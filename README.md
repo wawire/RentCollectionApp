@@ -36,7 +36,7 @@ RentCollectionApp/
 - **.NET 8**: Latest .NET framework
 - **ASP.NET Core**: Web API framework
 - **Entity Framework Core 8**: ORM for database operations
-- **PostgreSQL**: Primary database
+- **SQL Server**: Primary database
 - **AutoMapper**: Object-to-object mapping
 - **FluentValidation**: Input validation
 - **Serilog**: Structured logging
@@ -56,7 +56,7 @@ RentCollectionApp/
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 18+](https://nodejs.org/) (for frontend)
-- [PostgreSQL 14+](https://www.postgresql.org/download/)
+- [SQL Server 2019+](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) or SQL Server Express (free)
 - IDE: Visual Studio 2022, VS Code, or JetBrains Rider
 
 ## Getting Started
@@ -70,15 +70,22 @@ cd RentCollectionApp
 
 ### 2. Database Setup
 
-1. Install PostgreSQL
-2. Create a new database:
+1. Install SQL Server or SQL Server Express
+2. Create a new database using SQL Server Management Studio (SSMS) or command line:
    ```sql
-   CREATE DATABASE rentcollection_dev;
+   CREATE DATABASE RentCollection_Dev;
    ```
-3. Update the connection string in `src/RentCollection.API/appsettings.Development.json`:
+3. Update the connection string in `src/RentCollection.API/appsettings.Development.json` if needed:
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Host=localhost;Database=rentcollection_dev;Username=postgres;Password=yourpassword"
+     "DefaultConnection": "Server=localhost;Database=RentCollection_Dev;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+   }
+   ```
+
+   **Note:** If using SQL Server authentication instead of Windows Authentication, use:
+   ```json
+   "ConnectionStrings": {
+     "DefaultConnection": "Server=localhost;Database=RentCollection_Dev;User Id=sa;Password=YourPassword;TrustServerCertificate=True;MultipleActiveResultSets=true"
    }
    ```
 
@@ -243,7 +250,7 @@ npm run start
 
 ### Backend NuGet Packages
 - Microsoft.EntityFrameworkCore (8.0.0)
-- Npgsql.EntityFrameworkCore.PostgreSQL (8.0.0)
+- Microsoft.EntityFrameworkCore.SqlServer (8.0.0)
 - AutoMapper.Extensions.Microsoft.DependencyInjection (12.0.1)
 - FluentValidation.DependencyInjectionExtensions (11.9.0)
 - Swashbuckle.AspNetCore (6.5.0)
