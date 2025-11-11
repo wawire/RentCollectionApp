@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RentCollection.Application.Services.Interfaces;
 using RentCollection.Infrastructure.Data;
 using RentCollection.Infrastructure.Repositories.Implementations;
 using RentCollection.Infrastructure.Repositories.Interfaces;
+using RentCollection.Infrastructure.Services;
 
 namespace RentCollection.Infrastructure;
 
@@ -25,6 +27,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitRepository, UnitRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+        // Register services
+        services.AddScoped<ISmsService, AfricasTalkingSmsService>();
 
         return services;
     }
