@@ -1,36 +1,36 @@
 using Microsoft.AspNetCore.Mvc;
-using RentCollection.Application.DTOs.Properties;
+using RentCollection.Application.DTOs.Payments;
 using RentCollection.Application.Services.Interfaces;
 
 namespace RentCollection.API.Controllers;
 
 /// <summary>
-/// Properties management endpoints
+/// Payments management endpoints
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class PropertiesController : ControllerBase
+public class PaymentsController : ControllerBase
 {
-    private readonly IPropertyService _propertyService;
-    private readonly ILogger<PropertiesController> _logger;
+    private readonly IPaymentService _paymentService;
+    private readonly ILogger<PaymentsController> _logger;
 
-    public PropertiesController(IPropertyService propertyService, ILogger<PropertiesController> logger)
+    public PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger)
     {
-        _propertyService = propertyService;
+        _paymentService = paymentService;
         _logger = logger;
     }
 
     /// <summary>
-    /// Get all properties
+    /// Get all payments
     /// </summary>
-    /// <returns>List of all properties</returns>
+    /// <returns>List of all payments</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
     {
-        var result = await _propertyService.GetAllPropertiesAsync();
+        var result = await _paymentService.GetAllPaymentsAsync();
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -39,17 +39,17 @@ public class PropertiesController : ControllerBase
     }
 
     /// <summary>
-    /// Get paginated properties
+    /// Get paginated payments
     /// </summary>
     /// <param name="pageNumber">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
-    /// <returns>Paginated list of properties</returns>
+    /// <returns>Paginated list of payments</returns>
     [HttpGet("paginated")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaginated([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _propertyService.GetPropertiesPaginatedAsync(pageNumber, pageSize);
+        var result = await _paymentService.GetPaymentsPaginatedAsync(pageNumber, pageSize);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -58,16 +58,16 @@ public class PropertiesController : ControllerBase
     }
 
     /// <summary>
-    /// Get property by ID
+    /// Get payment by ID
     /// </summary>
-    /// <param name="id">Property ID</param>
-    /// <returns>Property details</returns>
+    /// <param name="id">Payment ID</param>
+    /// <returns>Payment details</returns>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
-        var result = await _propertyService.GetPropertyByIdAsync(id);
+        var result = await _paymentService.GetPaymentByIdAsync(id);
 
         if (!result.IsSuccess)
             return NotFound(result);
@@ -76,16 +76,34 @@ public class PropertiesController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new property
+    /// Get payments by tenant ID
     /// </summary>
-    /// <param name="createDto">Property creation data</param>
-    /// <returns>Created property</returns>
+    /// <param name="tenantId">Tenant ID</param>
+    /// <returns>List of payments for the specified tenant</returns>
+    [HttpGet("tenant/{tenantId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetByTenantId(int tenantId)
+    {
+        var result = await _paymentService.GetPaymentsByTenantIdAsync(tenantId);
+
+        if (!result.IsSuccess)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Record a new payment
+    /// </summary>
+    /// <param name="createDto">Payment creation data</param>
+    /// <returns>Created payment</returns>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] CreatePropertyDto createDto)
+    public async Task<IActionResult> Create([FromBody] CreatePaymentDto createDto)
     {
-        var result = await _propertyService.CreatePropertyAsync(createDto);
+        var result = await _paymentService.CreatePaymentAsync(createDto);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -94,29 +112,9 @@ public class PropertiesController : ControllerBase
     }
 
     /// <summary>
-    /// Update an existing property
+    /// Delete a payment
     /// </summary>
-    /// <param name="id">Property ID</param>
-    /// <param name="updateDto">Property update data</param>
-    /// <returns>Updated property</returns>
-    [HttpPut("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdatePropertyDto updateDto)
-    {
-        var result = await _propertyService.UpdatePropertyAsync(id, updateDto);
-
-        if (!result.IsSuccess)
-            return BadRequest(result);
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Delete a property
-    /// </summary>
-    /// <param name="id">Property ID</param>
+    /// <param name="id">Payment ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -124,7 +122,7 @@ public class PropertiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _propertyService.DeletePropertyAsync(id);
+        var result = await _paymentService.DeletePaymentAsync(id);
 
         if (!result.IsSuccess)
             return BadRequest(result);
