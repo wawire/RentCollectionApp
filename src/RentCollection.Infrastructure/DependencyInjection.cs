@@ -30,6 +30,7 @@ public static class DependencyInjection
 
         // Register services
         services.AddScoped<ISmsService, AfricasTalkingSmsService>();
+        services.AddScoped<IPdfService, PdfGenerationService>();
 
         return services;
     }
