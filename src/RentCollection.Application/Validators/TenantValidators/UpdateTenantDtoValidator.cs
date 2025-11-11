@@ -1,18 +1,12 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using RentCollection.Application.DTOs.Tenants;
-using RentCollection.Infrastructure.Data;
 
 namespace RentCollection.Application.Validators.TenantValidators;
 
-public class CreateTenantDtoValidator : AbstractValidator<CreateTenantDto>
+public class UpdateTenantDtoValidator : AbstractValidator<UpdateTenantDto>
 {
-    private readonly ApplicationDbContext _context;
-
-    public CreateTenantDtoValidator(ApplicationDbContext context)
+    public UpdateTenantDtoValidator()
     {
-        _context = context;
-
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required")
             .MaximumLength(100).WithMessage("First name must not exceed 100 characters");
@@ -33,10 +27,6 @@ public class CreateTenantDtoValidator : AbstractValidator<CreateTenantDto>
         RuleFor(x => x.IdNumber)
             .MaximumLength(50).WithMessage("ID number must not exceed 50 characters")
             .When(x => !string.IsNullOrEmpty(x.IdNumber));
-
-        RuleFor(x => x.UnitId)
-            .GreaterThan(0).WithMessage("A valid unit must be selected")
-            .MustAsync(UnitExists).WithMessage("The selected unit does not exist");
 
         RuleFor(x => x.MonthlyRent)
             .GreaterThan(0).WithMessage("Monthly rent must be greater than 0")
@@ -62,39 +52,8 @@ public class CreateTenantDtoValidator : AbstractValidator<CreateTenantDto>
             .WithMessage("Lease duration cannot exceed 10 years")
             .When(x => x.LeaseEndDate.HasValue);
 
-        // Business rule: Prevent overlapping tenant leases for the same unit
-        RuleFor(x => x)
-            .MustAsync(NoOverlappingLeases)
-            .WithMessage("Another active tenant already exists for this unit with overlapping lease dates")
-            .WithName("LeaseStartDate");
-
         RuleFor(x => x.Notes)
             .MaximumLength(2000).WithMessage("Notes must not exceed 2000 characters")
             .When(x => !string.IsNullOrEmpty(x.Notes));
-    }
-
-    private async Task<bool> UnitExists(int unitId, CancellationToken cancellationToken)
-    {
-        return await _context.Units.AnyAsync(u => u.Id == unitId, cancellationToken);
-    }
-
-    private async Task<bool> NoOverlappingLeases(CreateTenantDto dto, CancellationToken cancellationToken)
-    {
-        // Check if there are any active tenants for this unit with overlapping lease periods
-        var overlappingTenants = await _context.Tenants
-            .Where(t => t.UnitId == dto.UnitId && t.IsActive)
-            .Where(t =>
-                // Case 1: New lease starts during existing lease
-                (dto.LeaseStartDate >= t.LeaseStartDate && (!t.LeaseEndDate.HasValue || dto.LeaseStartDate <= t.LeaseEndDate.Value))
-                ||
-                // Case 2: New lease ends during existing lease
-                (dto.LeaseEndDate.HasValue && dto.LeaseEndDate.Value >= t.LeaseStartDate && (!t.LeaseEndDate.HasValue || dto.LeaseEndDate.Value <= t.LeaseEndDate.Value))
-                ||
-                // Case 3: New lease encompasses existing lease
-                (dto.LeaseStartDate <= t.LeaseStartDate && (!dto.LeaseEndDate.HasValue || (t.LeaseEndDate.HasValue && dto.LeaseEndDate.Value >= t.LeaseEndDate.Value)))
-            )
-            .AnyAsync(cancellationToken);
-
-        return !overlappingTenants;
     }
 }

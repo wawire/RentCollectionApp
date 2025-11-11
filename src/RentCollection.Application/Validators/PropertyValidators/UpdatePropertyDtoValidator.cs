@@ -3,9 +3,9 @@ using RentCollection.Application.DTOs.Properties;
 
 namespace RentCollection.Application.Validators.PropertyValidators;
 
-public class CreatePropertyDtoValidator : AbstractValidator<CreatePropertyDto>
+public class UpdatePropertyDtoValidator : AbstractValidator<UpdatePropertyDto>
 {
-    public CreatePropertyDtoValidator()
+    public UpdatePropertyDtoValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Property name is required")
@@ -16,8 +16,7 @@ public class CreatePropertyDtoValidator : AbstractValidator<CreatePropertyDto>
             .MaximumLength(300).WithMessage("Location must not exceed 300 characters");
 
         RuleFor(x => x.TotalUnits)
-            .GreaterThan(0).WithMessage("Total units must be greater than 0")
-            .LessThanOrEqualTo(10000).WithMessage("Total units seems unreasonably high");
+            .GreaterThan(0).WithMessage("Total units must be greater than 0");
 
         RuleFor(x => x.Description)
             .MaximumLength(1000).WithMessage("Description must not exceed 1000 characters")
