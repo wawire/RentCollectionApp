@@ -22,7 +22,9 @@ public static class DependencyInjection
         // Register repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IPropertyRepository, PropertyRepository>();
-        // Add other repositories here as needed
+        services.AddScoped<IUnitRepository, UnitRepository>();
+        services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
 
         return services;
     }
