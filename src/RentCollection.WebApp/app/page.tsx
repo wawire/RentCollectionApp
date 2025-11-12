@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { FaBuilding, FaUsers, FaMoneyBillWave, FaChartLine, FaDoorOpen, FaFileInvoice } from 'react-icons/fa'
-import Card from '@/components/ui/Card'
+import Card from '@/components/common/Card'
 
 export default function Home() {
   const features = [
