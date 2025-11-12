@@ -4,6 +4,7 @@ import { useGetDashboardStats } from '@/lib/hooks'
 import StatsCard from '@/components/dashboard/StatsCard'
 import RecentPayments from '@/components/dashboard/RecentPayments'
 import OccupancyChart from '@/components/dashboard/OccupancyChart'
+import RevenueChart from '@/components/dashboard/RevenueChart'
 import QuickActions from '@/components/dashboard/QuickActions'
 import { LoadingSpinner } from '@/components/common'
 import { FaBuilding, FaDoorOpen, FaUsers, FaMoneyBillWave } from 'react-icons/fa'
@@ -81,6 +82,9 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <QuickActions />
       </div>
+
+      {/* Revenue Chart */}
+      <RevenueChart />
 
       {/* Recent Payments */}
       <RecentPayments />
