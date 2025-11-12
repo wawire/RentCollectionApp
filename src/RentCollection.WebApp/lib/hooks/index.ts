@@ -39,6 +39,7 @@ export {
   useGetPaymentsByDateRange,
   useCreatePayment,
   useDeletePayment,
+  useDownloadPaymentReceipt,
 } from './usePayments'
 
 // Dashboard hooks
