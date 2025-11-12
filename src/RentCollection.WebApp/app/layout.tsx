@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-import Navbar from '@/components/layout/Navbar'
-
-const inter = Inter({ subsets: ['latin'] })
+import MainLayout from '@/components/layout/MainLayout'
 
 export const metadata: Metadata = {
   title: 'RentPro - Rent Collection System',
@@ -17,13 +14,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <main className="min-h-[calc(100vh-64px)]">
-            {children}
-          </main>
-        </div>
+      <body className="antialiased">
+        <MainLayout>{children}</MainLayout>
       </body>
     </html>
   )
