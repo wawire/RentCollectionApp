@@ -55,3 +55,9 @@ export {
   useSendRentReminder,
   useSendPaymentReceipt,
 } from './useSms'
+
+// Reports hooks
+export {
+  useDownloadMonthlyReport,
+  useDownloadTenantList,
+} from './useReports'

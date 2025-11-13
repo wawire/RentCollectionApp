@@ -542,24 +542,24 @@ This document provides a comprehensive step-by-step implementation plan for the 
 ### ✅ Step 4.12: Reports Section
 **Priority: MEDIUM** | **Time: 6-8 hours**
 
-- [ ] Create `app/reports/page.tsx`
-- [ ] Create `components/Reports/MonthlyReport.tsx`
-  - [ ] Month/year selector
-  - [ ] Revenue summary
-  - [ ] Collection rate
-  - [ ] PDF export
-- [ ] Create `components/Reports/PropertyReport.tsx`
-  - [ ] Property selector
-  - [ ] Occupancy statistics
-  - [ ] Revenue by property
-- [ ] Create `components/Reports/TenantReport.tsx`
-  - [ ] Tenant list export
-  - [ ] Filter options
-  - [ ] PDF export
-- [ ] Add charts and visualizations
-- [ ] Add export to Excel (optional)
+- [x] Create `app/reports/page.tsx`
+- [x] Create `components/Reports/MonthlyReport.tsx`
+  - [x] Month/year selector
+  - [x] Revenue summary
+  - [x] Collection rate
+  - [x] PDF export
+- [x] Create `components/Reports/PropertyReport.tsx`
+  - [x] Property selector
+  - [x] Occupancy statistics
+  - [x] Revenue by property
+- [x] Create `components/Reports/TenantReport.tsx`
+  - [x] Tenant list export
+  - [x] Filter options
+  - [x] PDF export
+- [x] Add charts and visualizations (bar charts for occupancy rates)
+- [x] Yearly overview table with monthly breakdown
 
-**Deliverable:** Reporting and analytics interface
+**Deliverable:** Reporting and analytics interface ✅
 
 ---
 
