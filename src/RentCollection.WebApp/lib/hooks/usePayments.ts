@@ -170,3 +170,35 @@ export function useDeletePayment() {
 
   return { deletePayment, loading, error }
 }
+
+export function useDownloadPaymentReceipt() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
+
+  const downloadReceipt = useCallback(async (paymentId: number, fileName?: string): Promise<boolean> => {
+    try {
+      setLoading(true)
+      setError(null)
+      const blob = await paymentService.downloadReceipt(paymentId)
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName || `Payment-Receipt-${paymentId}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      return true
+    } catch (err) {
+      setError(err as ApiError)
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { downloadReceipt, loading, error }
+}

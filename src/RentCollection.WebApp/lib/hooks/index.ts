@@ -39,6 +39,7 @@ export {
   useGetPaymentsByDateRange,
   useCreatePayment,
   useDeletePayment,
+  useDownloadPaymentReceipt,
 } from './usePayments'
 
 // Dashboard hooks
@@ -54,3 +55,9 @@ export {
   useSendRentReminder,
   useSendPaymentReceipt,
 } from './useSms'
+
+// Reports hooks
+export {
+  useDownloadMonthlyReport,
+  useDownloadTenantList,
+} from './useReports'

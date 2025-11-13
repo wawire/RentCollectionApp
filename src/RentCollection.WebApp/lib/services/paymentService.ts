@@ -37,4 +37,18 @@ export const paymentService = {
   async delete(id: number): Promise<void> {
     await apiClient.delete(`/payments/${id}`)
   },
+
+  async downloadReceipt(id: number): Promise<Blob> {
+    const response = await apiClient.get(`/reports/payment-receipt/${id}`, {
+      responseType: 'blob',
+    })
+    return response.data
+  },
+
+  async previewReceipt(id: number): Promise<Blob> {
+    const response = await apiClient.get(`/reports/payment-receipt/${id}/preview`, {
+      responseType: 'blob',
+    })
+    return response.data
+  },
 }
