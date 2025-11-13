@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     {
     }
 
+    public DbSet<ApplicationUser> Users { get; set; } = null!;
     public DbSet<Property> Properties { get; set; } = null!;
     public DbSet<Unit> Units { get; set; } = null!;
     public DbSet<Tenant> Tenants { get; set; } = null!;

@@ -27,10 +27,12 @@ public static class DependencyInjection
         services.AddScoped<IUnitRepository, UnitRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         // Register services
         services.AddScoped<ISmsService, AfricasTalkingSmsService>();
         services.AddScoped<IPdfService, PdfGenerationService>();
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         return services;
     }

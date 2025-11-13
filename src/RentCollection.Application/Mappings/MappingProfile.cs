@@ -3,6 +3,7 @@ using RentCollection.Application.DTOs.Properties;
 using RentCollection.Application.DTOs.Units;
 using RentCollection.Application.DTOs.Tenants;
 using RentCollection.Application.DTOs.Payments;
+using RentCollection.Application.DTOs.Auth;
 using RentCollection.Domain.Entities;
 
 namespace RentCollection.Application.Mappings;
@@ -43,5 +44,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PaymentMethodName, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
             .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.ToString()));
         CreateMap<CreatePaymentDto, Payment>();
+
+        // User/Auth mappings
+        CreateMap<ApplicationUser, UserDto>();
+        CreateMap<RegisterDto, ApplicationUser>();
     }
 }

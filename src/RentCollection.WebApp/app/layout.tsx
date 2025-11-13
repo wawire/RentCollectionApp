@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import MainLayout from '@/components/layout/MainLayout'
+import { AuthProvider } from '@/lib/contexts'
+import { ToastProvider } from '@/components/common'
 
 export const metadata: Metadata = {
   title: 'RentPro - Rent Collection System',
@@ -15,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <MainLayout>{children}</MainLayout>
+        <AuthProvider>
+          <ToastProvider>
+            <MainLayout>{children}</MainLayout>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   )

@@ -17,6 +17,9 @@ export type { DashboardStats, MonthlyReport } from './dashboard.types'
 // SMS
 export type { SendSmsDto, SmsResponse, SmsTemplate, SmsHistoryItem, BulkSmsDto } from './sms.types'
 
+// Auth
+export type { User, LoginDto, RegisterDto, AuthResponse, RefreshTokenDto, AuthContextType } from './auth.types'
+
 // Common
 export type {
   ApiResponse,
