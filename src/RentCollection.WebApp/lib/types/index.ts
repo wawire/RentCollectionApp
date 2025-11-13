@@ -15,7 +15,7 @@ export { PaymentMethod, PaymentStatus } from './payment.types'
 export type { DashboardStats, MonthlyReport } from './dashboard.types'
 
 // SMS
-export type { SendSmsDto, SmsResponse } from './sms.types'
+export type { SendSmsDto, SmsResponse, SmsTemplate, SmsHistoryItem, BulkSmsDto } from './sms.types'
 
 // Common
 export type {
