@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace RentCollection.Infrastructure.Repositories.Interfaces;
+namespace RentCollection.Application.Interfaces;
 
 public interface IRepository<T> where T : class
 {

@@ -2,9 +2,9 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Units;
+using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
-using RentCollection.Infrastructure.Repositories.Interfaces;
 
 namespace RentCollection.Application.Services.Implementations;
 

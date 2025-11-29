@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using RentCollection.Application.Interfaces;
 using RentCollection.Infrastructure.Data;
-using RentCollection.Infrastructure.Repositories.Interfaces;
 
 namespace RentCollection.Infrastructure.Repositories.Implementations;
 
