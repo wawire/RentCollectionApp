@@ -16,7 +16,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
 
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
-      router.push('/');
+      // AuthContext will handle redirect to dashboard
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid email or password');
       setIsLoading(false);
