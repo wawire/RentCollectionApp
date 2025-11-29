@@ -36,7 +36,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             if (entry.State == EntityState.Modified)
             {
-                entry.Property("UpdatedAt").CurrentValue = DateTime.UtcNow;
+                // Only set UpdatedAt if the entity has this property (domain entities, not Identity entities)
+                var updatedAtProperty = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "UpdatedAt");
+                if (updatedAtProperty != null)
+                {
+                    updatedAtProperty.CurrentValue = DateTime.UtcNow;
+                }
             }
         }
 
