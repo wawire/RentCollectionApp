@@ -13,16 +13,13 @@ namespace RentCollection.Infrastructure.Services;
 public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
         IConfiguration configuration)
     {
         _userManager = userManager;
-        _signInManager = signInManager;
         _configuration = configuration;
     }
 
@@ -91,8 +88,8 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("User account is deactivated");
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: false);
-        if (!result.Succeeded)
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+        if (!isPasswordValid)
         {
             throw new UnauthorizedAccessException("Invalid email or password");
         }
