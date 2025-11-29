@@ -18,8 +18,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="QuestPDF" Version="2024.1.0" />
-    <PackageReference Include="RestSharp" Version="110.2.0" />
+    <PackageReference Include="QuestPDF" Version="2024.12.3" />
+    <PackageReference Include="RestSharp" Version="112.1.0" />
   </ItemGroup>
 
 </Project>
