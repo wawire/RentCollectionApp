@@ -16,7 +16,7 @@ export default function RegisterPage() {
     phoneNumber: '',
     password: '',
     confirmPassword: '',
-    role: UserRole.Caretaker,
+    role: UserRole.Tenant, // Public registration is for Tenants only
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -65,8 +65,8 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Join RentCollection</h1>
-            <p className="text-emerald-100">Start managing your properties today</p>
+            <h1 className="text-4xl font-bold mb-2">Welcome Tenants!</h1>
+            <p className="text-emerald-100">Access your rental account and manage payments</p>
           </div>
 
           <div className="space-y-6">
@@ -78,8 +78,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Easy to Use</h3>
-                  <p className="text-sm text-emerald-100">Intuitive interface designed for Kenyan property managers</p>
+                  <h3 className="text-lg font-semibold mb-1">Pay Rent Online</h3>
+                  <p className="text-sm text-emerald-100">Make secure payments from your phone via M-Pesa</p>
                 </div>
               </div>
             </div>
@@ -92,8 +92,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Secure & Reliable</h3>
-                  <p className="text-sm text-emerald-100">Your data is encrypted and backed up automatically</p>
+                  <h3 className="text-lg font-semibold mb-1">Track Your Payments</h3>
+                  <p className="text-sm text-emerald-100">View payment history and get instant receipts</p>
                 </div>
               </div>
             </div>
@@ -106,8 +106,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Fast Setup</h3>
-                  <p className="text-sm text-emerald-100">Get started in minutes, not hours</p>
+                  <h3 className="text-lg font-semibold mb-1">Submit Requests</h3>
+                  <p className="text-sm text-emerald-100">Report maintenance issues directly to your landlord</p>
                 </div>
               </div>
             </div>
@@ -129,8 +129,11 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Create account</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Create Tenant Account</h2>
             <p className="mt-2 text-sm text-gray-600">
+              Register for tenant self-service portal
+            </p>
+            <p className="mt-1 text-sm text-gray-600">
               Already have an account?{' '}
               <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-500">
                 Sign in
@@ -244,25 +247,6 @@ export default function RegisterPage() {
                     onChange={handleChange}
                   />
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  required
-                  className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
-                  value={formData.role}
-                  onChange={handleChange}
-                >
-                  <option value={UserRole.Landlord}>Landlord (Property Owner)</option>
-                  <option value={UserRole.Caretaker}>Caretaker (Property Manager)</option>
-                  <option value={UserRole.Accountant}>Accountant</option>
-                </select>
-                <p className="mt-1 text-xs text-gray-500">Select your role in property management</p>
               </div>
 
               <div>
