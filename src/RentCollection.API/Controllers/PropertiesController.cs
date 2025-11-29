@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentCollection.Application.DTOs.Properties;
 using RentCollection.Application.Services.Interfaces;
@@ -7,6 +8,7 @@ namespace RentCollection.API.Controllers;
 /// <summary>
 /// Properties management endpoints
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
