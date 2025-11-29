@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/lib/contexts/AuthContext'
 import {
   FaHome,
   FaChartLine,
@@ -22,6 +23,12 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const { isAuthenticated } = useAuth()
+
+  // Don't show sidebar on login/register pages or if not authenticated
+  if (pathname === '/login' || pathname === '/register' || !isAuthenticated) {
+    return null
+  }
 
   const navItems = [
     { name: 'Home', path: '/', icon: FaHome },

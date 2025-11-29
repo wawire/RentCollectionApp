@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/lib/contexts/AuthContext'
+import { useRouter, usePathname } from 'next/navigation'
 import { FaBars, FaBell, FaSearch, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa'
 
 interface HeaderProps {
@@ -8,8 +10,30 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
+  const { user, logout, isAuthenticated } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+
+  // Don't show header on login/register pages
+  if (pathname === '/login' || pathname === '/register') {
+    return null
+  }
+
+  // Don't show header if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
+
+  const handleSignOut = () => {
+    logout()
+  }
+
+  const getInitials = () => {
+    if (!user) return '??'
+    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
+  }
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-0 md:left-64 z-10">
@@ -79,11 +103,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
               className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                JD
+                {getInitials()}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900">John Doe</p>
-                <p className="text-xs text-gray-500">Admin</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="text-xs text-gray-500">{user?.role}</p>
               </div>
             </button>
 
@@ -99,7 +125,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   <span>Settings</span>
                 </button>
                 <hr className="my-2 border-gray-200" />
-                <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                >
                   <FaSignOutAlt className="w-4 h-4" />
                   <span>Sign Out</span>
                 </button>
