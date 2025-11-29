@@ -22,7 +22,7 @@ export default function RegisterPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
 
@@ -58,7 +58,7 @@ export default function RegisterPage() {
         password: formData.password,
         phoneNumber: formData.phoneNumber,
       });
-      router.push('/');
+      // AuthContext will handle redirect to dashboard
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
       setIsLoading(false);
