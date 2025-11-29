@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentCollection.Application.Services.Interfaces;
 
@@ -6,6 +7,7 @@ namespace RentCollection.API.Controllers;
 /// <summary>
 /// PDF reports and document generation endpoints
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
