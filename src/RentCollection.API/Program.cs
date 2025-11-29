@@ -1,6 +1,11 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 using RentCollection.API.Middleware;
 using RentCollection.Application;
 using RentCollection.Infrastructure;
+using RentCollection.Infrastructure.Data;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +22,17 @@ builder.Host.UseSerilog();
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Add comprehensive health checks
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddHealthChecks()
+    .AddSqlServer(
+        connectionString: connectionString!,
+        name: "Database",
+        failureStatus: HealthStatus.Unhealthy,
+        tags: new[] { "db", "sql", "sqlserver" })
+    .AddCheck("API", () => HealthCheckResult.Healthy("API is running"), tags: new[] { "api" });
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -46,6 +62,28 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Initialize and seed database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        logger.LogInformation("Ensuring database is created...");
+        await context.Database.EnsureCreatedAsync();
+
+        logger.LogInformation("Starting database seed...");
+        await ApplicationDbContextSeed.SeedAsync(context, logger);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database");
+    }
+}
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -67,5 +105,23 @@ app.UseCors("AllowFrontend");
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Health check endpoints
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();

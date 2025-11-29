@@ -1,17 +1,16 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using RentCollection.Application.DTOs.Payments;
-using RentCollection.Infrastructure.Data;
+using RentCollection.Application.Interfaces;
 
 namespace RentCollection.Application.Validators.PaymentValidators;
 
 public class CreatePaymentDtoValidator : AbstractValidator<CreatePaymentDto>
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ITenantRepository _tenantRepository;
 
-    public CreatePaymentDtoValidator(ApplicationDbContext context)
+    public CreatePaymentDtoValidator(ITenantRepository tenantRepository)
     {
-        _context = context;
+        _tenantRepository = tenantRepository;
 
         RuleFor(x => x.TenantId)
             .GreaterThan(0).WithMessage("A valid tenant must be selected")
@@ -43,9 +42,9 @@ public class CreatePaymentDtoValidator : AbstractValidator<CreatePaymentDto>
             .WithMessage("Payment period cannot exceed 1 year")
             .WithName("PeriodEnd");
 
-        RuleFor(x => x.ReferenceNumber)
-            .MaximumLength(100).WithMessage("Reference number must not exceed 100 characters")
-            .When(x => !string.IsNullOrEmpty(x.ReferenceNumber));
+        RuleFor(x => x.TransactionReference)
+            .MaximumLength(100).WithMessage("Transaction reference must not exceed 100 characters")
+            .When(x => !string.IsNullOrEmpty(x.TransactionReference));
 
         RuleFor(x => x.Notes)
             .MaximumLength(1000).WithMessage("Notes must not exceed 1000 characters")
@@ -54,12 +53,12 @@ public class CreatePaymentDtoValidator : AbstractValidator<CreatePaymentDto>
 
     private async Task<bool> TenantExists(int tenantId, CancellationToken cancellationToken)
     {
-        return await _context.Tenants.AnyAsync(t => t.Id == tenantId, cancellationToken);
+        return await _tenantRepository.ExistsAsync(tenantId);
     }
 
     private async Task<bool> TenantIsActive(int tenantId, CancellationToken cancellationToken)
     {
-        var tenant = await _context.Tenants.FindAsync(new object[] { tenantId }, cancellationToken);
+        var tenant = await _tenantRepository.GetByIdAsync(tenantId);
         return tenant?.IsActive ?? false;
     }
 }

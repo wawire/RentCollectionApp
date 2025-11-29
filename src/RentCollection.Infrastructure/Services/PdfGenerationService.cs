@@ -71,7 +71,7 @@ public class PdfGenerationService : IPdfService
                             {
                                 row.RelativeItem().Column(leftColumn =>
                                 {
-                                    leftColumn.Item().Text($"Receipt No: {payment.ReferenceNumber ?? payment.Id.ToString()}")
+                                    leftColumn.Item().Text($"Receipt No: {payment.TransactionReference ?? payment.Id.ToString()}")
                                         .Bold();
                                     leftColumn.Item().Text($"Date: {payment.PaymentDate:dd MMM yyyy}");
                                 });
@@ -97,7 +97,7 @@ public class PdfGenerationService : IPdfService
                                 });
 
                                 table.Cell().Text("Name:").Bold();
-                                table.Cell().Text(payment.Tenant.FullName);
+                                table.Cell().Text($"{payment.Tenant.FirstName} {payment.Tenant.LastName}");
 
                                 table.Cell().Text("Phone:").Bold();
                                 table.Cell().Text(payment.Tenant.PhoneNumber);
@@ -158,14 +158,13 @@ public class PdfGenerationService : IPdfService
 
                     page.Footer()
                         .AlignCenter()
+                        .DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Darken1))
                         .Text(text =>
                         {
                             text.Span("Generated on ");
                             text.Span(DateTime.UtcNow.ToString("dd MMM yyyy HH:mm")).Bold();
                             text.Span(" | This is a computer-generated receipt and does not require a signature.");
-                        })
-                        .FontSize(8)
-                        .FontColor(Colors.Grey.Darken1);
+                        });
                 });
             });
 
@@ -312,14 +311,16 @@ public class PdfGenerationService : IPdfService
                                 foreach (var payment in payments)
                                 {
                                     table.Cell().Element(CellStyle).Text(payment.PaymentDate.ToString("dd MMM"));
-                                    table.Cell().Element(CellStyle).Text(payment.Tenant.FullName);
+                                    table.Cell().Element(CellStyle).Text($"{payment.Tenant.FirstName} {payment.Tenant.LastName}");
                                     table.Cell().Element(CellStyle).Text($"{payment.Tenant.Unit.Property.Name} - {payment.Tenant.Unit.UnitNumber}");
                                     table.Cell().Element(CellStyle).AlignRight().Text($"KES {payment.Amount:N2}");
                                     table.Cell().Element(CellStyle).Text(payment.PaymentMethod.ToString());
                                 }
 
-                                // Total row
-                                table.Cell().Element(TotalStyle).ColumnSpan(3).Text("TOTAL").Bold();
+                                // Total row - spans first 3 columns
+                                table.Cell().Element(TotalStyle).Text("TOTAL").Bold();
+                                table.Cell().Element(TotalStyle).Text("");
+                                table.Cell().Element(TotalStyle).Text("");
                                 table.Cell().Element(TotalStyle).AlignRight().Text($"KES {totalRevenue:N2}").Bold();
                                 table.Cell().Element(TotalStyle);
 
@@ -342,6 +343,7 @@ public class PdfGenerationService : IPdfService
 
                     page.Footer()
                         .AlignCenter()
+                        .DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Darken1))
                         .Text(text =>
                         {
                             text.Span("Page ");
@@ -350,9 +352,7 @@ public class PdfGenerationService : IPdfService
                             text.TotalPages();
                             text.Span(" | Generated on ");
                             text.Span(DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"));
-                        })
-                        .FontSize(8)
-                        .FontColor(Colors.Grey.Darken1);
+                        });
                 });
             });
 
@@ -434,13 +434,13 @@ public class PdfGenerationService : IPdfService
                             // Data rows
                             foreach (var tenant in tenants)
                             {
-                                table.Cell().Element(CellStyle).Text(tenant.FullName);
+                                table.Cell().Element(CellStyle).Text($"{tenant.FirstName} {tenant.LastName}");
                                 table.Cell().Element(CellStyle).Text(tenant.Unit.Property.Name);
                                 table.Cell().Element(CellStyle).Text(tenant.Unit.UnitNumber);
                                 table.Cell().Element(CellStyle).Text(tenant.PhoneNumber);
                                 table.Cell().Element(CellStyle).Text(tenant.Email);
                                 table.Cell().Element(CellStyle).AlignRight().Text($"KES {tenant.MonthlyRent:N2}");
-                                table.Cell().Element(CellStyle).Text(tenant.MoveInDate.ToString("dd MMM yyyy"));
+                                table.Cell().Element(CellStyle).Text(tenant.LeaseStartDate.ToString("dd MMM yyyy"));
                             }
 
                             static IContainer HeaderStyle(IContainer container)
@@ -456,6 +456,7 @@ public class PdfGenerationService : IPdfService
 
                     page.Footer()
                         .AlignCenter()
+                        .DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Darken1))
                         .Text(text =>
                         {
                             text.Span("Page ");
@@ -464,9 +465,7 @@ public class PdfGenerationService : IPdfService
                             text.TotalPages();
                             text.Span(" | Generated on ");
                             text.Span(DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"));
-                        })
-                        .FontSize(8)
-                        .FontColor(Colors.Grey.Darken1);
+                        });
                 });
             });
 

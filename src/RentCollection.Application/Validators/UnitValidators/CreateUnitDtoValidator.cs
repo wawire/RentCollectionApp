@@ -1,17 +1,18 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using RentCollection.Application.DTOs.Units;
-using RentCollection.Infrastructure.Data;
+using RentCollection.Application.Interfaces;
 
 namespace RentCollection.Application.Validators.UnitValidators;
 
 public class CreateUnitDtoValidator : AbstractValidator<CreateUnitDto>
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IPropertyRepository _propertyRepository;
+    private readonly IUnitRepository _unitRepository;
 
-    public CreateUnitDtoValidator(ApplicationDbContext context)
+    public CreateUnitDtoValidator(IPropertyRepository propertyRepository, IUnitRepository unitRepository)
     {
-        _context = context;
+        _propertyRepository = propertyRepository;
+        _unitRepository = unitRepository;
 
         RuleFor(x => x.UnitNumber)
             .NotEmpty().WithMessage("Unit number is required")
@@ -51,13 +52,13 @@ public class CreateUnitDtoValidator : AbstractValidator<CreateUnitDto>
 
     private async Task<bool> PropertyExists(int propertyId, CancellationToken cancellationToken)
     {
-        return await _context.Properties.AnyAsync(p => p.Id == propertyId, cancellationToken);
+        return await _propertyRepository.ExistsAsync(propertyId);
     }
 
     private async Task<bool> UnitNumberMustBeUniqueInProperty(CreateUnitDto dto, CancellationToken cancellationToken)
     {
-        var exists = await _context.Units
-            .AnyAsync(u => u.PropertyId == dto.PropertyId && u.UnitNumber == dto.UnitNumber, cancellationToken);
+        var units = await _unitRepository.GetUnitsByPropertyIdAsync(dto.PropertyId);
+        var exists = units.Any(u => u.UnitNumber == dto.UnitNumber);
 
         return !exists;
     }

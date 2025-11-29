@@ -63,7 +63,7 @@ public class AfricasTalkingSmsService : ISmsService
                 Message = sendSmsDto.Message,
                 Status = response.IsSuccessful ? SmsStatus.Sent : SmsStatus.Failed,
                 SentAt = DateTime.UtcNow,
-                Response = response.Content,
+                ExternalId = response.Content,
                 TenantId = sendSmsDto.TenantId
             };
 
@@ -92,7 +92,7 @@ public class AfricasTalkingSmsService : ISmsService
                 Message = sendSmsDto.Message,
                 Status = SmsStatus.Failed,
                 SentAt = DateTime.UtcNow,
-                Response = ex.Message,
+                ErrorMessage = ex.Message,
                 TenantId = sendSmsDto.TenantId
             };
 
@@ -123,7 +123,7 @@ public class AfricasTalkingSmsService : ISmsService
             }
 
             var message = SmsTemplates.GetRentReminderMessage(
-                tenant.FullName,
+                $"{tenant.FirstName} {tenant.LastName}",
                 tenant.Unit.Property.Name,
                 tenant.Unit.UnitNumber,
                 tenant.MonthlyRent,
@@ -167,10 +167,10 @@ public class AfricasTalkingSmsService : ISmsService
             }
 
             var message = SmsTemplates.GetPaymentReceiptMessage(
-                payment.Tenant.FullName,
+                $"{payment.Tenant.FirstName} {payment.Tenant.LastName}",
                 payment.Amount,
                 payment.PaymentDate,
-                payment.ReferenceNumber ?? payment.Id.ToString(),
+                payment.TransactionReference ?? payment.Id.ToString(),
                 payment.Tenant.Unit.Property.Name,
                 payment.Tenant.Unit.UnitNumber
             );

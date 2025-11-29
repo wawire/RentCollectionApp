@@ -1,17 +1,18 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using RentCollection.Application.DTOs.Tenants;
-using RentCollection.Infrastructure.Data;
+using RentCollection.Application.Interfaces;
 
 namespace RentCollection.Application.Validators.TenantValidators;
 
 public class CreateTenantDtoValidator : AbstractValidator<CreateTenantDto>
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitRepository _unitRepository;
+    private readonly ITenantRepository _tenantRepository;
 
-    public CreateTenantDtoValidator(ApplicationDbContext context)
+    public CreateTenantDtoValidator(IUnitRepository unitRepository, ITenantRepository tenantRepository)
     {
-        _context = context;
+        _unitRepository = unitRepository;
+        _tenantRepository = tenantRepository;
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required")
@@ -75,14 +76,16 @@ public class CreateTenantDtoValidator : AbstractValidator<CreateTenantDto>
 
     private async Task<bool> UnitExists(int unitId, CancellationToken cancellationToken)
     {
-        return await _context.Units.AnyAsync(u => u.Id == unitId, cancellationToken);
+        return await _unitRepository.ExistsAsync(unitId);
     }
 
     private async Task<bool> NoOverlappingLeases(CreateTenantDto dto, CancellationToken cancellationToken)
     {
         // Check if there are any active tenants for this unit with overlapping lease periods
-        var overlappingTenants = await _context.Tenants
-            .Where(t => t.UnitId == dto.UnitId && t.IsActive)
+        var activeTenants = await _tenantRepository.GetTenantsByUnitIdAsync(dto.UnitId);
+
+        var overlappingTenants = activeTenants
+            .Where(t => t.IsActive)
             .Where(t =>
                 // Case 1: New lease starts during existing lease
                 (dto.LeaseStartDate >= t.LeaseStartDate && (!t.LeaseEndDate.HasValue || dto.LeaseStartDate <= t.LeaseEndDate.Value))
@@ -93,7 +96,7 @@ public class CreateTenantDtoValidator : AbstractValidator<CreateTenantDto>
                 // Case 3: New lease encompasses existing lease
                 (dto.LeaseStartDate <= t.LeaseStartDate && (!dto.LeaseEndDate.HasValue || (t.LeaseEndDate.HasValue && dto.LeaseEndDate.Value >= t.LeaseEndDate.Value)))
             )
-            .AnyAsync(cancellationToken);
+            .Any();
 
         return !overlappingTenants;
     }
