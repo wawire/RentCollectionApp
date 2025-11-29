@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link'
 import { FaBuilding, FaUsers, FaMoneyBillWave, FaChartLine, FaDoorOpen, FaFileInvoice } from 'react-icons/fa'
 import Card from '@/components/common/Card'
+import { ProtectedRoute } from '@/components/Auth/ProtectedRoute'
 
 export default function Home() {
   const features = [
@@ -55,7 +58,8 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen">
+    <ProtectedRoute>
+      <div className="min-h-screen">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div className="container mx-auto px-6 py-20">
@@ -150,6 +154,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }
