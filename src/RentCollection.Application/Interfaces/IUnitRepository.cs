@@ -1,6 +1,6 @@
 using RentCollection.Domain.Entities;
 
-namespace RentCollection.Infrastructure.Repositories.Interfaces;
+namespace RentCollection.Application.Interfaces;
 
 public interface IUnitRepository : IRepository<Unit>
 {
