@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/lib/contexts/AuthContext'
-import { useRouter, usePathname } from 'next/navigation'
 import { FaBars, FaBell, FaSearch, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa'
 import { useAuth } from '@/contexts/AuthContext'
 

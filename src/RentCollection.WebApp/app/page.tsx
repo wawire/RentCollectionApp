@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { FaBuilding, FaUsers, FaMoneyBillWave, FaChartLine, FaDoorOpen, FaFileInvoice } from 'react-icons/fa'
 import Card from '@/components/common/Card'
-import { ProtectedRoute } from '@/components/Auth/ProtectedRoute'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function Home() {
   const features = [

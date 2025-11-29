@@ -1,15 +1,16 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using HealthChecks.UI.Client;
 using RentCollection.API.Middleware;
 using RentCollection.Application;
 using RentCollection.Infrastructure;
 using RentCollection.Infrastructure.Data;
+using RentCollection.Infrastructure.Data.SeedData;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -103,30 +104,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// Add JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-        ClockSkew = TimeSpan.Zero
-    };
-});
-
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -149,16 +126,14 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        var userManager = services.GetRequiredService<UserManager<RentCollection.Infrastructure.Identity.ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var logger = services.GetRequiredService<ILogger<Program>>();
 
         logger.LogInformation("Ensuring database is created...");
         await context.Database.EnsureCreatedAsync();
 
-        // Seed Identity data (roles and users)
-        logger.LogInformation("Starting Identity data seed...");
-        await RentCollection.Infrastructure.Data.IdentityDataSeeder.SeedAsync(userManager, roleManager, logger);
+        // Seed default users
+        logger.LogInformation("Starting database seed...");
+        await DefaultUsers.SeedAsync(context, logger);
 
         // Seed application data (properties, units, tenants, payments)
         logger.LogInformation("Starting application data seed...");
