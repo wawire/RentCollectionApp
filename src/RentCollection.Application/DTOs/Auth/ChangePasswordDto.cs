@@ -1,5 +1,8 @@
 namespace RentCollection.Application.DTOs.Auth;
 
+/// <summary>
+/// Change password request DTO
+/// </summary>
 public class ChangePasswordDto
 {
     public string CurrentPassword { get; set; } = string.Empty;

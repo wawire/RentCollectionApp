@@ -4,35 +4,25 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/contexts/AuthContext'
 import { useRouter, usePathname } from 'next/navigation'
 import { FaBars, FaBell, FaSearch, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface HeaderProps {
   onMenuClick: () => void
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { user, logout, isAuthenticated } = useAuth()
-  const router = useRouter()
-  const pathname = usePathname()
+  const { user, logout } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
 
-  // Don't show header on login/register pages
-  if (pathname === '/login' || pathname === '/register') {
-    return null
-  }
-
-  // Don't show header if not authenticated
-  if (!isAuthenticated) {
-    return null
-  }
-
-  const handleSignOut = () => {
-    logout()
-  }
-
-  const getInitials = () => {
-    if (!user) return '??'
-    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
+  // Get user initials
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
   return (
@@ -97,44 +87,48 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
 
           {/* User Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {getInitials()}
-              </div>
-              <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-xs text-gray-500">{user?.role}</p>
-              </div>
-            </button>
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                  {getInitials(user.fullName)}
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
+                  <p className="text-xs text-gray-500">{user.role}</p>
+                </div>
+              </button>
 
-            {/* User Dropdown */}
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                  <FaUser className="w-4 h-4" />
-                  <span>Profile</span>
-                </button>
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                  <FaCog className="w-4 h-4" />
-                  <span>Settings</span>
-                </button>
-                <hr className="my-2 border-gray-200" />
-                <button
-                  onClick={handleSignOut}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                >
-                  <FaSignOutAlt className="w-4 h-4" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            )}
-          </div>
+              {/* User Dropdown */}
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                  <div className="px-4 py-2 border-b border-gray-200">
+                    <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                    <FaUser className="w-4 h-4" />
+                    <span>Profile</span>
+                  </button>
+                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                    <FaCog className="w-4 h-4" />
+                    <span>Settings</span>
+                  </button>
+                  <hr className="my-2 border-gray-200" />
+                  <button
+                    onClick={logout}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                  >
+                    <FaSignOutAlt className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>

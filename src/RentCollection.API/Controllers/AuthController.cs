@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentCollection.Application.DTOs.Auth;
-using RentCollection.Application.Interfaces;
+using RentCollection.Application.Services.Auth;
+using RentCollection.Domain.Enums;
 using System.Security.Claims;
 
 namespace RentCollection.API.Controllers;
 
-[Route("api/[controller]")]
+/// <summary>
+/// Authentication and user management endpoints
+/// </summary>
 [ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -20,210 +25,140 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Register a new user
+    /// Login with email/phone and password
     /// </summary>
-    [HttpPost("register")]
-    [AllowAnonymous]
-    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
-    {
-        try
-        {
-            var response = await _authService.RegisterAsync(registerDto);
-            _logger.LogInformation("User registered successfully: {Email}", registerDto.Email);
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning("Registration failed: {Message}", ex.Message);
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during registration");
-            return StatusCode(500, new { message = "An error occurred during registration" });
-        }
-    }
-
-    /// <summary>
-    /// Login with email and password
-    /// </summary>
+    /// <param name="loginDto">Login credentials</param>
+    /// <returns>Authentication token and user info</returns>
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        try
-        {
-            var response = await _authService.LoginAsync(loginDto);
-            _logger.LogInformation("User logged in successfully: {Email}", loginDto.Email);
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            _logger.LogWarning("Login failed: {Message}", ex.Message);
-            return Unauthorized(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during login");
-            return StatusCode(500, new { message = "An error occurred during login" });
-        }
+        var response = await _authService.LoginAsync(loginDto);
+        return Ok(response);
     }
 
     /// <summary>
-    /// Get current authenticated user
+    /// Register a new user
     /// </summary>
+    /// <param name="registerDto">User registration details</param>
+    /// <returns>Authentication token and user info</returns>
+    [HttpPost("register")]
+    [Authorize(Roles = "SystemAdmin,Landlord")] // Only SystemAdmin and Landlord can create users
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+    {
+        var response = await _authService.RegisterAsync(registerDto);
+        return CreatedAtAction(nameof(GetUser), new { id = response.UserId }, response);
+    }
+
+    /// <summary>
+    /// Get current user information
+    /// </summary>
+    /// <returns>Current user details</returns>
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetCurrentUser()
     {
-        try
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated" });
-            }
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
-            var user = await _authService.GetCurrentUserAsync(userId);
-            return Ok(user);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning("User not found: {Message}", ex.Message);
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting current user");
-            return StatusCode(500, new { message = "An error occurred" });
-        }
+        if (userId == 0)
+            return Unauthorized();
+
+        var user = await _authService.GetUserByIdAsync(userId);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user);
+    }
+
+    /// <summary>
+    /// Get user by ID
+    /// </summary>
+    /// <param name="id">User ID</param>
+    /// <returns>User details</returns>
+    [HttpGet("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUser(int id)
+    {
+        var user = await _authService.GetUserByIdAsync(id);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user);
+    }
+
+    /// <summary>
+    /// Get all users
+    /// </summary>
+    /// <returns>List of all users</returns>
+    [HttpGet]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = await _authService.GetAllUsersAsync();
+        return Ok(users);
     }
 
     /// <summary>
     /// Change password for current user
     /// </summary>
+    /// <param name="changePasswordDto">Password change details</param>
+    /// <returns>Success message</returns>
     [HttpPost("change-password")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
     {
-        try
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated" });
-            }
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
-            await _authService.ChangePasswordAsync(userId, changePasswordDto);
-            _logger.LogInformation("Password changed successfully for user: {UserId}", userId);
-            return Ok(new { message = "Password changed successfully" });
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning("Password change failed: {Message}", ex.Message);
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error changing password");
-            return StatusCode(500, new { message = "An error occurred" });
-        }
+        if (userId == 0)
+            return Unauthorized();
+
+        await _authService.ChangePasswordAsync(userId, changePasswordDto);
+
+        return Ok(new { message = "Password changed successfully" });
     }
 
     /// <summary>
-    /// Get all users (Admin only)
+    /// Update user status (activate/suspend)
     /// </summary>
-    [HttpGet("users")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
+    /// <param name="id">User ID</param>
+    /// <param name="status">New status</param>
+    /// <returns>Success message</returns>
+    [HttpPut("{id}/status")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateUserStatus(int id, [FromBody] UserStatus status)
     {
-        try
-        {
-            var users = await _authService.GetAllUsersAsync();
-            return Ok(users);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting all users");
-            return StatusCode(500, new { message = "An error occurred" });
-        }
+        await _authService.UpdateUserStatusAsync(id, status);
+        return Ok(new { message = $"User status updated to {status}" });
     }
 
     /// <summary>
-    /// Get user by ID (Admin only)
+    /// Delete user
     /// </summary>
-    [HttpGet("users/{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<UserDto>> GetUserById(string id)
+    /// <param name="id">User ID</param>
+    /// <returns>No content</returns>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "SystemAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteUser(int id)
     {
-        try
-        {
-            var user = await _authService.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound(new { message = "User not found" });
-            }
-            return Ok(user);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting user by ID");
-            return StatusCode(500, new { message = "An error occurred" });
-        }
-    }
-
-    /// <summary>
-    /// Update user (Admin only)
-    /// </summary>
-    [HttpPut("users/{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateUser(string id, [FromBody] UserDto userDto)
-    {
-        try
-        {
-            await _authService.UpdateUserAsync(id, userDto);
-            _logger.LogInformation("User updated successfully: {UserId}", id);
-            return Ok(new { message = "User updated successfully" });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning("User not found: {Message}", ex.Message);
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning("User update failed: {Message}", ex.Message);
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating user");
-            return StatusCode(500, new { message = "An error occurred" });
-        }
-    }
-
-    /// <summary>
-    /// Delete/deactivate user (Admin only)
-    /// </summary>
-    [HttpDelete("users/{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteUser(string id)
-    {
-        try
-        {
-            await _authService.DeleteUserAsync(id);
-            _logger.LogInformation("User deactivated successfully: {UserId}", id);
-            return Ok(new { message = "User deactivated successfully" });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning("User not found: {Message}", ex.Message);
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting user");
-            return StatusCode(500, new { message = "An error occurred" });
-        }
+        await _authService.DeleteUserAsync(id);
+        return NoContent();
     }
 }

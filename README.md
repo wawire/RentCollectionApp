@@ -152,6 +152,9 @@ cd RentCollectionApp
 - ✅ Monthly reports
 - ✅ SMS notifications (Africa's Talking integration)
 - ✅ PDF receipt generation
+- ✅ **JWT Authentication & Authorization** (NEW!)
+- ✅ **Role-Based Access Control** - Landlord, Caretaker, Accountant, Tenant (NEW!)
+- ✅ **Modern Login/Registration Pages** (NEW!)
 
 ### Technical Features
 - ✅ Clean Architecture
@@ -165,8 +168,20 @@ cd RentCollectionApp
 - ✅ CORS configuration
 - ✅ TypeScript for type safety
 - ✅ Responsive design with Tailwind CSS
+- ✅ **JWT Token-based authentication** (NEW!)
+- ✅ **BCrypt password hashing** (NEW!)
+- ✅ **Protected routes in frontend** (NEW!)
 
 ## API Endpoints
+
+### Authentication (NEW!)
+- `POST /api/auth/login` - Login with email/phone and password
+- `POST /api/auth/register` - Register new user (Admin/Landlord only)
+- `GET /api/auth/me` - Get current user info
+- `GET /api/auth` - Get all users
+- `POST /api/auth/change-password` - Change password
+- `PUT /api/auth/{id}/status` - Update user status
+- `DELETE /api/auth/{id}` - Delete user
 
 ### Properties
 - `GET /api/properties` - Get all properties
@@ -180,6 +195,26 @@ cd RentCollectionApp
 - `GET /api/dashboard/monthly-report/{year}` - Get monthly report
 
 *Full API documentation available at `/swagger` when running the API*
+
+## Authentication
+
+### Login
+Visit `http://localhost:3000/login` and use these demo credentials:
+
+| Role | Email | Password |
+|------|-------|----------|
+| SystemAdmin | admin@rentcollection.com | Admin@123 |
+| Landlord | landlord@example.com | Landlord@123 |
+| Caretaker | caretaker@example.com | Caretaker@123 |
+| Accountant | accountant@example.com | Accountant@123 |
+
+### User Roles (Kenyan Property Management Context)
+
+1. **SystemAdmin** - Full system access
+2. **Landlord** - Property owner with full access to their properties
+3. **Caretaker** - Day-to-day property manager (Bwana/Bi Caretaker)
+4. **Accountant** - Financial records and reporting (read-only)
+5. **Tenant** - Self-service portal for tenants (future phase)
 
 ## Database Migrations
 

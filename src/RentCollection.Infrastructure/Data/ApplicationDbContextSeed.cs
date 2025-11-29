@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
+using RentCollection.Infrastructure.Data.SeedData;
 
 namespace RentCollection.Infrastructure.Data;
 
@@ -301,6 +302,9 @@ public class ApplicationDbContextSeed
             await context.Payments.AddRangeAsync(payments);
             await context.SaveChangesAsync();
             logger.LogInformation("Seeded {Count} payments", payments.Count);
+
+            // Seed default users
+            await DefaultUsers.SeedAsync(context, logger);
 
             logger.LogInformation("Database seeding completed successfully!");
         }

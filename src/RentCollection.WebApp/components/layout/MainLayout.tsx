@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
@@ -11,6 +12,14 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Don't show layout on auth pages
+  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register')
+
+  if (isAuthPage) {
+    return <>{children}</>
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

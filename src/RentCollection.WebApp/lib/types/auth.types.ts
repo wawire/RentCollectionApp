@@ -1,48 +1,66 @@
-export interface LoginCredentials {
-  email: string;
-  password: string;
+export enum UserRole {
+  SystemAdmin = 'SystemAdmin',
+  Landlord = 'Landlord',
+  Caretaker = 'Caretaker',
+  Accountant = 'Accountant',
+  Tenant = 'Tenant',
 }
 
-export interface RegisterData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  role?: string;
+export enum UserStatus {
+  Active = 'Active',
+  Suspended = 'Suspended',
+  Inactive = 'Inactive',
+}
+
+export interface LoginRequest {
+  emailOrPhone: string
+  password: string
+}
+
+export interface RegisterRequest {
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string
+  password: string
+  confirmPassword: string
+  role: UserRole
+  propertyId?: number
+  tenantId?: number
 }
 
 export interface AuthResponse {
-  token: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  expiresAt: string;
+  userId: number
+  email: string
+  fullName: string
+  phoneNumber: string
+  role: UserRole
+  token: string
+  expiresAt: string
+  propertyId?: number
+  tenantId?: number
 }
 
 export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  lastLoginAt?: string;
+  id: number
+  firstName: string
+  lastName: string
+  fullName: string
+  email: string
+  phoneNumber: string
+  role: UserRole
+  roleName: string
+  status: UserStatus
+  statusName: string
+  propertyId?: number
+  propertyName?: string
+  tenantId?: number
+  createdAt: string
+  lastLoginAt?: string
 }
 
-export interface ChangePasswordData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
 }
-
-export const UserRoles = {
-  Admin: 'Admin',
-  PropertyManager: 'PropertyManager',
-  Viewer: 'Viewer',
-} as const;
-
-export type UserRole = typeof UserRoles[keyof typeof UserRoles];
