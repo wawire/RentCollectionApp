@@ -132,8 +132,8 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         var logger = services.GetRequiredService<ILogger<Program>>();
 
-        logger.LogInformation("Ensuring database is created...");
-        await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Applying database migrations...");
+        await context.Database.MigrateAsync();
 
         // Seed default users
         logger.LogInformation("Starting database seed...");
