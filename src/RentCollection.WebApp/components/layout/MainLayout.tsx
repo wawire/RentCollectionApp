@@ -23,8 +23,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Page Content */}
-        <main className="flex-1 mt-16 p-6">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <main className="flex-1 mt-16">
+          {children}
         </main>
 
         {/* Footer */}

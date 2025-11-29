@@ -16,7 +16,7 @@ apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Add auth token here if using authentication
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken')
+      const token = localStorage.getItem('token')
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -69,9 +69,11 @@ apiClient.interceptors.response.use(
           break
         case 401:
           apiError.message = 'Unauthorized. Please log in again.'
-          // Optionally redirect to login
-          if (typeof window !== 'undefined') {
-            // window.location.href = '/login'
+          // Redirect to login and clear auth data
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            window.location.href = '/login'
           }
           break
         case 403:
