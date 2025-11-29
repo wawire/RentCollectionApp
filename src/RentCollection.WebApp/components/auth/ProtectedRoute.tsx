@@ -1,58 +1,45 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
-import { UserRole } from '@/lib/types/auth.types'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
-  allowedRoles?: UserRole[]
+  children: React.ReactNode;
+  allowedRoles?: string[];
 }
 
-export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading } = useAuth()
-  const router = useRouter()
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const { isAuthenticated, user, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        router.push('/login')
-        return
-      }
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
 
-      // Check if user has required role
-      if (allowedRoles && allowedRoles.length > 0 && user) {
-        if (!allowedRoles.includes(user.role)) {
-          router.push('/unauthorized')
-        }
+    if (!isLoading && isAuthenticated && allowedRoles && user?.role) {
+      if (!allowedRoles.includes(user.role)) {
+        router.push('/unauthorized');
       }
     }
-  }, [isAuthenticated, isLoading, user, allowedRoles, router])
+  }, [isAuthenticated, isLoading, router, allowedRoles, user]);
 
-  // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
-  // Show nothing while redirecting
   if (!isAuthenticated) {
-    return null
+    return null;
   }
 
-  // Check role authorization
-  if (allowedRoles && allowedRoles.length > 0 && user) {
-    if (!allowedRoles.includes(user.role)) {
-      return null
-    }
+  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
+    return null;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
