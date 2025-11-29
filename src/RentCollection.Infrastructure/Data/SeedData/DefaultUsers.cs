@@ -22,7 +22,7 @@ public static class DefaultUsers
 
         var users = new List<User>
         {
-            // System Admin
+            // ===== SYSTEM ADMIN =====
             new User
             {
                 FirstName = "System",
@@ -33,47 +33,112 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
                 Role = UserRole.SystemAdmin,
                 Status = UserStatus.Active,
+                PropertyId = null, // SystemAdmin sees all properties
                 CreatedAt = DateTime.UtcNow
             },
-            // Demo Landlord
+
+            // ===== LANDLORD 1: John Landlord (Sunset Apartments Westlands) =====
             new User
             {
                 FirstName = "John",
                 LastName = "Landlord",
                 Email = "landlord@example.com",
-                PhoneNumber = "+254712345678",
+                PhoneNumber = "+254723870917", // Real number for SMS testing
                 // Password: Landlord@123
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
                 Role = UserRole.Landlord,
                 Status = UserStatus.Active,
-                PropertyId = 1, // Will be linked to first property
+                PropertyId = 1, // Sunset Apartments Westlands
                 CreatedAt = DateTime.UtcNow
             },
-            // Demo Caretaker
+
+            // ===== LANDLORD 2: Mary Wanjiku (Kileleshwa Gardens) =====
             new User
             {
                 FirstName = "Mary",
-                LastName = "Caretaker",
+                LastName = "Wanjiku",
+                Email = "mary.wanjiku@example.com",
+                PhoneNumber = "+254716539952", // Real number for SMS testing
+                // Password: Landlord@123
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
+                Role = UserRole.Landlord,
+                Status = UserStatus.Active,
+                PropertyId = 3, // Kileleshwa Gardens
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // ===== LANDLORD 3: David Kamau (Utawala Maisonettes) =====
+            new User
+            {
+                FirstName = "David",
+                LastName = "Kamau",
+                Email = "david.kamau@example.com",
+                PhoneNumber = "+254734567890",
+                // Password: Landlord@123
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
+                Role = UserRole.Landlord,
+                Status = UserStatus.Active,
+                PropertyId = 5, // Utawala Maisonettes
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // ===== CARETAKER 1: Jane Mueni (Works for Landlord 1 - Sunset Apartments) =====
+            new User
+            {
+                FirstName = "Jane",
+                LastName = "Mueni",
                 Email = "caretaker@example.com",
-                PhoneNumber = "+254723456789",
+                PhoneNumber = "+254745678901",
                 // Password: Caretaker@123
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Caretaker@123"),
                 Role = UserRole.Caretaker,
                 Status = UserStatus.Active,
-                PropertyId = 1, // Will be linked to first property
+                PropertyId = 1, // Sunset Apartments Westlands (same as Landlord 1)
                 CreatedAt = DateTime.UtcNow
             },
-            // Demo Accountant
+
+            // ===== CARETAKER 2: Peter Kamau (Works for Landlord 2 - Kileleshwa) =====
+            new User
+            {
+                FirstName = "Peter",
+                LastName = "Kamau",
+                Email = "peter.caretaker@example.com",
+                PhoneNumber = "+254756789012",
+                // Password: Caretaker@123
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Caretaker@123"),
+                Role = UserRole.Caretaker,
+                Status = UserStatus.Active,
+                PropertyId = 3, // Kileleshwa Gardens (same as Landlord 2)
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // ===== CARETAKER 3: James Omondi (Works for Landlord 3 - Utawala) =====
             new User
             {
                 FirstName = "James",
-                LastName = "Accountant",
+                LastName = "Omondi",
+                Email = "james.caretaker@example.com",
+                PhoneNumber = "+254767890123",
+                // Password: Caretaker@123
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Caretaker@123"),
+                Role = UserRole.Caretaker,
+                Status = UserStatus.Active,
+                PropertyId = 5, // Utawala Maisonettes (same as Landlord 3)
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // ===== ACCOUNTANT: Grace Wambui (Can view all properties - Read Only) =====
+            new User
+            {
+                FirstName = "Grace",
+                LastName = "Wambui",
                 Email = "accountant@example.com",
-                PhoneNumber = "+254734567890",
+                PhoneNumber = "+254778901234",
                 // Password: Accountant@123
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Accountant@123"),
                 Role = UserRole.Accountant,
                 Status = UserStatus.Active,
+                PropertyId = null, // Accountant can view ALL properties (read-only)
                 CreatedAt = DateTime.UtcNow
             }
         };
@@ -82,11 +147,50 @@ public static class DefaultUsers
         await context.SaveChangesAsync();
 
         logger.LogInformation("Default users seeded successfully");
-        logger.LogInformation("=== Default User Credentials ===");
-        logger.LogInformation("System Admin: admin@rentcollection.com / Admin@123");
-        logger.LogInformation("Landlord: landlord@example.com / Landlord@123");
-        logger.LogInformation("Caretaker: caretaker@example.com / Caretaker@123");
-        logger.LogInformation("Accountant: accountant@example.com / Accountant@123");
+        logger.LogInformation("=== DEFAULT USER CREDENTIALS ===");
+        logger.LogInformation("");
+        logger.LogInformation("🔐 SYSTEM ADMIN:");
+        logger.LogInformation("   Email: admin@rentcollection.com");
+        logger.LogInformation("   Password: Admin@123");
+        logger.LogInformation("   Access: ALL properties across all landlords");
+        logger.LogInformation("");
+        logger.LogInformation("🏢 LANDLORD 1 (John Landlord - Sunset Apartments Westlands):");
+        logger.LogInformation("   Email: landlord@example.com");
+        logger.LogInformation("   Phone: +254 723 870917 (REAL NUMBER - Can receive SMS)");
+        logger.LogInformation("   Password: Landlord@123");
+        logger.LogInformation("   Properties: Sunset Apartments Westlands (Bedsitters, One-bedroom)");
+        logger.LogInformation("");
+        logger.LogInformation("🏢 LANDLORD 2 (Mary Wanjiku - Kileleshwa Gardens):");
+        logger.LogInformation("   Email: mary.wanjiku@example.com");
+        logger.LogInformation("   Phone: +254 716 539952 (REAL NUMBER - Can receive SMS)");
+        logger.LogInformation("   Password: Landlord@123");
+        logger.LogInformation("   Properties: Kileleshwa Gardens (Two & Three bedroom)");
+        logger.LogInformation("");
+        logger.LogInformation("🏢 LANDLORD 3 (David Kamau - Utawala Maisonettes):");
+        logger.LogInformation("   Email: david.kamau@example.com");
+        logger.LogInformation("   Password: Landlord@123");
+        logger.LogInformation("   Properties: Utawala Maisonettes (Own compound)");
+        logger.LogInformation("");
+        logger.LogInformation("👷 CARETAKER 1 (Jane Mueni - for Landlord 1):");
+        logger.LogInformation("   Email: caretaker@example.com");
+        logger.LogInformation("   Password: Caretaker@123");
+        logger.LogInformation("   Property: Sunset Apartments Westlands");
+        logger.LogInformation("");
+        logger.LogInformation("👷 CARETAKER 2 (Peter Kamau - for Landlord 2):");
+        logger.LogInformation("   Email: peter.caretaker@example.com");
+        logger.LogInformation("   Password: Caretaker@123");
+        logger.LogInformation("   Property: Kileleshwa Gardens");
+        logger.LogInformation("");
+        logger.LogInformation("👷 CARETAKER 3 (James Omondi - for Landlord 3):");
+        logger.LogInformation("   Email: james.caretaker@example.com");
+        logger.LogInformation("   Password: Caretaker@123");
+        logger.LogInformation("   Property: Utawala Maisonettes");
+        logger.LogInformation("");
+        logger.LogInformation("📊 ACCOUNTANT (Grace Wambui):");
+        logger.LogInformation("   Email: accountant@example.com");
+        logger.LogInformation("   Password: Accountant@123");
+        logger.LogInformation("   Access: View ALL properties (read-only financial reports)");
+        logger.LogInformation("");
         logger.LogInformation("================================");
     }
 }
