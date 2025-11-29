@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Infrastructure.Data;
 using RentCollection.Infrastructure.Repositories.Implementations;
-using RentCollection.Infrastructure.Repositories.Interfaces;
 using RentCollection.Infrastructure.Services;
 
 namespace RentCollection.Infrastructure;

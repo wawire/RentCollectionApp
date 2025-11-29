@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using RentCollection.Application.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Infrastructure.Data;
-using RentCollection.Infrastructure.Repositories.Interfaces;
 
 namespace RentCollection.Infrastructure.Repositories.Implementations;
 
