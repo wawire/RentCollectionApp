@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
     public DbSet<SmsLog> SmsLogs { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
