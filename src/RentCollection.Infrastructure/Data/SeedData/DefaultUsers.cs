@@ -43,7 +43,7 @@ public static class DefaultUsers
                 FirstName = "John",
                 LastName = "Landlord",
                 Email = "landlord@example.com",
-                PhoneNumber = "+254712345678",
+                PhoneNumber = "+254723870917", // Real number for SMS testing
                 // Password: Landlord@123
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
                 Role = UserRole.Landlord,
@@ -58,7 +58,7 @@ public static class DefaultUsers
                 FirstName = "Mary",
                 LastName = "Wanjiku",
                 Email = "mary.wanjiku@example.com",
-                PhoneNumber = "+254723456789",
+                PhoneNumber = "+254716539952", // Real number for SMS testing
                 // Password: Landlord@123
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
                 Role = UserRole.Landlord,
@@ -156,11 +156,13 @@ public static class DefaultUsers
         logger.LogInformation("");
         logger.LogInformation("🏢 LANDLORD 1 (John Landlord - Sunset Apartments Westlands):");
         logger.LogInformation("   Email: landlord@example.com");
+        logger.LogInformation("   Phone: +254 723 870917 (REAL NUMBER - Can receive SMS)");
         logger.LogInformation("   Password: Landlord@123");
         logger.LogInformation("   Properties: Sunset Apartments Westlands (Bedsitters, One-bedroom)");
         logger.LogInformation("");
         logger.LogInformation("🏢 LANDLORD 2 (Mary Wanjiku - Kileleshwa Gardens):");
         logger.LogInformation("   Email: mary.wanjiku@example.com");
+        logger.LogInformation("   Phone: +254 716 539952 (REAL NUMBER - Can receive SMS)");
         logger.LogInformation("   Password: Landlord@123");
         logger.LogInformation("   Properties: Kileleshwa Gardens (Two & Three bedroom)");
         logger.LogInformation("");

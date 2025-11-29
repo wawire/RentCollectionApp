@@ -404,7 +404,7 @@ public class ApplicationDbContextSeed
                     FirstName = "Peter",
                     LastName = "Mwangi",
                     Email = "peter.mwangi@gmail.com",
-                    PhoneNumber = "+254712345678",
+                    PhoneNumber = "+254723870917", // Real number for SMS testing
                     IdNumber = "28934567",
                     UnitId = sunsetUnits[0].Id, // B1 Bedsitter
                     LeaseStartDate = DateTime.UtcNow.AddMonths(-6),
@@ -420,7 +420,7 @@ public class ApplicationDbContextSeed
                     FirstName = "Grace",
                     LastName = "Akinyi",
                     Email = "grace.akinyi@yahoo.com",
-                    PhoneNumber = "+254723456789",
+                    PhoneNumber = "+254716539952", // Real number for SMS testing
                     IdNumber = "31245678",
                     UnitId = sunsetUnits[3].Id, // 1A One-bedroom
                     LeaseStartDate = DateTime.UtcNow.AddMonths(-3),
