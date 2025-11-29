@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using HealthChecks.UI.Client;
 using RentCollection.API.Middleware;
 using RentCollection.Application;
+using RentCollection.Application.Authorization;
 using RentCollection.Infrastructure;
 using RentCollection.Infrastructure.Data;
 using RentCollection.Infrastructure.Data.SeedData;
@@ -102,7 +103,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+// Add Role-Based Access Control (RBAC) with custom authorization policies
+builder.Services.AddRentCollectionAuthorization();
 
 // Add Application and Infrastructure services
 builder.Services.AddApplicationServices();
