@@ -40,36 +40,25 @@ Registered `CurrentUserService` in DI container (`Program.cs`)
 
 ## ⏳ What Still Needs to Be Done
 
-### 7. Complete PropertyService Updates ⏳
-Need to update:
-- `UpdatePropertyAsync()`: Add permission check
-- `DeletePropertyAsync()`: Add permission check
-- `GetPropertiesPaginatedAsync()`: Add filtering
+### 7. Complete PropertyService Updates ✅ **COMPLETED**
+- ✅ `UpdatePropertyAsync()`: Permission check added
+- ✅ `DeletePropertyAsync()`: Permission check added
+- ✅ `GetPropertiesPaginatedAsync()`: Filtering added
 
-### 8. Update Other Services ⏳
-Apply same filtering logic to:
-- **UnitService**: Filter units by property's LandlordId
-- **TenantService**: Filter tenants by property's LandlordId
-- **PaymentService**: Filter payments by tenant's LandlordId
-- **DashboardService**: Aggregate stats only for user's accessible data
+### 8. Update Other Services ✅ **COMPLETED**
+- ✅ **PropertyService**: Complete with filtering and permission checks
+- ✅ **UnitService**: Filter units by property's LandlordId
+- ✅ **TenantService**: Filter tenants by property's LandlordId
+- ✅ **PaymentService**: Filter payments by tenant's LandlordId
+- ✅ **DashboardService**: Aggregate stats only for user's accessible data
 
-### 9. Controller Authorization Attributes ⏳
-Add role-based `[Authorize]` attributes:
-```csharp
-// Only Landlords and SystemAdmin can delete properties
-[Authorize(Roles = "SystemAdmin,Landlord")]
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteProperty(int id)
-
-// Accountants can view but not modify
-[Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
-[HttpPost]
-public async Task<IActionResult> CreatePayment(...)
-
-[Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
-[HttpGet]
-public async Task<IActionResult> GetPayments(...)
-```
+### 9. Controller Authorization Attributes ✅ **COMPLETED**
+Added role-based `[Authorize]` attributes to all controllers:
+- **PropertiesController**: ✅ Create/Update (Landlord, Caretaker), Delete (Landlord only)
+- **UnitsController**: ✅ Create/Update (Landlord, Caretaker), Delete (Landlord only)
+- **TenantsController**: ✅ Create/Update (Landlord, Caretaker), Delete (Landlord only)
+- **PaymentsController**: ✅ Create (Landlord, Caretaker), Delete (Landlord only)
+- **DashboardController**: ✅ All users can view their own data
 
 ### 10. Database Migration ⏳ **CRITICAL**
 Create and apply migration for new columns:
