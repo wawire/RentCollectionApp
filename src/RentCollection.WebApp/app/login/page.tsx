@@ -180,9 +180,11 @@ export default function LoginPage() {
           <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
             <p className="text-xs text-gray-700 font-semibold mb-2">Demo Credentials:</p>
             <div className="space-y-1 text-xs text-gray-600">
-              <p><strong>Admin:</strong> admin@rentcollection.com / Admin@123</p>
-              <p><strong>Manager:</strong> manager@rentcollection.com / Manager@123</p>
-              <p><strong>Viewer:</strong> viewer@rentcollection.com / Viewer@123</p>
+              <p><strong>System Admin:</strong> admin@rentcollection.com / Admin@123</p>
+              <p><strong>Landlord 1 (John):</strong> landlord1@example.com / Landlord@123</p>
+              <p><strong>Landlord 2 (Mary):</strong> landlord2@example.com / Landlord@123</p>
+              <p><strong>Caretaker (James):</strong> caretaker@example.com / Caretaker@123</p>
+              <p><strong>Accountant (Grace):</strong> accountant@example.com / Accountant@123</p>
             </div>
           </div>
         </div>
