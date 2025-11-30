@@ -1,7 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
@@ -9,8 +8,10 @@ using Microsoft.OpenApi.Models;
 using HealthChecks.UI.Client;
 using RentCollection.API.Middleware;
 using RentCollection.Application;
+using RentCollection.Application.Authorization;
 using RentCollection.Infrastructure;
 using RentCollection.Infrastructure.Data;
+using RentCollection.Infrastructure.Data.SeedData;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +26,11 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 // Add comprehensive health checks
@@ -47,24 +52,24 @@ builder.Services.AddSwaggerGen(options =>
         Description = "API for managing rental properties, tenants, and payments"
     });
 
-    // Add JWT Authentication to Swagger
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    // Add JWT authentication to Swagger
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.\n\nExample: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'",
         Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
@@ -79,13 +84,10 @@ builder.Services.AddHttpContextAccessor();
 // Add Current User Service
 builder.Services.AddScoped<RentCollection.Application.Services.Interfaces.ICurrentUserService, RentCollection.API.Services.CurrentUserService>();
 
-// Add Application and Infrastructure services
-builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices(builder.Configuration);
-
 // Add JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-256-bit-secret-key-here-change-in-production-minimum-32-characters";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RentCollectionAPI";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "RentCollectionApp";
 
 builder.Services.AddAuthentication(options =>
 {
@@ -100,12 +102,19 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
         ClockSkew = TimeSpan.Zero
     };
 });
+
+// Add Role-Based Access Control (RBAC) with custom authorization policies
+builder.Services.AddRentCollectionAuthorization();
+
+// Add Application and Infrastructure services
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -129,20 +138,19 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        var userManager = services.GetRequiredService<UserManager<RentCollection.Infrastructure.Identity.ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var logger = services.GetRequiredService<ILogger<Program>>();
 
-        logger.LogInformation("Ensuring database is created...");
-        await context.Database.EnsureCreatedAsync();
-
-        // Seed Identity data (roles and users)
-        logger.LogInformation("Starting Identity data seed...");
-        await RentCollection.Infrastructure.Data.IdentityDataSeeder.SeedAsync(userManager, roleManager, logger);
+        logger.LogInformation("Applying database migrations...");
+        await context.Database.MigrateAsync();
 
         // Seed application data (properties, units, tenants, payments)
+        // IMPORTANT: Must seed Properties BEFORE Users since Users reference PropertyId
         logger.LogInformation("Starting application data seed...");
         await ApplicationDbContextSeed.SeedAsync(context, logger);
+
+        // Seed default users (after properties exist)
+        logger.LogInformation("Starting user seed...");
+        await DefaultUsers.SeedAsync(context, logger);
     }
     catch (Exception ex)
     {
