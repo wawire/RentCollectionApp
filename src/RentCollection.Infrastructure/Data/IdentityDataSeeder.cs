@@ -16,9 +16,7 @@ public class IdentityDataSeeder
             logger.LogInformation("Starting Identity data seeding...");
 
             // Seed Roles
-            var roles = new[] { UserRoles.Admin, UserRoles.PropertyManager, UserRoles.Viewer };
-
-            foreach (var roleName in roles)
+            foreach (var roleName in UserRoles.All)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
                 {
@@ -41,7 +39,7 @@ public class IdentityDataSeeder
                 }
             }
 
-            // Seed Default Admin User
+            // Seed System Admin User
             var adminEmail = "admin@rentcollection.com";
             var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
 
@@ -53,7 +51,7 @@ public class IdentityDataSeeder
                     Email = adminEmail,
                     FirstName = "System",
                     LastName = "Administrator",
-                    Role = UserRoles.Admin,
+                    Role = UserRoles.SystemAdmin,
                     IsActive = true,
                     EmailConfirmed = true,
                     CreatedAt = DateTime.UtcNow
@@ -63,8 +61,8 @@ public class IdentityDataSeeder
 
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
-                    logger.LogInformation("Default admin user created successfully: {Email}", adminEmail);
+                    await userManager.AddToRoleAsync(adminUser, UserRoles.SystemAdmin);
+                    logger.LogInformation("System admin user created successfully: {Email}", adminEmail);
                     logger.LogWarning("⚠️  DEFAULT ADMIN CREDENTIALS - Email: {Email}, Password: Admin@123", adminEmail);
                     logger.LogWarning("⚠️  PLEASE CHANGE THE DEFAULT PASSWORD IMMEDIATELY!");
                 }
@@ -79,36 +77,117 @@ public class IdentityDataSeeder
                 logger.LogInformation("Admin user already exists: {Email}", adminEmail);
             }
 
-            // Seed Sample Users
-            var sampleUsers = new[]
-            {
-                new { Email = "manager@rentcollection.com", FirstName = "Property", LastName = "Manager", Role = UserRoles.PropertyManager, Password = "Manager@123" },
-                new { Email = "viewer@rentcollection.com", FirstName = "Read", LastName = "Only", Role = UserRoles.Viewer, Password = "Viewer@123" }
-            };
+            // Seed Landlords
+            string? landlord1Id = null;
+            string? landlord2Id = null;
 
-            foreach (var userData in sampleUsers)
+            var landlord1Email = "landlord1@example.com";
+            var landlord1 = await userManager.FindByEmailAsync(landlord1Email);
+            if (landlord1 == null)
             {
-                var existing = await userManager.FindByEmailAsync(userData.Email);
-                if (existing == null)
+                landlord1 = new ApplicationUser
                 {
-                    var user = new ApplicationUser
-                    {
-                        UserName = userData.Email,
-                        Email = userData.Email,
-                        FirstName = userData.FirstName,
-                        LastName = userData.LastName,
-                        Role = userData.Role,
-                        IsActive = true,
-                        EmailConfirmed = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
+                    UserName = landlord1Email,
+                    Email = landlord1Email,
+                    FirstName = "John",
+                    LastName = "Kariuki",
+                    Role = UserRoles.Landlord,
+                    IsActive = true,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                    var result = await userManager.CreateAsync(user, userData.Password);
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(user, userData.Role);
-                        logger.LogInformation("Sample user created: {Email} ({Role})", userData.Email, userData.Role);
-                    }
+                var result = await userManager.CreateAsync(landlord1, "Landlord@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(landlord1, UserRoles.Landlord);
+                    landlord1Id = landlord1.Id;
+                    logger.LogInformation("Landlord 1 created: {Email}", landlord1Email);
+                }
+            }
+            else
+            {
+                landlord1Id = landlord1.Id;
+            }
+
+            var landlord2Email = "landlord2@example.com";
+            var landlord2 = await userManager.FindByEmailAsync(landlord2Email);
+            if (landlord2 == null)
+            {
+                landlord2 = new ApplicationUser
+                {
+                    UserName = landlord2Email,
+                    Email = landlord2Email,
+                    FirstName = "Mary",
+                    LastName = "Wanjiku",
+                    Role = UserRoles.Landlord,
+                    IsActive = true,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var result = await userManager.CreateAsync(landlord2, "Landlord@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(landlord2, UserRoles.Landlord);
+                    landlord2Id = landlord2.Id;
+                    logger.LogInformation("Landlord 2 created: {Email}", landlord2Email);
+                }
+            }
+            else
+            {
+                landlord2Id = landlord2.Id;
+            }
+
+            // Seed Caretaker for Landlord 1
+            var caretakerEmail = "caretaker@example.com";
+            var caretaker = await userManager.FindByEmailAsync(caretakerEmail);
+            if (caretaker == null)
+            {
+                caretaker = new ApplicationUser
+                {
+                    UserName = caretakerEmail,
+                    Email = caretakerEmail,
+                    FirstName = "James",
+                    LastName = "Omondi",
+                    Role = UserRoles.Caretaker,
+                    LandlordId = landlord1Id, // Belongs to Landlord 1
+                    IsActive = true,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var result = await userManager.CreateAsync(caretaker, "Caretaker@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(caretaker, UserRoles.Caretaker);
+                    logger.LogInformation("Caretaker created: {Email} (Landlord: {LandlordId})", caretakerEmail, landlord1Id);
+                }
+            }
+
+            // Seed Accountant for Landlord 1
+            var accountantEmail = "accountant@example.com";
+            var accountant = await userManager.FindByEmailAsync(accountantEmail);
+            if (accountant == null)
+            {
+                accountant = new ApplicationUser
+                {
+                    UserName = accountantEmail,
+                    Email = accountantEmail,
+                    FirstName = "Grace",
+                    LastName = "Mutua",
+                    Role = UserRoles.Accountant,
+                    LandlordId = landlord1Id, // Belongs to Landlord 1
+                    IsActive = true,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var result = await userManager.CreateAsync(accountant, "Accountant@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(accountant, UserRoles.Accountant);
+                    logger.LogInformation("Accountant created: {Email} (Landlord: {LandlordId})", accountantEmail, landlord1Id);
                 }
             }
 

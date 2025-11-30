@@ -11,6 +11,9 @@ public class Property : BaseEntity
     public int TotalUnits { get; set; }
     public bool IsActive { get; set; } = true;
 
+    // Owner of the property (Landlord User ID)
+    public string? LandlordId { get; set; }
+
     // Navigation properties
     public ICollection<Unit> Units { get; set; } = new List<Unit>();
 }
