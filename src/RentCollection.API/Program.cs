@@ -73,6 +73,12 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Add HttpContextAccessor for accessing current user
+builder.Services.AddHttpContextAccessor();
+
+// Add Current User Service
+builder.Services.AddScoped<RentCollection.Application.Services.Interfaces.ICurrentUserService, RentCollection.API.Services.CurrentUserService>();
+
 // Add Application and Infrastructure services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
