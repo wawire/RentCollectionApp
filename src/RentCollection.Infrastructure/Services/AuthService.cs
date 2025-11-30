@@ -264,6 +264,17 @@ public class AuthService : IAuthService
             new Claim("isActive", user.IsActive.ToString())
         };
 
+        // Add LandlordId for Caretakers and Accountants (data isolation)
+        if (!string.IsNullOrEmpty(user.LandlordId))
+        {
+            claims.Add(new Claim("LandlordId", user.LandlordId));
+        }
+        // For Landlords, their own UserId is their LandlordId
+        else if (user.Role == UserRoles.Landlord)
+        {
+            claims.Add(new Claim("LandlordId", user.Id));
+        }
+
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
