@@ -101,6 +101,7 @@ public class PaymentsController : ControllerBase
     /// <param name="createDto">Payment creation data</param>
     /// <returns>Created payment</returns>
     [HttpPost]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreatePaymentDto createDto)
@@ -119,6 +120,7 @@ public class PaymentsController : ControllerBase
     /// <param name="id">Payment ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
