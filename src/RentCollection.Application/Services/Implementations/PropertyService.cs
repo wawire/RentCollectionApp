@@ -14,15 +14,18 @@ public class PropertyService : IPropertyService
     private readonly IPropertyRepository _propertyRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<PropertyService> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
     public PropertyService(
         IPropertyRepository propertyRepository,
         IMapper mapper,
-        ILogger<PropertyService> logger)
+        ILogger<PropertyService> logger,
+        ICurrentUserService currentUserService)
     {
         _propertyRepository = propertyRepository;
         _mapper = mapper;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<IEnumerable<PropertyDto>>> GetAllPropertiesAsync()
@@ -30,6 +33,16 @@ public class PropertyService : IPropertyService
         try
         {
             var properties = await _propertyRepository.GetPropertiesWithUnitsAsync();
+
+            // Filter based on user role
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                // Landlords, Caretakers, and Accountants only see properties they have access to
+                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+
+                properties = properties.Where(p => p.LandlordId == landlordId).ToList();
+            }
+
             var propertyDtos = _mapper.Map<IEnumerable<PropertyDto>>(properties);
 
             return Result<IEnumerable<PropertyDto>>.Success(propertyDtos);
@@ -52,6 +65,17 @@ public class PropertyService : IPropertyService
                 return Result<PropertyDto>.Failure($"Property with ID {id} not found");
             }
 
+            // Check access permission
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+
+                if (property.LandlordId != landlordId)
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                }
+            }
+
             var propertyDto = _mapper.Map<PropertyDto>(property);
             return Result<PropertyDto>.Success(propertyDto);
         }
@@ -69,10 +93,21 @@ public class PropertyService : IPropertyService
             var property = _mapper.Map<Property>(createDto);
             property.CreatedAt = DateTime.UtcNow;
 
-            var createdProperty = await _propertyRepository.AddAsync(property);
-            var propertyDto = _mapper.Map<PropertyDto>(createdProperty);
+            // Set LandlordId based on current user
+            if (_currentUserService.IsLandlord)
+            {
+                property.LandlordId = _currentUserService.UserId;
+            }
+            else if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            {
+                property.LandlordId = _currentUserService.LandlordId;
+            }
+            // SystemAdmin can create properties for any landlord (would need additional logic/DTO field)
 
-            _logger.LogInformation("Property created successfully: {PropertyName}", createdProperty.Name);
+            var createdProperty = await _propertyRepository.AddAsync(property);
+            var propertyDto = _mapper.Map<PropertyDto>(property);
+
+            _logger.LogInformation("Property created successfully: {PropertyName} for Landlord {LandlordId}", createdProperty.Name, property.LandlordId);
             return Result<PropertyDto>.Success(propertyDto, "Property created successfully");
         }
         catch (Exception ex)
@@ -91,6 +126,23 @@ public class PropertyService : IPropertyService
             if (existingProperty == null)
             {
                 return Result<PropertyDto>.Failure($"Property with ID {id} not found");
+            }
+
+            // Check access permission
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+
+                if (existingProperty.LandlordId != landlordId)
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to update this property");
+                }
+
+                // Accountants have read-only access
+                if (_currentUserService.IsAccountant)
+                {
+                    return Result<PropertyDto>.Failure("Accountants do not have permission to modify properties");
+                }
             }
 
             _mapper.Map(updateDto, existingProperty);
@@ -121,6 +173,22 @@ public class PropertyService : IPropertyService
                 return Result.Failure($"Property with ID {id} not found");
             }
 
+            // Check access permission - Only SystemAdmin and Landlords can delete
+            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            {
+                return Result.Failure("You do not have permission to delete properties");
+            }
+
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.UserId; // Must be landlord at this point
+
+                if (property.LandlordId != landlordId)
+                {
+                    return Result.Failure("You do not have permission to delete this property");
+                }
+            }
+
             // Check if property has units
             if (property.Units.Any())
             {
@@ -148,6 +216,14 @@ public class PropertyService : IPropertyService
             if (pageSize > 100) pageSize = 100; // Max page size
 
             var allProperties = await _propertyRepository.GetPropertiesWithUnitsAsync();
+
+            // Filter based on user role
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+                allProperties = allProperties.Where(p => p.LandlordId == landlordId).ToList();
+            }
+
             var totalCount = allProperties.Count();
 
             var paginatedProperties = allProperties

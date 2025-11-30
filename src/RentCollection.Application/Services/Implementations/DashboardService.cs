@@ -14,19 +14,22 @@ public class DashboardService : IDashboardService
     private readonly ITenantRepository _tenantRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly ILogger<DashboardService> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
     public DashboardService(
         IPropertyRepository propertyRepository,
         IUnitRepository unitRepository,
         ITenantRepository tenantRepository,
         IPaymentRepository paymentRepository,
-        ILogger<DashboardService> logger)
+        ILogger<DashboardService> logger,
+        ICurrentUserService currentUserService)
     {
         _propertyRepository = propertyRepository;
         _unitRepository = unitRepository;
         _tenantRepository = tenantRepository;
         _paymentRepository = paymentRepository;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<DashboardStatsDto>> GetDashboardStatsAsync()
@@ -38,10 +41,34 @@ public class DashboardService : IDashboardService
             var tenants = await _tenantRepository.GetAllAsync();
             var activeTenants = await _tenantRepository.GetActiveTenantsAsync();
 
+            // Filter data by LandlordId (unless SystemAdmin)
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                properties = properties.Where(p => p.LandlordId == landlordId).ToList();
+                units = units.Where(u => u.Property?.LandlordId == landlordId).ToList();
+                tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+            }
+
             // Calculate current month's payments
             var currentMonthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             var currentMonthEnd = currentMonthStart.AddMonths(1).AddDays(-1);
-            var currentMonthPayments = await _paymentRepository.GetPaymentsByDateRangeAsync(currentMonthStart, currentMonthEnd);
+            var allPayments = await _paymentRepository.GetPaymentsByDateRangeAsync(currentMonthStart, currentMonthEnd);
+
+            // Filter payments by LandlordId (unless SystemAdmin)
+            var currentMonthPayments = allPayments;
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+            }
 
             var stats = new DashboardStatsDto
             {
@@ -92,10 +119,33 @@ public class DashboardService : IDashboardService
                 var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
                 // Get payments for this month
-                var monthlyPayments = await _paymentRepository.GetPaymentsByDateRangeAsync(monthStart, monthEnd);
+                var allMonthlyPayments = await _paymentRepository.GetPaymentsByDateRangeAsync(monthStart, monthEnd);
+
+                // Filter payments by LandlordId (unless SystemAdmin)
+                var monthlyPayments = allMonthlyPayments;
+                if (!_currentUserService.IsSystemAdmin)
+                {
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserId
+                        : _currentUserService.LandlordId;
+
+                    monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
 
                 // Get expected rent (active tenants for that month)
-                var activeTenants = await _tenantRepository.GetActiveTenantsAsync();
+                var allActiveTenants = await _tenantRepository.GetActiveTenantsAsync();
+
+                // Filter tenants by LandlordId (unless SystemAdmin)
+                var activeTenants = allActiveTenants;
+                if (!_currentUserService.IsSystemAdmin)
+                {
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserId
+                        : _currentUserService.LandlordId;
+
+                    activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
+
                 var tenantsActiveInMonth = activeTenants.Where(t =>
                     t.LeaseStartDate <= monthEnd &&
                     (!t.LeaseEndDate.HasValue || t.LeaseEndDate.Value >= monthStart));

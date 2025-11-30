@@ -14,17 +14,20 @@ public class TenantService : ITenantService
     private readonly IUnitRepository _unitRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<TenantService> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
     public TenantService(
         ITenantRepository tenantRepository,
         IUnitRepository unitRepository,
         IMapper mapper,
-        ILogger<TenantService> logger)
+        ILogger<TenantService> logger,
+        ICurrentUserService currentUserService)
     {
         _tenantRepository = tenantRepository;
         _unitRepository = unitRepository;
         _mapper = mapper;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<IEnumerable<TenantDto>>> GetAllTenantsAsync()
@@ -32,6 +35,17 @@ public class TenantService : ITenantService
         try
         {
             var tenants = await _tenantRepository.GetAllAsync();
+
+            // Filter tenants by unit's property's LandlordId (unless SystemAdmin)
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+            }
+
             var tenantDtos = _mapper.Map<IEnumerable<TenantDto>>(tenants);
 
             return Result<IEnumerable<TenantDto>>.Success(tenantDtos);
@@ -47,10 +61,23 @@ public class TenantService : ITenantService
     {
         try
         {
-            var unit = await _unitRepository.GetByIdAsync(unitId);
+            var unit = await _unitRepository.GetUnitWithDetailsAsync(unitId);
             if (unit == null)
             {
                 return Result<IEnumerable<TenantDto>>.Failure($"Unit with ID {unitId} not found");
+            }
+
+            // Check access permission to the unit's property
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                if (unit.Property?.LandlordId != landlordId)
+                {
+                    return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
+                }
             }
 
             var tenants = await _tenantRepository.GetTenantsByUnitIdAsync(unitId);
@@ -76,6 +103,19 @@ public class TenantService : ITenantService
                 return Result<TenantDto>.Failure($"Tenant with ID {id} not found");
             }
 
+            // Check access permission via unit's property's LandlordId
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                if (tenant.Unit?.Property?.LandlordId != landlordId)
+                {
+                    return Result<TenantDto>.Failure("You do not have permission to access this tenant");
+                }
+            }
+
             var tenantDto = _mapper.Map<TenantDto>(tenant);
             return Result<TenantDto>.Success(tenantDto);
         }
@@ -95,6 +135,25 @@ public class TenantService : ITenantService
             if (unit == null)
             {
                 return Result<TenantDto>.Failure($"Unit with ID {createDto.UnitId} not found");
+            }
+
+            // Check access permission - user must have access to the unit's property
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                if (unit.Property?.LandlordId != landlordId)
+                {
+                    return Result<TenantDto>.Failure("You do not have permission to create tenants for this unit");
+                }
+
+                // Accountants cannot create tenants (read-only access)
+                if (_currentUserService.IsAccountant)
+                {
+                    return Result<TenantDto>.Failure("Accountants do not have permission to create tenants");
+                }
             }
 
             // Check if unit already has an active tenant
@@ -146,6 +205,25 @@ public class TenantService : ITenantService
                 return Result<TenantDto>.Failure($"Tenant with ID {id} not found");
             }
 
+            // Check access permission via unit's property's LandlordId
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserId
+                    : _currentUserService.LandlordId;
+
+                if (existingTenant.Unit?.Property?.LandlordId != landlordId)
+                {
+                    return Result<TenantDto>.Failure("You do not have permission to update this tenant");
+                }
+
+                // Accountants cannot modify tenants (read-only access)
+                if (_currentUserService.IsAccountant)
+                {
+                    return Result<TenantDto>.Failure("Accountants do not have permission to modify tenants");
+                }
+            }
+
             // Validate lease dates
             if (updateDto.LeaseEndDate.HasValue && updateDto.LeaseEndDate.Value <= updateDto.LeaseStartDate)
             {
@@ -190,6 +268,22 @@ public class TenantService : ITenantService
             if (tenant == null)
             {
                 return Result.Failure($"Tenant with ID {id} not found");
+            }
+
+            // Check access permission - Only SystemAdmin and Landlords can delete
+            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            {
+                return Result.Failure("You do not have permission to delete tenants");
+            }
+
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.UserId; // Must be landlord at this point
+
+                if (tenant.Unit?.Property?.LandlordId != landlordId)
+                {
+                    return Result.Failure("You do not have permission to delete this tenant");
+                }
             }
 
             // Check if tenant has payments

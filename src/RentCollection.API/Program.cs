@@ -78,6 +78,12 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Add HttpContextAccessor for accessing current user
+builder.Services.AddHttpContextAccessor();
+
+// Add Current User Service
+builder.Services.AddScoped<RentCollection.Application.Services.Interfaces.ICurrentUserService, RentCollection.API.Services.CurrentUserService>();
+
 // Add JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-256-bit-secret-key-here-change-in-production-minimum-32-characters";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RentCollectionAPI";

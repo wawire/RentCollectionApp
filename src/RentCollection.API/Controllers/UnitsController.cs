@@ -82,6 +82,7 @@ public class UnitsController : ControllerBase
     /// <param name="createDto">Unit creation data</param>
     /// <returns>Created unit</returns>
     [HttpPost]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateUnitDto createDto)
@@ -101,6 +102,7 @@ public class UnitsController : ControllerBase
     /// <param name="updateDto">Unit update data</param>
     /// <returns>Updated unit</returns>
     [HttpPut("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -120,6 +122,7 @@ public class UnitsController : ControllerBase
     /// <param name="id">Unit ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
