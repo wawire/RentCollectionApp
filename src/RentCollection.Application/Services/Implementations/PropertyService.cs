@@ -128,6 +128,23 @@ public class PropertyService : IPropertyService
                 return Result<PropertyDto>.Failure($"Property with ID {id} not found");
             }
 
+            // Check access permission
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+
+                if (existingProperty.LandlordId != landlordId)
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to update this property");
+                }
+
+                // Accountants have read-only access
+                if (_currentUserService.IsAccountant)
+                {
+                    return Result<PropertyDto>.Failure("Accountants do not have permission to modify properties");
+                }
+            }
+
             _mapper.Map(updateDto, existingProperty);
             existingProperty.UpdatedAt = DateTime.UtcNow;
 
@@ -154,6 +171,22 @@ public class PropertyService : IPropertyService
             if (property == null)
             {
                 return Result.Failure($"Property with ID {id} not found");
+            }
+
+            // Check access permission - Only SystemAdmin and Landlords can delete
+            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            {
+                return Result.Failure("You do not have permission to delete properties");
+            }
+
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.UserId; // Must be landlord at this point
+
+                if (property.LandlordId != landlordId)
+                {
+                    return Result.Failure("You do not have permission to delete this property");
+                }
             }
 
             // Check if property has units
@@ -183,6 +216,14 @@ public class PropertyService : IPropertyService
             if (pageSize > 100) pageSize = 100; // Max page size
 
             var allProperties = await _propertyRepository.GetPropertiesWithUnitsAsync();
+
+            // Filter based on user role
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+                allProperties = allProperties.Where(p => p.LandlordId == landlordId).ToList();
+            }
+
             var totalCount = allProperties.Count();
 
             var paginatedProperties = allProperties
