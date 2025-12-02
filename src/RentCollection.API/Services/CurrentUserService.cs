@@ -30,4 +30,6 @@ public class CurrentUserService : ICurrentUserService
     public bool IsCaretaker => Role == UserRoleExtensions.Caretaker;
 
     public bool IsAccountant => Role == UserRoleExtensions.Accountant;
+
+    public bool IsTenant => Role == UserRoleExtensions.Tenant;
 }

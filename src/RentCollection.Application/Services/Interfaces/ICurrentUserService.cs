@@ -11,4 +11,5 @@ public interface ICurrentUserService
     bool IsLandlord { get; }
     bool IsCaretaker { get; }
     bool IsAccountant { get; }
+    bool IsTenant { get; }
 }
