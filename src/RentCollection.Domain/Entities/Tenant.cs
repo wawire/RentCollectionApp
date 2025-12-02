@@ -41,15 +41,9 @@ public class Tenant : BaseEntity
     /// </summary>
     public string? ApplicationNotes { get; set; }
 
-    /// <summary>
-    /// User account ID after tenant is approved and given login access
-    /// </summary>
-    public int? UserId { get; set; }
-
     public string? Notes { get; set; }
 
     // Navigation properties
     public Unit Unit { get; set; } = null!;
-    public User? User { get; set; }
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

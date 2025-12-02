@@ -611,7 +611,6 @@ public class TenantService : ITenantService
                     };
 
                     var createdUser = await _userRepository.AddAsync(user);
-                    tenant.UserId = createdUser.Id;
 
                     _logger.LogInformation("User account created for tenant {TenantId}: {Email}", tenant.Id, tenant.Email);
                 }
