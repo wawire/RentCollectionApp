@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { FaMapMarkerAlt, FaBed, FaBath, FaRulerCombined, FaSearch, FaUserPlus } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaBed, FaBath, FaSearch, FaStar, FaHeart, FaCheckCircle, FaUserPlus, FaClipboardList } from 'react-icons/fa'
 import { useVacantUnits } from '@/lib/hooks/usePublicListings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
 export default function PublicLandingPage() {
   const { units, loading, error } = useVacantUnits()
@@ -12,6 +14,7 @@ export default function PublicLandingPage() {
   const [minPrice, setMinPrice] = useState<number | ''>('')
   const [maxPrice, setMaxPrice] = useState<number | ''>('')
   const [bedrooms, setBedrooms] = useState<number | ''>('')
+  const [propertyType, setPropertyType] = useState<string>('all')
 
   const filteredUnits = units.filter((unit) => {
     const matchesSearch =
@@ -27,93 +30,125 @@ export default function PublicLandingPage() {
     return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms
   })
 
+  const categories = [
+    { id: 'all', label: 'All Properties', icon: '🏠' },
+    { id: 'apartment', label: 'Apartments', icon: '🏢' },
+    { id: 'house', label: 'Houses', icon: '🏡' },
+    { id: 'studio', label: 'Studio', icon: '🛏️' },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
-        <div className="container mx-auto px-6 py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold mb-4">Find Your Perfect Home</h1>
-            <p className="text-xl text-primary-100 mb-8">
-              Browse available rental units and apply online in minutes. No account required to view listings.
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      {/* Hero Section with Search */}
+      <div className="relative bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200)' }}>
+        <div className="container mx-auto px-6 py-32">
+          <div className="max-w-3xl mx-auto text-center text-white">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              Find Your Perfect Home in Kenya
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-gray-100">
+              Discover quality rental properties. Apply online in minutes.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="#listings"
-                className="bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+
+            {/* Search Bar */}
+            <div className="bg-white rounded-full shadow-2xl p-2 flex flex-col md:flex-row gap-2 max-w-4xl mx-auto">
+              <div className="flex-1 relative">
+                <FaSearch className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search location or property name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-14 pr-4 py-4 rounded-full focus:outline-none text-gray-900"
+                />
+              </div>
+              <button
+                onClick={() => document.getElementById('properties')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-full font-semibold transition-colors"
               >
-                Browse Units
-              </Link>
-              <Link
-                href="/login"
-                className="bg-primary-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-400 transition-colors border-2 border-white"
-              >
-                Landlord Login
-              </Link>
+                Search
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Search & Filter Section */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-6 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="md:col-span-2 relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by location, property, or unit..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <input
-                type="number"
-                placeholder="Min Rent (KES)"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <input
-                type="number"
-                placeholder="Max Rent (KES)"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <select
-                value={bedrooms}
-                onChange={(e) => setBedrooms(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+      {/* Category Tabs */}
+      <div className="border-b border-gray-200 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="flex space-x-8 overflow-x-auto py-4">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setPropertyType(cat.id)}
+                className={`flex flex-col items-center min-w-fit space-y-2 pb-2 border-b-2 transition-colors ${
+                  propertyType === cat.id
+                    ? 'border-primary-600 text-primary-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
               >
-                <option value="">Any Bedrooms</option>
-                <option value="1">1 Bedroom</option>
-                <option value="2">2 Bedrooms</option>
-                <option value="3">3 Bedrooms</option>
-                <option value="4">4+ Bedrooms</option>
-              </select>
-            </div>
+                <span className="text-2xl">{cat.icon}</span>
+                <span className="text-sm font-medium whitespace-nowrap">{cat.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Listings Section */}
-      <div id="listings" className="container mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Available Units
-            {filteredUnits.length > 0 && (
-              <span className="text-primary-600"> ({filteredUnits.length})</span>
+      {/* Advanced Filters */}
+      <div className="bg-gray-50 border-b border-gray-200">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex flex-wrap gap-3">
+            <select
+              value={bedrooms}
+              onChange={(e) => setBedrooms(e.target.value === '' ? '' : Number(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white"
+            >
+              <option value="">Bedrooms</option>
+              <option value="1">1 Bed</option>
+              <option value="2">2 Beds</option>
+              <option value="3">3 Beds</option>
+              <option value="4">4+ Beds</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Min Price (KES)"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none w-40"
+            />
+            <input
+              type="number"
+              placeholder="Max Price (KES)"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none w-40"
+            />
+            {(searchTerm || minPrice || maxPrice || bedrooms) && (
+              <button
+                onClick={() => {
+                  setSearchTerm('')
+                  setMinPrice('')
+                  setMaxPrice('')
+                  setBedrooms('')
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium"
+              >
+                Clear all
+              </button>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Properties Section */}
+      <div id="properties" className="container mx-auto px-6 py-16">
+        <div className="mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+            {filteredUnits.length > 0 ? `${filteredUnits.length} properties` : 'Available Properties'}
           </h2>
-          <p className="text-gray-600">Browse our collection of rental units and apply online</p>
+          <p className="text-gray-600 text-lg">Find your perfect rental home</p>
         </div>
 
         {loading ? (
@@ -121,13 +156,13 @@ export default function PublicLandingPage() {
             <LoadingSpinner size="lg" />
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p className="text-red-600 font-medium">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+            <p className="text-red-600 font-semibold text-lg">{error}</p>
             <p className="text-gray-600 mt-2">Please try again later</p>
           </div>
         ) : filteredUnits.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
-            <p className="text-gray-600 text-lg mb-4">No units found matching your criteria</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-16 text-center">
+            <p className="text-gray-600 text-xl mb-4">No properties match your search</p>
             <button
               onClick={() => {
                 setSearchTerm('')
@@ -135,75 +170,58 @@ export default function PublicLandingPage() {
                 setMaxPrice('')
                 setBedrooms('')
               }}
-              className="text-primary-600 font-medium hover:underline"
+              className="text-primary-600 font-semibold hover:underline text-lg"
             >
               Clear filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredUnits.map((unit) => (
               <Link
                 key={unit.id}
                 href={`/units/${unit.id}/apply`}
-                className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden hover:-translate-y-1"
+                className="group cursor-pointer"
               >
-                <div className="p-6">
-                  {/* Property Name & Location */}
-                  <div className="mb-4">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{unit.propertyName}</h3>
-                    <div className="flex items-center text-gray-600 text-sm">
-                      <FaMapMarkerAlt className="mr-1" />
-                      <span>{unit.propertyLocation || 'Location not specified'}</span>
-                    </div>
+                {/* Image Placeholder */}
+                <div className="relative aspect-square mb-3 rounded-xl overflow-hidden bg-gray-200">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                    <span className="text-white text-6xl font-bold opacity-20">
+                      {unit.bedrooms}BR
+                    </span>
                   </div>
-
-                  {/* Unit Number */}
-                  <div className="mb-4">
-                    <span className="inline-block bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <button className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors">
+                    <FaHeart className="text-gray-600" />
+                  </button>
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-white px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
                       Unit {unit.unitNumber}
                     </span>
                   </div>
+                </div>
 
-                  {/* Unit Details */}
-                  <div className="grid grid-cols-3 gap-4 mb-4 py-4 border-t border-b border-gray-200">
-                    <div className="text-center">
-                      <FaBed className="text-2xl text-gray-400 mx-auto mb-1" />
-                      <p className="text-gray-900 font-medium">{unit.bedrooms}</p>
-                      <p className="text-gray-500 text-xs">Beds</p>
+                {/* Property Details */}
+                <div>
+                  <div className="flex items-start justify-between mb-1">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                      {unit.propertyName}
+                    </h3>
+                    <div className="flex items-center text-sm">
+                      <FaStar className="text-yellow-400 mr-1" />
+                      <span className="font-semibold">4.8</span>
                     </div>
-                    <div className="text-center">
-                      <FaBath className="text-2xl text-gray-400 mx-auto mb-1" />
-                      <p className="text-gray-900 font-medium">{unit.bathrooms}</p>
-                      <p className="text-gray-500 text-xs">Baths</p>
-                    </div>
-                    {unit.squareFeet && (
-                      <div className="text-center">
-                        <FaRulerCombined className="text-2xl text-gray-400 mx-auto mb-1" />
-                        <p className="text-gray-900 font-medium">{unit.squareFeet}</p>
-                        <p className="text-gray-500 text-xs">Sq Ft</p>
-                      </div>
-                    )}
                   </div>
-
-                  {/* Description */}
-                  {unit.description && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{unit.description}</p>
-                  )}
-
-                  {/* Price & Apply Button */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-500 text-xs">Monthly Rent</p>
-                      <p className="text-2xl font-bold text-primary-600">
-                        KES {unit.monthlyRent.toLocaleString()}
-                      </p>
-                    </div>
-                    <button className="bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center gap-2">
-                      <FaUserPlus />
-                      Apply
-                    </button>
-                  </div>
+                  <p className="text-gray-600 text-sm mb-2 flex items-center">
+                    <FaMapMarkerAlt className="mr-1 text-gray-400" size={12} />
+                    {unit.propertyLocation || 'Nairobi'}
+                  </p>
+                  <p className="text-gray-600 text-sm mb-2">
+                    {unit.bedrooms} bed • {unit.bathrooms} bath
+                  </p>
+                  <p className="text-gray-900">
+                    <span className="font-bold">KES {unit.monthlyRent.toLocaleString()}</span>
+                    <span className="text-gray-600 text-sm"> /month</span>
+                  </p>
                 </div>
               </Link>
             ))}
@@ -211,21 +229,118 @@ export default function PublicLandingPage() {
         )}
       </div>
 
-      {/* Call to Action */}
-      <div className="bg-primary-600 text-white">
-        <div className="container mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold mb-4">Are you a landlord?</h2>
-          <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-            Manage your properties, tenants, and payments efficiently with our comprehensive platform
-          </p>
-          <Link
-            href="/login"
-            className="inline-block bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
-          >
-            Get Started
-          </Link>
+      {/* How It Works Section */}
+      <div id="how-it-works" className="bg-gray-50 py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Find and rent your perfect home in three simple steps
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+            <div className="text-center">
+              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FaSearch className="text-4xl text-primary-600" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">1. Browse Properties</h3>
+              <p className="text-gray-600">
+                Search through our curated list of quality rental properties across Kenya. Filter by location, price, and amenities.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FaClipboardList className="text-4xl text-primary-600" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">2. Apply Online</h3>
+              <p className="text-gray-600">
+                Fill out a simple application form. No account needed. Your application goes directly to the landlord for review.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FaCheckCircle className="text-4xl text-primary-600" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">3. Move In</h3>
+              <p className="text-gray-600">
+                Once approved, receive your login credentials and access your tenant portal to manage payments and communications.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* About Section */}
+      <div id="about" className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Why Choose RentPro?</h2>
+            <p className="text-xl text-gray-600 mb-12">
+              Modern property management for the Kenyan market
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-8 text-left">
+              <div className="bg-gray-50 p-8 rounded-xl">
+                <h3 className="text-xl font-bold mb-3">For Tenants</h3>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-green-500 mr-3 mt-1 flex-shrink-0" />
+                    <span>Browse properties without creating an account</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-green-500 mr-3 mt-1 flex-shrink-0" />
+                    <span>Simple online application process</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-green-500 mr-3 mt-1 flex-shrink-0" />
+                    <span>Track payments and lease details online</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-green-500 mr-3 mt-1 flex-shrink-0" />
+                    <span>Direct communication with landlords</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-primary-50 p-8 rounded-xl">
+                <h3 className="text-xl font-bold mb-3">For Landlords</h3>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-primary-600 mr-3 mt-1 flex-shrink-0" />
+                    <span>Manage multiple properties in one place</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-primary-600 mr-3 mt-1 flex-shrink-0" />
+                    <span>Review tenant applications efficiently</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-primary-600 mr-3 mt-1 flex-shrink-0" />
+                    <span>Track rent payments and generate reports</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FaCheckCircle className="text-primary-600 mr-3 mt-1 flex-shrink-0" />
+                    <span>SMS notifications for important updates</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-12">
+              <Link
+                href="/login"
+                className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-full font-semibold text-lg transition-colors"
+              >
+                Get Started Today
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
     </div>
   )
 }
