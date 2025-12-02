@@ -28,8 +28,19 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Notes)
             .HasMaxLength(500);
 
+        // New payment proof fields
+        builder.Property(p => p.PaymentProofUrl)
+            .HasMaxLength(500);
+
+        // Navigation property for confirming user
+        builder.HasOne(p => p.ConfirmedBy)
+            .WithMany()
+            .HasForeignKey(p => p.ConfirmedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(p => p.PaymentDate);
         builder.HasIndex(p => p.Status);
         builder.HasIndex(p => p.TransactionReference);
+        builder.HasIndex(p => p.ConfirmedAt);
     }
 }

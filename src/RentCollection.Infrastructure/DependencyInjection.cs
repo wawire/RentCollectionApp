@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Auth;
+using RentCollection.Application.Services.Implementations;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Infrastructure.Data;
 using RentCollection.Infrastructure.Repositories.Implementations;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISmsService, AfricasTalkingSmsService>();
         services.AddScoped<IPdfService, PdfGenerationService>();
+        services.AddScoped<IPublicListingService, PublicListingService>();
 
         return services;
     }

@@ -38,6 +38,20 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.Notes)
             .HasMaxLength(1000);
 
+        builder.Property(t => t.ApplicationNotes)
+            .HasMaxLength(1000);
+
+        // New tenant self-service fields
+        builder.Property(t => t.Status)
+            .IsRequired()
+            .HasConversion<int>(); // Store enum as int
+
+        // Navigation properties
+        builder.HasOne(t => t.User)
+            .WithOne(u => u.Tenant)
+            .HasForeignKey<Tenant>(t => t.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(t => t.Payments)
             .WithOne(p => p.Tenant)
             .HasForeignKey(p => p.TenantId)
@@ -45,5 +59,6 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 
         builder.HasIndex(t => t.Email);
         builder.HasIndex(t => t.PhoneNumber);
+        builder.HasIndex(t => t.Status);
     }
 }
