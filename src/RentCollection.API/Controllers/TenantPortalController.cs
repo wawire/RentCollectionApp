@@ -40,7 +40,7 @@ public class TenantPortalController : ControllerBase
             return Ok(result.Data);
         }
 
-        return NotFound(result.Error);
+        return NotFound(result.Errors);
     }
 
     /// <summary>
@@ -58,6 +58,6 @@ public class TenantPortalController : ControllerBase
             return Ok(result.Data);
         }
 
-        return NotFound(result.Error);
+        return NotFound(result.Errors);
     }
 }
