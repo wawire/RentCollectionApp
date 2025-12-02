@@ -1,4 +1,5 @@
 using AutoMapper;
+using BCrypt.Net;
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Payments;
@@ -716,12 +717,10 @@ public class TenantService : ITenantService
                 Status = tenant.Status,
                 UnitId = tenant.UnitId,
                 UnitNumber = tenant.Unit?.UnitNumber,
-                UnitType = tenant.Unit?.UnitType,
-                UnitSize = tenant.Unit?.Size,
+                SquareFeet = tenant.Unit?.SquareFeet,
                 PropertyId = tenant.Unit?.PropertyId ?? 0,
                 PropertyName = tenant.Unit?.Property?.Name,
-                PropertyAddress = tenant.Unit?.Property?.Address,
-                PropertyCity = tenant.Unit?.Property?.City,
+                PropertyLocation = tenant.Unit?.Property?.Location,
                 TotalPaid = totalPaid,
                 OutstandingBalance = outstanding,
                 LastPaymentDate = lastPayment?.PaymentDate

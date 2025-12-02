@@ -24,14 +24,12 @@ public class TenantPortalDto
     // Unit Information
     public int UnitId { get; set; }
     public string? UnitNumber { get; set; }
-    public string? UnitType { get; set; }
-    public decimal? UnitSize { get; set; }
+    public decimal? SquareFeet { get; set; }
 
     // Property Information
     public int PropertyId { get; set; }
     public string? PropertyName { get; set; }
-    public string? PropertyAddress { get; set; }
-    public string? PropertyCity { get; set; }
+    public string? PropertyLocation { get; set; }
 
     // Payment Summary
     public decimal TotalPaid { get; set; }
