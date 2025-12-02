@@ -40,8 +40,7 @@ public class PublicListingService : IPublicListingService
                     Id = p.Id,
                     Name = p.Name,
                     Description = p.Description,
-                    Address = p.Address,
-                    City = p.City,
+                    Location = p.Location,
                     TotalUnits = p.Units.Count,
                     VacantUnits = p.Units.Count(u => !u.IsOccupied && u.IsActive),
                     AvailableUnits = p.Units
@@ -50,17 +49,15 @@ public class PublicListingService : IPublicListingService
                         {
                             Id = u.Id,
                             UnitNumber = u.UnitNumber,
-                            UnitType = u.UnitType,
                             Bedrooms = u.Bedrooms,
                             Bathrooms = u.Bathrooms,
-                            Size = u.Size,
+                            SquareFeet = u.SquareFeet,
                             MonthlyRent = u.MonthlyRent,
                             Description = u.Description,
                             IsOccupied = u.IsOccupied,
                             PropertyId = p.Id,
                             PropertyName = p.Name,
-                            PropertyAddress = p.Address,
-                            PropertyCity = p.City
+                            PropertyLocation = p.Location
                         })
                         .ToList()
                 })
@@ -91,8 +88,7 @@ public class PublicListingService : IPublicListingService
                 Id = property.Id,
                 Name = property.Name,
                 Description = property.Description,
-                Address = property.Address,
-                City = property.City,
+                Location = property.Location,
                 TotalUnits = property.Units.Count,
                 VacantUnits = property.Units.Count(u => !u.IsOccupied && u.IsActive),
                 AvailableUnits = property.Units
@@ -101,17 +97,15 @@ public class PublicListingService : IPublicListingService
                     {
                         Id = u.Id,
                         UnitNumber = u.UnitNumber,
-                        UnitType = u.UnitType,
                         Bedrooms = u.Bedrooms,
                         Bathrooms = u.Bathrooms,
-                        Size = u.Size,
+                        SquareFeet = u.SquareFeet,
                         MonthlyRent = u.MonthlyRent,
                         Description = u.Description,
                         IsOccupied = u.IsOccupied,
                         PropertyId = property.Id,
                         PropertyName = property.Name,
-                        PropertyAddress = property.Address,
-                        PropertyCity = property.City
+                        PropertyLocation = property.Location
                     })
                     .ToList()
             };
@@ -137,17 +131,15 @@ public class PublicListingService : IPublicListingService
                 {
                     Id = u.Id,
                     UnitNumber = u.UnitNumber,
-                    UnitType = u.UnitType,
                     Bedrooms = u.Bedrooms,
                     Bathrooms = u.Bathrooms,
-                    Size = u.Size,
+                    SquareFeet = u.SquareFeet,
                     MonthlyRent = u.MonthlyRent,
                     Description = u.Description,
                     IsOccupied = u.IsOccupied,
                     PropertyId = u.PropertyId,
                     PropertyName = u.Property?.Name,
-                    PropertyAddress = u.Property?.Address,
-                    PropertyCity = u.Property?.City
+                    PropertyLocation = u.Property?.Location
                 })
                 .ToList();
 
@@ -177,17 +169,15 @@ public class PublicListingService : IPublicListingService
                 {
                     Id = u.Id,
                     UnitNumber = u.UnitNumber,
-                    UnitType = u.UnitType,
                     Bedrooms = u.Bedrooms,
                     Bathrooms = u.Bathrooms,
-                    Size = u.Size,
+                    SquareFeet = u.SquareFeet,
                     MonthlyRent = u.MonthlyRent,
                     Description = u.Description,
                     IsOccupied = u.IsOccupied,
                     PropertyId = property.Id,
                     PropertyName = property.Name,
-                    PropertyAddress = property.Address,
-                    PropertyCity = property.City
+                    PropertyLocation = property.Location
                 })
                 .ToList();
 
@@ -215,17 +205,15 @@ public class PublicListingService : IPublicListingService
             {
                 Id = unit.Id,
                 UnitNumber = unit.UnitNumber,
-                UnitType = unit.UnitType,
                 Bedrooms = unit.Bedrooms,
                 Bathrooms = unit.Bathrooms,
-                Size = unit.Size,
+                SquareFeet = unit.SquareFeet,
                 MonthlyRent = unit.MonthlyRent,
                 Description = unit.Description,
                 IsOccupied = unit.IsOccupied,
                 PropertyId = unit.PropertyId,
                 PropertyName = unit.Property?.Name,
-                PropertyAddress = unit.Property?.Address,
-                PropertyCity = unit.Property?.City
+                PropertyLocation = unit.Property?.Location
             };
 
             return Result<PublicUnitListingDto>.Success(dto);
