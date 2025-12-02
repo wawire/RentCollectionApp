@@ -39,11 +39,14 @@ public class TenantService : ITenantService
             // Filter tenants by unit's property's LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                if (int.TryParse(landlordIdStr, out var landlordId))
+                {
+                    tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
             }
 
             var tenantDtos = _mapper.Map<IEnumerable<TenantDto>>(tenants);
@@ -70,13 +73,16 @@ public class TenantService : ITenantService
             // Check access permission to the unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (unit.Property?.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
+                    if (unit.Property?.LandlordId != landlordId)
+                    {
+                        return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
+                    }
                 }
             }
 
@@ -106,13 +112,16 @@ public class TenantService : ITenantService
             // Check access permission via unit's property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (tenant.Unit?.Property?.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result<TenantDto>.Failure("You do not have permission to access this tenant");
+                    if (tenant.Unit?.Property?.LandlordId != landlordId)
+                    {
+                        return Result<TenantDto>.Failure("You do not have permission to access this tenant");
+                    }
                 }
             }
 
@@ -140,13 +149,16 @@ public class TenantService : ITenantService
             // Check access permission - user must have access to the unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (unit.Property?.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result<TenantDto>.Failure("You do not have permission to create tenants for this unit");
+                    if (unit.Property?.LandlordId != landlordId)
+                    {
+                        return Result<TenantDto>.Failure("You do not have permission to create tenants for this unit");
+                    }
                 }
 
                 // Accountants cannot create tenants (read-only access)
@@ -208,13 +220,16 @@ public class TenantService : ITenantService
             // Check access permission via unit's property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (existingTenant.Unit?.Property?.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result<TenantDto>.Failure("You do not have permission to update this tenant");
+                    if (existingTenant.Unit?.Property?.LandlordId != landlordId)
+                    {
+                        return Result<TenantDto>.Failure("You do not have permission to update this tenant");
+                    }
                 }
 
                 // Accountants cannot modify tenants (read-only access)
@@ -278,11 +293,14 @@ public class TenantService : ITenantService
 
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.UserId; // Must be landlord at this point
+                var landlordIdStr = _currentUserService.UserId; // Must be landlord at this point
 
-                if (tenant.Unit?.Property?.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result.Failure("You do not have permission to delete this tenant");
+                    if (tenant.Unit?.Property?.LandlordId != landlordId)
+                    {
+                        return Result.Failure("You do not have permission to delete this tenant");
+                    }
                 }
             }
 

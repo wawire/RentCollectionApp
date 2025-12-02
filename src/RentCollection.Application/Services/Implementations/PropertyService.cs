@@ -38,9 +38,11 @@ public class PropertyService : IPropertyService
             if (!_currentUserService.IsSystemAdmin)
             {
                 // Landlords, Caretakers, and Accountants only see properties they have access to
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
-
-                properties = properties.Where(p => p.LandlordId == landlordId).ToList();
+                var landlordIdStr = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+                if (int.TryParse(landlordIdStr, out var landlordId))
+                {
+                    properties = properties.Where(p => p.LandlordId == landlordId).ToList();
+                }
             }
 
             var propertyDtos = _mapper.Map<IEnumerable<PropertyDto>>(properties);
@@ -68,11 +70,13 @@ public class PropertyService : IPropertyService
             // Check access permission
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
-
-                if (property.LandlordId != landlordId)
+                var landlordIdStr = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                    if (property.LandlordId != landlordId)
+                    {
+                        return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                    }
                 }
             }
 
@@ -96,11 +100,17 @@ public class PropertyService : IPropertyService
             // Set LandlordId based on current user
             if (_currentUserService.IsLandlord)
             {
-                property.LandlordId = _currentUserService.UserId;
+                if (int.TryParse(_currentUserService.UserId, out var userId))
+                {
+                    property.LandlordId = userId;
+                }
             }
             else if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
             {
-                property.LandlordId = _currentUserService.LandlordId;
+                if (int.TryParse(_currentUserService.LandlordId, out var landlordId))
+                {
+                    property.LandlordId = landlordId;
+                }
             }
             // SystemAdmin can create properties for any landlord (would need additional logic/DTO field)
 
@@ -131,11 +141,14 @@ public class PropertyService : IPropertyService
             // Check access permission
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+                var landlordIdStr = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
 
-                if (existingProperty.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result<PropertyDto>.Failure("You do not have permission to update this property");
+                    if (existingProperty.LandlordId != landlordId)
+                    {
+                        return Result<PropertyDto>.Failure("You do not have permission to update this property");
+                    }
                 }
 
                 // Accountants have read-only access
@@ -181,11 +194,14 @@ public class PropertyService : IPropertyService
 
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.UserId; // Must be landlord at this point
+                var landlordIdStr = _currentUserService.UserId; // Must be landlord at this point
 
-                if (property.LandlordId != landlordId)
+                if (int.TryParse(landlordIdStr, out var landlordId))
                 {
-                    return Result.Failure("You do not have permission to delete this property");
+                    if (property.LandlordId != landlordId)
+                    {
+                        return Result.Failure("You do not have permission to delete this property");
+                    }
                 }
             }
 
@@ -220,8 +236,11 @@ public class PropertyService : IPropertyService
             // Filter based on user role
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
-                allProperties = allProperties.Where(p => p.LandlordId == landlordId).ToList();
+                var landlordIdStr = _currentUserService.IsLandlord ? _currentUserService.UserId : _currentUserService.LandlordId;
+                if (int.TryParse(landlordIdStr, out var landlordId))
+                {
+                    allProperties = allProperties.Where(p => p.LandlordId == landlordId).ToList();
+                }
             }
 
             var totalCount = allProperties.Count();

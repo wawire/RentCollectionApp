@@ -44,14 +44,17 @@ public class DashboardService : IDashboardService
             // Filter data by LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                properties = properties.Where(p => p.LandlordId == landlordId).ToList();
-                units = units.Where(u => u.Property?.LandlordId == landlordId).ToList();
-                tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
-                activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                if (int.TryParse(landlordIdStr, out var landlordId))
+                {
+                    properties = properties.Where(p => p.LandlordId == landlordId).ToList();
+                    units = units.Where(u => u.Property?.LandlordId == landlordId).ToList();
+                    tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                    activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
             }
 
             // Calculate current month's payments
@@ -63,11 +66,14 @@ public class DashboardService : IDashboardService
             var currentMonthPayments = allPayments;
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
+                var landlordIdStr = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                if (int.TryParse(landlordIdStr, out var landlordId))
+                {
+                    currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
             }
 
             var stats = new DashboardStatsDto
@@ -125,11 +131,14 @@ public class DashboardService : IDashboardService
                 var monthlyPayments = allMonthlyPayments;
                 if (!_currentUserService.IsSystemAdmin)
                 {
-                    var landlordId = _currentUserService.IsLandlord
+                    var landlordIdStr = _currentUserService.IsLandlord
                         ? _currentUserService.UserId
                         : _currentUserService.LandlordId;
 
-                    monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                    if (int.TryParse(landlordIdStr, out var landlordId))
+                    {
+                        monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                    }
                 }
 
                 // Get expected rent (active tenants for that month)
@@ -139,11 +148,14 @@ public class DashboardService : IDashboardService
                 var activeTenants = allActiveTenants;
                 if (!_currentUserService.IsSystemAdmin)
                 {
-                    var landlordId = _currentUserService.IsLandlord
+                    var landlordIdStr = _currentUserService.IsLandlord
                         ? _currentUserService.UserId
                         : _currentUserService.LandlordId;
 
-                    activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                    if (int.TryParse(landlordIdStr, out var landlordId))
+                    {
+                        activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                    }
                 }
 
                 var tenantsActiveInMonth = activeTenants.Where(t =>
