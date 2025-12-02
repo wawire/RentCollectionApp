@@ -48,7 +48,7 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
                 Role = UserRole.Landlord,
                 Status = UserStatus.Active,
-                PropertyId = 1, // Sunset Apartments Westlands
+                PropertyId = null, // Landlords see ALL their owned properties
                 CreatedAt = DateTime.UtcNow
             },
 
@@ -63,7 +63,7 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
                 Role = UserRole.Landlord,
                 Status = UserStatus.Active,
-                PropertyId = 3, // Kileleshwa Gardens
+                PropertyId = null, // Landlords see ALL their owned properties
                 CreatedAt = DateTime.UtcNow
             },
 
@@ -78,7 +78,7 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Landlord@123"),
                 Role = UserRole.Landlord,
                 Status = UserStatus.Active,
-                PropertyId = 5, // Utawala Maisonettes
+                PropertyId = null, // Landlords see ALL their owned properties
                 CreatedAt = DateTime.UtcNow
             },
 
@@ -93,7 +93,7 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Caretaker@123"),
                 Role = UserRole.Caretaker,
                 Status = UserStatus.Active,
-                PropertyId = 1, // Sunset Apartments Westlands (same as Landlord 1)
+                PropertyId = null, // Landlords see ALL their owned properties (same as Landlord 1)
                 CreatedAt = DateTime.UtcNow
             },
 
@@ -108,7 +108,7 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Caretaker@123"),
                 Role = UserRole.Caretaker,
                 Status = UserStatus.Active,
-                PropertyId = 3, // Kileleshwa Gardens (same as Landlord 2)
+                PropertyId = null, // Landlords see ALL their owned properties (same as Landlord 2)
                 CreatedAt = DateTime.UtcNow
             },
 
@@ -123,7 +123,7 @@ public static class DefaultUsers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Caretaker@123"),
                 Role = UserRole.Caretaker,
                 Status = UserStatus.Active,
-                PropertyId = 5, // Utawala Maisonettes (same as Landlord 3)
+                PropertyId = null, // Landlords see ALL their owned properties (same as Landlord 3)
                 CreatedAt = DateTime.UtcNow
             },
 
