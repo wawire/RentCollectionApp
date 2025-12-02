@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FaMapMarkerAlt, FaBed, FaBath, FaSearch, FaStar, FaHeart, FaFilter } from 'react-icons/fa'
+import { MapPin, Bed, Bath, Search, Star, Heart, Filter } from 'lucide-react'
 import { useVacantUnits } from '@/lib/hooks/usePublicListings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import Navbar from '@/components/layout/Navbar'
@@ -88,13 +88,13 @@ export default function PublicLandingPage() {
                   onClick={() => setMobileFilterOpen(true)}
                   className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  <FaFilter />
+                  <Filter size={16} />
                   <span>Filters</span>
                 </button>
 
                 {/* Search Bar */}
                 <div className="flex-1 relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                   <input
                     type="text"
                     placeholder="Search by property name or location..."
@@ -140,65 +140,60 @@ export default function PublicLandingPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
             {filteredUnits.map((unit) => (
               <Link
                 key={unit.id}
                 href={`/units/${unit.id}/apply`}
-                className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200"
+                className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
               >
                 {/* Image Placeholder */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
+                <div className="relative aspect-square overflow-hidden bg-gray-200">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    <span className="text-white text-5xl font-bold opacity-20">
+                    <span className="text-white text-2xl font-bold opacity-20">
                       {unit.bedrooms}BR
                     </span>
                   </div>
-                  <button className="absolute top-3 right-3 p-2.5 bg-white rounded-full hover:scale-110 transition-transform shadow-md">
-                    <FaHeart className="text-gray-600" />
+                  <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full hover:scale-110 transition-transform shadow-md">
+                    <Heart className="text-gray-600" size={14} />
                   </button>
-                  <div className="absolute bottom-3 left-3">
-                    <span className="bg-white px-3 py-1.5 rounded-full text-xs font-bold text-gray-900 shadow-sm">
-                      Unit {unit.unitNumber}
+                  <div className="absolute bottom-2 left-2">
+                    <span className="bg-white px-2 py-1 rounded-full text-[10px] font-bold text-gray-900 shadow-sm">
+                      {unit.unitNumber}
                     </span>
                   </div>
                 </div>
 
                 {/* Property Details */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors text-lg">
+                <div className="p-2.5">
+                  <div className="flex items-start justify-between mb-1.5">
+                    <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors text-xs line-clamp-1">
                       {unit.propertyName}
                     </h3>
-                    <div className="flex items-center text-sm">
-                      <FaStar className="text-yellow-400 mr-1" />
+                    <div className="flex items-center text-xs ml-1">
+                      <Star className="text-yellow-400 mr-0.5 fill-yellow-400" size={12} />
                       <span className="font-semibold">4.8</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm mb-3 flex items-center">
-                    <FaMapMarkerAlt className="mr-1.5 text-gray-400" size={14} />
+                  <p className="text-gray-600 text-[10px] mb-2 flex items-center line-clamp-1">
+                    <MapPin className="mr-1 text-gray-400 flex-shrink-0" size={10} />
                     {unit.propertyLocation || 'Nairobi, Kenya'}
                   </p>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                    <span className="flex items-center gap-1">
-                      <FaBed className="text-gray-400" />
-                      {unit.bedrooms} beds
+                  <div className="flex items-center gap-2 text-[10px] text-gray-600 mb-2">
+                    <span className="flex items-center gap-0.5">
+                      <Bed className="text-gray-400" size={12} />
+                      {unit.bedrooms}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <FaBath className="text-gray-400" />
-                      {unit.bathrooms} baths
+                    <span className="flex items-center gap-0.5">
+                      <Bath className="text-gray-400" size={12} />
+                      {unit.bathrooms}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">
-                        KES {unit.monthlyRent.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-500">per month</p>
-                    </div>
-                    <button className="text-primary-600 font-semibold hover:text-primary-700 text-sm">
-                      View Details →
-                    </button>
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-sm font-bold text-gray-900">
+                      KES {unit.monthlyRent.toLocaleString()}
+                    </p>
+                    <p className="text-[9px] text-gray-500">per month</p>
                   </div>
                 </div>
               </Link>

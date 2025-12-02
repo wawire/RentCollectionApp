@@ -1,6 +1,7 @@
 'use client'
 
-import { FaMapMarkerAlt, FaTimes } from 'react-icons/fa'
+import { useState } from 'react'
+import { MapPin, X, ChevronDown, ChevronUp, Home, Building2, DoorOpen, Wifi, Car, Zap, Droplets, Wind, Flame, Shield } from 'lucide-react'
 
 interface FilterSidebarProps {
   searchTerm: string
@@ -24,11 +25,32 @@ export default function FilterSidebar(props: FilterSidebarProps) {
     propertyType, setPropertyType, onClose, isMobile = false
   } = props
 
+  const [amenitiesOpen, setAmenitiesOpen] = useState(true)
+  const [rentalTypeOpen, setRentalTypeOpen] = useState(true)
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
+  const [rentalType, setRentalType] = useState<string>('all')
+
   const propertyTypes = [
-    { id: 'all', label: 'All Types', icon: '🏠' },
-    { id: 'apartment', label: 'Apartment', icon: '🏢' },
-    { id: 'house', label: 'House', icon: '🏡' },
-    { id: 'studio', label: 'Studio', icon: '🛏️' },
+    { id: 'all', label: 'All Properties', icon: Home },
+    { id: 'apartment', label: 'Apartments', icon: Building2 },
+    { id: 'house', label: 'Houses', icon: Home },
+    { id: 'studio', label: 'Studios', icon: DoorOpen },
+  ]
+
+  const amenities = [
+    { id: 'wifi', label: 'WiFi', icon: Wifi },
+    { id: 'parking', label: 'Parking', icon: Car },
+    { id: 'power_backup', label: 'Power Backup', icon: Zap },
+    { id: 'water', label: 'Water Supply', icon: Droplets },
+    { id: 'ac', label: 'Air Conditioning', icon: Wind },
+    { id: 'gas', label: 'Gas Connection', icon: Flame },
+    { id: 'security', label: 'Security', icon: Shield },
+  ]
+
+  const rentalTypes = [
+    { id: 'all', label: 'All', description: 'Show both leasing and renting options' },
+    { id: 'rent', label: 'For Rent', description: 'Monthly payments, flexible terms' },
+    { id: 'lease', label: 'For Lease', description: '6-12 month commitment' },
   ]
 
   const bedroomOptions = [
@@ -36,8 +58,17 @@ export default function FilterSidebar(props: FilterSidebarProps) {
     { value: 1, label: '1' },
     { value: 2, label: '2' },
     { value: 3, label: '3' },
-    { value: 4, label: '4+' },
+    { value: 4, label: '4' },
+    { value: 5, label: '5+' },
   ]
+
+  const toggleAmenity = (amenityId: string) => {
+    setSelectedAmenities(prev =>
+      prev.includes(amenityId)
+        ? prev.filter(id => id !== amenityId)
+        : [...prev, amenityId]
+    )
+  }
 
   const clearFilters = () => {
     setSearchTerm('')
@@ -45,98 +76,143 @@ export default function FilterSidebar(props: FilterSidebarProps) {
     setMaxPrice('')
     setBedrooms('')
     setPropertyType('all')
+    setSelectedAmenities([])
+    setRentalType('all')
   }
 
-  const hasActiveFilters = searchTerm || minPrice || maxPrice || bedrooms || propertyType !== 'all'
+  const hasActiveFilters = searchTerm || minPrice || maxPrice || bedrooms ||
+    propertyType !== 'all' || selectedAmenities.length > 0 || rentalType !== 'all'
+
+  const FilterSection = ({ title, children, isOpen, toggle }: any) => (
+    <div className="border-b border-gray-200 pb-4 mb-4">
+      <button
+        onClick={toggle}
+        className="w-full flex items-center justify-between py-2 hover:text-primary-600 transition-colors"
+      >
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{title}</h3>
+        {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+      </button>
+      {isOpen && <div className="mt-4">{children}</div>}
+    </div>
+  )
 
   return (
     <div className="h-full bg-white border-r border-gray-200 overflow-y-auto">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+      <div className="p-5">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900">Filter Properties</h2>
           {isMobile && (
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-              <FaTimes className="text-gray-600" />
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <X size={20} className="text-gray-600" />
             </button>
           )}
         </div>
 
+        {/* Location Search */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+          <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
             Location
           </label>
           <div className="relative">
-            <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search location..."
+              placeholder="Enter location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
             />
           </div>
         </div>
 
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Property Type
-          </label>
+        {/* Rental Type (Kenyan Standard) */}
+        <FilterSection title="Rental Type" isOpen={rentalTypeOpen} toggle={() => setRentalTypeOpen(!rentalTypeOpen)}>
           <div className="space-y-2">
-            {propertyTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => setPropertyType(type.id)}
-                className={'w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ' + (
-                  propertyType === type.id
-                    ? 'bg-primary-50 border-2 border-primary-600'
-                    : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                )}
-              >
-                <span className="text-2xl">{type.icon}</span>
-                <span className={'font-medium ' + (propertyType === type.id ? 'text-primary-700' : 'text-gray-700')}>
-                  {type.label}
-                </span>
-              </button>
+            {rentalTypes.map((type) => (
+              <label key={type.id} className="flex items-start cursor-pointer group">
+                <input
+                  type="radio"
+                  name="rentalType"
+                  checked={rentalType === type.id}
+                  onChange={() => setRentalType(type.id)}
+                  className="mt-0.5 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <div className="ml-3">
+                  <span className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
+                    {type.label}
+                  </span>
+                  <p className="text-xs text-gray-500 mt-0.5">{type.description}</p>
+                </div>
+              </label>
             ))}
           </div>
+        </FilterSection>
+
+        {/* Property Type */}
+        <div className="mb-6">
+          <label className="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wide">
+            Property Type
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {propertyTypes.map((type) => {
+              const Icon = type.icon
+              return (
+                <button
+                  key={type.id}
+                  onClick={() => setPropertyType(type.id)}
+                  className={`flex flex-col items-center p-3 rounded-lg transition-all ${
+                    propertyType === type.id
+                      ? 'bg-primary-600 text-white shadow-md'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  <Icon size={22} className="mb-1.5" />
+                  <span className="text-xs font-medium">{type.label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
+        {/* Price Range */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Price Range (KES)
+          <label className="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wide">
+            Monthly Rent (KES)
           </label>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
-              placeholder="Min price"
+              placeholder="Min"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="px-3 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
             <input
               type="number"
-              placeholder="Max price"
+              placeholder="Max"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="px-3 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
         </div>
 
+        {/* Bedrooms */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+          <label className="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wide">
             Bedrooms
           </label>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-6 gap-2">
             {bedroomOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setBedrooms(option.value as any)}
-                className={'p-3 rounded-lg font-medium transition-colors ' + (
+                className={`p-2.5 rounded-md font-semibold text-sm transition-all ${
                   bedrooms === option.value
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                )}
+                    ? 'bg-primary-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                }`}
               >
                 {option.label}
               </button>
@@ -144,14 +220,53 @@ export default function FilterSidebar(props: FilterSidebarProps) {
           </div>
         </div>
 
+        {/* Amenities */}
+        <FilterSection title="Amenities" isOpen={amenitiesOpen} toggle={() => setAmenitiesOpen(!amenitiesOpen)}>
+          <div className="space-y-2.5">
+            {amenities.map((amenity) => {
+              const Icon = amenity.icon
+              return (
+                <label key={amenity.id} className="flex items-center cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes(amenity.id)}
+                    onChange={() => toggleAmenity(amenity.id)}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <Icon size={16} className="ml-3 mr-2 text-gray-500 group-hover:text-primary-600 transition-colors" />
+                  <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+                    {amenity.label}
+                  </span>
+                </label>
+              )
+            })}
+          </div>
+        </FilterSection>
+
+        {/* Clear Filters Button */}
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="w-full py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full mt-6 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg font-semibold text-sm text-gray-700 transition-colors"
           >
-            Clear All Filters
+            Clear All Filters ({
+              (searchTerm ? 1 : 0) +
+              (minPrice || maxPrice ? 1 : 0) +
+              (bedrooms ? 1 : 0) +
+              (propertyType !== 'all' ? 1 : 0) +
+              selectedAmenities.length +
+              (rentalType !== 'all' ? 1 : 0)
+            })
           </button>
         )}
+
+        {/* Vacancy Status Badge */}
+        <div className="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-xs font-semibold text-green-800 flex items-center">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            Showing vacant properties only
+          </p>
+        </div>
       </div>
     </div>
   )
