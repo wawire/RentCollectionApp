@@ -6,7 +6,6 @@ using RentCollection.Application.Services.Auth;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Infrastructure.Data;
 using RentCollection.Infrastructure.Repositories.Implementations;
-using RentCollection.Infrastructure.Services;
 using RentCollection.Infrastructure.Services.Auth;
 
 namespace RentCollection.Infrastructure;
