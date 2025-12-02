@@ -39,7 +39,7 @@ public class TenantApplicationsController : ControllerBase
             return Ok(result.Data);
         }
 
-        return BadRequest(result.Error);
+        return BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -59,12 +59,12 @@ public class TenantApplicationsController : ControllerBase
             return Ok(result.Data);
         }
 
-        if (result.Error.Contains("not found"))
+        if (result.Errors.Any(e => e.Contains("not found")))
         {
-            return NotFound(result.Error);
+            return NotFound(result.Errors);
         }
 
-        return StatusCode(StatusCodes.Status403Forbidden, result.Error);
+        return StatusCode(StatusCodes.Status403Forbidden, result.Errors);
     }
 
     /// <summary>
@@ -92,16 +92,16 @@ public class TenantApplicationsController : ControllerBase
             return Ok(result.Data);
         }
 
-        if (result.Error.Contains("not found"))
+        if (result.Errors.Any(e => e.Contains("not found")))
         {
-            return NotFound(result.Error);
+            return NotFound(result.Errors);
         }
 
-        if (result.Error.Contains("permission"))
+        if (result.Errors.Any(e => e.Contains("permission")))
         {
-            return StatusCode(StatusCodes.Status403Forbidden, result.Error);
+            return StatusCode(StatusCodes.Status403Forbidden, result.Errors);
         }
 
-        return BadRequest(result.Error);
+        return BadRequest(result.Errors);
     }
 }

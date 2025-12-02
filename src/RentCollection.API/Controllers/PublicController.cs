@@ -40,7 +40,7 @@ public class PublicController : ControllerBase
             return Ok(result.Data);
         }
 
-        return BadRequest(result.Error);
+        return BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public class PublicController : ControllerBase
             return Ok(result.Data);
         }
 
-        return NotFound(result.Error);
+        return NotFound(result.Errors);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public class PublicController : ControllerBase
             return Ok(result.Data);
         }
 
-        return BadRequest(result.Error);
+        return BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public class PublicController : ControllerBase
             return Ok(result.Data);
         }
 
-        return NotFound(result.Error);
+        return NotFound(result.Errors);
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public class PublicController : ControllerBase
             return Ok(result.Data);
         }
 
-        return NotFound(result.Error);
+        return NotFound(result.Errors);
     }
 
     /// <summary>
@@ -133,10 +133,10 @@ public class PublicController : ControllerBase
         {
             return CreatedAtAction(
                 nameof(GetUnitDetails),
-                new { unitId = result.Data.UnitId },
+                new { unitId = result.Data!.UnitId },
                 result.Data);
         }
 
-        return BadRequest(result.Error);
+        return BadRequest(result.Errors);
     }
 }
