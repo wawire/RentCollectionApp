@@ -143,14 +143,14 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Applying database migrations...");
         await context.Database.MigrateAsync();
 
-        // Seed application data (properties, units, tenants, payments)
-        // IMPORTANT: Must seed Properties BEFORE Users since Users reference PropertyId
-        logger.LogInformation("Starting application data seed...");
-        await ApplicationDbContextSeed.SeedAsync(context, logger);
-
-        // Seed default users (after properties exist)
+        // Seed default users first (so we have User IDs for properties)
         logger.LogInformation("Starting user seed...");
         await DefaultUsers.SeedAsync(context, logger);
+
+        // Seed application data (properties, units, tenants, payments)
+        // IMPORTANT: Must seed Users FIRST so Properties can reference LandlordId
+        logger.LogInformation("Starting application data seed...");
+        await ApplicationDbContextSeed.SeedAsync(context, logger);
     }
     catch (Exception ex)
     {

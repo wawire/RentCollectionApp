@@ -38,6 +38,11 @@ public class User
     public DateTime? LastLoginAt { get; set; }
 
     /// <summary>
+    /// For Landlord role - properties they own
+    /// </summary>
+    public ICollection<Property> OwnedProperties { get; set; } = new List<Property>();
+
+    /// <summary>
     /// Full name for display
     /// </summary>
     public string FullName => $"{FirstName} {LastName}";

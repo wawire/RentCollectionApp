@@ -21,6 +21,17 @@ public class ApplicationDbContextSeed
 
             logger.LogInformation("Starting database seeding...");
 
+            // Get landlords (users should already be seeded)
+            var johnLandlord = await context.Users.FirstOrDefaultAsync(u => u.Email == "landlord@example.com");
+            var maryLandlord = await context.Users.FirstOrDefaultAsync(u => u.Email == "mary.wanjiku@example.com");
+            var davidLandlord = await context.Users.FirstOrDefaultAsync(u => u.Email == "david.kamau@example.com");
+
+            if (johnLandlord == null || maryLandlord == null || davidLandlord == null)
+            {
+                logger.LogError("Landlord users not found! Please ensure users are seeded first.");
+                throw new InvalidOperationException("Landlord users must be seeded before properties.");
+            }
+
             // ===== SEED PROPERTIES (3 Landlords, 6 Properties) =====
             var properties = new List<Property>
             {
@@ -31,6 +42,7 @@ public class ApplicationDbContextSeed
                     Location = "Muthangari Road, Westlands, Nairobi",
                     Description = "Modern bedsitters and one-bedroom apartments in the heart of Westlands. Walking distance to Sarit Centre and Westgate Mall. Secure compound with ample parking.",
                     TotalUnits = 12,
+                    LandlordId = johnLandlord.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -40,6 +52,7 @@ public class ApplicationDbContextSeed
                     Location = "5th Avenue, Parklands, Nairobi",
                     Description = "Affordable bedsitters and studios for young professionals. Near shops, hospitals, and public transport. Water available 24/7.",
                     TotalUnits = 8,
+                    LandlordId = johnLandlord.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -51,6 +64,7 @@ public class ApplicationDbContextSeed
                     Location = "Mandera Road, Kileleshwa, Nairobi",
                     Description = "Family-friendly two and three bedroom apartments with spacious balconies. Quiet neighborhood with schools nearby. Borehole water and backup generator.",
                     TotalUnits = 15,
+                    LandlordId = maryLandlord.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -60,6 +74,7 @@ public class ApplicationDbContextSeed
                     Location = "James Gichuru Road, Lavington, Nairobi",
                     Description = "Premium two and three bedroom apartments in serene Lavington. Swimming pool, gym, children's play area. DSTV ready, fiber internet.",
                     TotalUnits = 10,
+                    LandlordId = maryLandlord.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -71,6 +86,7 @@ public class ApplicationDbContextSeed
                     Location = "Eastern Bypass, Utawala, Nairobi",
                     Description = "Own compound maisonettes with 3 bedrooms, DSQ (domestic servant quarters), parking for 2 cars. Gated community with 24hr security.",
                     TotalUnits = 6,
+                    LandlordId = davidLandlord.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -80,6 +96,7 @@ public class ApplicationDbContextSeed
                     Location = "Ruiru-Kiambu Road, Ruiru",
                     Description = "Standalone bungalows (own compound) with 2-3 bedrooms. Each house has a garden, parking, and perimeter wall. Perfect for families seeking peace and privacy.",
                     TotalUnits = 8,
+                    LandlordId = davidLandlord.Id,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 }
