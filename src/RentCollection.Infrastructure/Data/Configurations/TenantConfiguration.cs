@@ -47,11 +47,6 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             .HasConversion<int>(); // Store enum as int
 
         // Navigation properties
-        builder.HasOne(t => t.User)
-            .WithOne(u => u.Tenant)
-            .HasForeignKey<Tenant>(t => t.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasMany(t => t.Payments)
             .WithOne(p => p.Tenant)
             .HasForeignKey(p => p.TenantId)
