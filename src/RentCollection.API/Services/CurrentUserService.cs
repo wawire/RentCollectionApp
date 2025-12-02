@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using RentCollection.Application.Services.Interfaces;
-using RentCollection.Infrastructure.Identity;
+using RentCollection.Domain.Enums;
 
 namespace RentCollection.API.Services;
 
@@ -23,11 +23,11 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
-    public bool IsSystemAdmin => Role == UserRoles.SystemAdmin;
+    public bool IsSystemAdmin => Role == UserRoleExtensions.SystemAdmin;
 
-    public bool IsLandlord => Role == UserRoles.Landlord;
+    public bool IsLandlord => Role == UserRoleExtensions.Landlord;
 
-    public bool IsCaretaker => Role == UserRoles.Caretaker;
+    public bool IsCaretaker => Role == UserRoleExtensions.Caretaker;
 
-    public bool IsAccountant => Role == UserRoles.Accountant;
+    public bool IsAccountant => Role == UserRoleExtensions.Accountant;
 }
