@@ -49,13 +49,14 @@ export default function FilterSidebar(props: FilterSidebarProps) {
   }, [minPrice, maxPrice])
 
   const handlePriceChange = (values: number | number[]) => {
-    const [min, max] = values as [number, number]
+    const [min, max] = Array.isArray(values) ? values : [values, values]
     setPriceRange([min, max])
   }
 
-  const handlePriceCommit = () => {
-    setMinPrice(priceRange[0] === 0 ? '' : priceRange[0])
-    setMaxPrice(priceRange[1] === 150000 ? '' : priceRange[1])
+  const handlePriceCommit = (values: number | number[]) => {
+    const [min, max] = Array.isArray(values) ? values : [values, values]
+    setMinPrice(min === 0 ? '' : min)
+    setMaxPrice(max === 150000 ? '' : max)
   }
 
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
@@ -291,16 +292,14 @@ export default function FilterSidebar(props: FilterSidebarProps) {
                 step={1000}
                 value={priceRange}
                 onChange={handlePriceChange}
-                onChangeComplete={handlePriceCommit}
-                styles={{
-                  track: { backgroundColor: '#16a34a' },
-                  handle: {
-                    borderColor: '#16a34a',
-                    backgroundColor: '#fff',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  },
-                  rail: { backgroundColor: '#e5e7eb' },
+                onAfterChange={handlePriceCommit}
+                trackStyle={{ backgroundColor: '#16a34a' }}
+                handleStyle={{
+                  borderColor: '#16a34a',
+                  backgroundColor: '#fff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                 }}
+                railStyle={{ backgroundColor: '#e5e7eb' }}
               />
               <div className="flex justify-between mt-4 mb-4">
                 <div className="text-sm">
