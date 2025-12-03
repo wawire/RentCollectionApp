@@ -2,8 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Fonts */
+@font-face {
+  font-family: 'URWClassico';
+  src: url('/fonts/URWClassico-Reg.eot');
+  src: url('/fonts/URWClassico-Reg.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fenwick';
+  src: url('/fonts/FenwickRg-Bold.eot');
+  src: url('/fonts/FenwickRg-Bold.eot?#iefix') format('embedded-opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Edmondsans';
+  src: url('/fonts/Edmondsans-Regular.eot');
+  src: url('/fonts/Edmondsans-Regular.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
+    /* Custom Fonts */
+    --font-urw-classico: 'URWClassico', Georgia, Cambria, 'Times New Roman', serif;
+    --font-fenwick: 'Fenwick', 'Arial Black', sans-serif;
+    --font-edmondsans: 'Edmondsans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
     /* Primary Palette */
     --color-primary: #0B0B0D;        /* Charcoal Black - Headers, backgrounds */
     --color-surface: #FFFFFF;         /* Pure White - Cards, content panels */
