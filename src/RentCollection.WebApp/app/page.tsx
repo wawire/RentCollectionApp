@@ -133,7 +133,7 @@ export default function PublicLandingPage() {
           {/* Properties Section */}
           <div className="container mx-auto px-6 py-8">
             <div className="mb-6">
-              <h2 className="text-3xl font-serif font-bold text-primary tracking-tight">
+              <h2 className="text-3xl font-serif font-medium text-primary tracking-wide leading-tight">
                 {filteredUnits.length > 0 ? `${filteredUnits.length} properties available` : 'Available Properties'}
               </h2>
             </div>
@@ -192,7 +192,7 @@ export default function PublicLandingPage() {
                 {/* Property Details */}
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-serif font-bold text-primary group-hover:text-accent transition-colors text-sm leading-snug tracking-tight line-clamp-1 flex-1">
+                    <h3 className="font-serif font-medium text-primary group-hover:text-accent transition-colors text-base leading-snug tracking-wide line-clamp-1 flex-1">
                       {unit.propertyName}
                     </h3>
                     <div className="flex items-center text-xs ml-2 flex-shrink-0">
@@ -200,11 +200,11 @@ export default function PublicLandingPage() {
                       <span className="font-semibold text-primary">4.8</span>
                     </div>
                   </div>
-                  <p className="text-muted text-xs mb-3 flex items-center line-clamp-1 leading-relaxed">
+                  <p className="text-muted text-xs mb-3 flex items-center line-clamp-1 leading-relaxed tracking-wide">
                     <MapPin className="mr-1 text-muted/70 flex-shrink-0" size={12} />
-                    <span className="tracking-wide">{unit.propertyLocation || 'Nairobi, Kenya'}</span>
+                    <span>{unit.propertyLocation || 'Nairobi, Kenya'}</span>
                   </p>
-                  <div className="flex items-center gap-3 text-xs text-primary/70 mb-3">
+                  <div className="flex items-center gap-3 text-xs text-primary/70 mb-3 tracking-wide">
                     <span className="flex items-center gap-1">
                       <Bed className="text-muted" size={14} />
                       <span className="font-medium">{unit.bedrooms}</span>
@@ -215,10 +215,10 @@ export default function PublicLandingPage() {
                     </span>
                   </div>
                   <div className="pt-3 border-t border-secondary/50">
-                    <p className="text-accent font-serif font-bold text-lg tracking-tight leading-tight">
+                    <p className="text-accent font-serif font-semibold text-xl tracking-wide leading-tight">
                       KES {unit.monthlyRent.toLocaleString()}
                     </p>
-                    <p className="text-xs text-muted/80 font-medium tracking-wide mt-0.5">per month</p>
+                    <p className="text-xs text-muted/80 font-normal tracking-wider mt-1 leading-relaxed">per month</p>
                   </div>
                 </div>
               </Link>
