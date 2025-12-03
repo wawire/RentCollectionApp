@@ -225,6 +225,7 @@ public class ApplicationDbContextSeed
                     Description = "Bedsitter with own bathroom and kitchenette. Ground floor.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -238,6 +239,7 @@ public class ApplicationDbContextSeed
                     Description = "Bedsitter with balcony. First floor.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -251,6 +253,7 @@ public class ApplicationDbContextSeed
                     Description = "Spacious bedsitter. Second floor with city view.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 // One-Bedroom
@@ -265,6 +268,7 @@ public class ApplicationDbContextSeed
                     Description = "One bedroom with separate kitchen and sitting room.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -278,6 +282,7 @@ public class ApplicationDbContextSeed
                     Description = "One bedroom apartment with balcony.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -296,6 +301,7 @@ public class ApplicationDbContextSeed
                     Description = "Affordable bedsitter for students/young professionals.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -309,6 +315,7 @@ public class ApplicationDbContextSeed
                     Description = "Bedsitter with shared laundry area.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -322,6 +329,7 @@ public class ApplicationDbContextSeed
                     Description = "One bedroom apartment.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -340,6 +348,7 @@ public class ApplicationDbContextSeed
                     Description = "Two bedroom apartment with master ensuite. DSQ included.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -353,6 +362,7 @@ public class ApplicationDbContextSeed
                     Description = "Two bedroom with balcony facing garden.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -366,6 +376,7 @@ public class ApplicationDbContextSeed
                     Description = "Three bedroom apartment with master ensuite and DSQ.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -379,6 +390,7 @@ public class ApplicationDbContextSeed
                     Description = "Spacious three bedroom with dining area.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -397,6 +409,7 @@ public class ApplicationDbContextSeed
                     Description = "Premium two bedroom with gym and pool access. Fiber internet.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -410,6 +423,7 @@ public class ApplicationDbContextSeed
                     Description = "Luxury three bedroom with all bedrooms ensuite. DSQ, balcony.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -428,6 +442,7 @@ public class ApplicationDbContextSeed
                     Description = "Three bedroom maisonette (own compound) with DSQ, parking for 2 cars, garden.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -441,6 +456,7 @@ public class ApplicationDbContextSeed
                     Description = "Maisonette with own gate, perimeter wall, and compound. DSQ included.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -454,6 +470,7 @@ public class ApplicationDbContextSeed
                     Description = "Corner maisonette with larger compound and garden space.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -472,6 +489,7 @@ public class ApplicationDbContextSeed
                     Description = "Two bedroom bungalow (own compound) with garden, parking, perimeter wall.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -485,6 +503,7 @@ public class ApplicationDbContextSeed
                     Description = "Standalone bungalow with own compound. Family-friendly.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -498,6 +517,7 @@ public class ApplicationDbContextSeed
                     Description = "Three bedroom bungalow with spacious compound and kitchen garden.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };

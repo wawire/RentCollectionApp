@@ -16,6 +16,7 @@ export default function PublicLandingPage() {
   const [maxPrice, setMaxPrice] = useState<number | ''>('')
   const [bedrooms, setBedrooms] = useState<number | ''>('')
   const [propertyType, setPropertyType] = useState<string>('all')
+  const [rentalType, setRentalType] = useState<string>('all')
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
 
   const filteredUnits = units.filter((unit) => {
@@ -29,7 +30,13 @@ export default function PublicLandingPage() {
     const matchesMaxPrice = maxPrice === '' || unit.monthlyRent <= maxPrice
     const matchesBedrooms = bedrooms === '' || unit.bedrooms === bedrooms
 
-    return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms
+    // Rental type filtering (1=Rent, 2=Lease, 3=Both)
+    const matchesRentalType =
+      rentalType === 'all' ||
+      (rentalType === 'rent' && (unit.rentalType === 1 || unit.rentalType === 3)) ||
+      (rentalType === 'lease' && (unit.rentalType === 2 || unit.rentalType === 3))
+
+    return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesRentalType
   })
 
   return (
@@ -51,6 +58,8 @@ export default function PublicLandingPage() {
             setBedrooms={setBedrooms}
             propertyType={propertyType}
             setPropertyType={setPropertyType}
+            rentalType={rentalType}
+            setRentalType={setRentalType}
           />
         </aside>
 
@@ -70,6 +79,8 @@ export default function PublicLandingPage() {
                 setBedrooms={setBedrooms}
                 propertyType={propertyType}
                 setPropertyType={setPropertyType}
+                rentalType={rentalType}
+                setRentalType={setRentalType}
                 onClose={() => setMobileFilterOpen(false)}
                 isMobile={true}
               />
@@ -133,6 +144,8 @@ export default function PublicLandingPage() {
                 setMinPrice('')
                 setMaxPrice('')
                 setBedrooms('')
+                setPropertyType('all')
+                setRentalType('all')
               }}
               className="text-primary-600 font-semibold hover:underline text-lg"
             >

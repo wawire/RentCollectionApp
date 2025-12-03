@@ -1,4 +1,5 @@
 using RentCollection.Domain.Common;
+using RentCollection.Domain.Enums;
 
 namespace RentCollection.Domain.Entities;
 
@@ -13,6 +14,7 @@ public class Unit : BaseEntity
     public string? Description { get; set; }
     public bool IsOccupied { get; set; } = false;
     public bool IsActive { get; set; } = true;
+    public RentalType RentalType { get; set; } = RentalType.Rent;
 
     // Navigation properties
     public Property Property { get; set; } = null!;
