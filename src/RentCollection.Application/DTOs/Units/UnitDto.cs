@@ -1,3 +1,5 @@
+using RentCollection.Domain.Enums;
+
 namespace RentCollection.Application.DTOs.Units;
 
 public class UnitDto
@@ -13,6 +15,7 @@ public class UnitDto
     public string? Description { get; set; }
     public bool IsOccupied { get; set; }
     public bool IsActive { get; set; }
+    public RentalType RentalType { get; set; }
     public string? CurrentTenantName { get; set; }
     public DateTime CreatedAt { get; set; }
 }
