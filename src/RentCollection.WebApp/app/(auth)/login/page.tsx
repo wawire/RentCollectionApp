@@ -122,15 +122,15 @@ export default function LoginPage() {
                   Email or Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-3 pointer-events-none">
+                    <FiMail className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="emailOrPhone"
                     name="emailOrPhone"
                     type="text"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                    className="w-full pl-7 pr-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
                     placeholder="admin@rentcollection.com or 0712345678"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
@@ -143,28 +143,28 @@ export default function LoginPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-3 pointer-events-none">
+                    <FiLock className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-3 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                    className="w-full pl-7 pr-10 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-0 bottom-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     )}
                   </button>
                 </div>

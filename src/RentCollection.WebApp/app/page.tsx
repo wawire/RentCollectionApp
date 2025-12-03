@@ -99,9 +99,6 @@ export default function PublicLandingPage() {
             >
               Studio
             </button>
-            <span className="ml-auto text-sm font-medium text-primary/50 tracking-wide">
-              {filteredUnits.length} properties
-            </span>
           </div>
         </div>
       </div>
