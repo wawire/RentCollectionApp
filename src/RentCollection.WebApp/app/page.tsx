@@ -173,9 +173,9 @@ export default function PublicLandingPage() {
                 className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
               >
                 {/* Image Placeholder */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    <span className="text-white text-2xl font-bold opacity-20">
+                <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-700 to-bg-dark flex items-center justify-center">
+                    <span className="text-accent text-2xl font-bold opacity-30">
                       {unit.bedrooms}BR
                     </span>
                   </div>

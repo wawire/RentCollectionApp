@@ -31,12 +31,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Full width image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-bg-dark via-primary-800 to-primary-900">
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
             <h1 className="text-4xl font-bold mb-2">RentCollection</h1>
-            <p className="text-blue-100">Modern Property Management System</p>
+            <p className="text-secondary/80">Modern Property Management System</p>
           </div>
 
           <div className="space-y-8">
@@ -49,21 +49,21 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Manage Properties</h3>
-                  <p className="text-sm text-blue-100">Track all your properties, units, and tenants in one place</p>
+                  <p className="text-sm text-secondary/70">Track all your properties, units, and tenants in one place</p>
                 </div>
               </div>
             </div>
 
             <div>
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
+                  <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">M-Pesa Integration</h3>
-                  <p className="text-sm text-blue-100">Accept rent payments via M-Pesa with automatic reconciliation</p>
+                  <p className="text-sm text-secondary/70">Accept rent payments via M-Pesa with automatic reconciliation</p>
                 </div>
               </div>
             </div>
@@ -77,13 +77,13 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">SMS Reminders</h3>
-                  <p className="text-sm text-blue-100">Automated rent reminders and payment confirmations</p>
+                  <p className="text-sm text-secondary/70">Automated rent reminders and payment confirmations</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-blue-100">
+          <div className="text-sm text-secondary/60">
             © 2024 RentCollection. Designed for Kenyan property managers.
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function LoginPage() {
                     name="emailOrPhone"
                     type="text"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="block w-full pl-10 pr-3 py-3 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
                     placeholder="admin@rentcollection.com or 0712345678"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
@@ -151,7 +151,7 @@ export default function LoginPage() {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="block w-full pl-10 pr-10 py-3 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -177,15 +177,15 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-accent focus:ring-accent border-muted rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-primary">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                <a href="#" className="font-medium text-accent hover:text-accent-600 transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -194,7 +194,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-primary bg-accent hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all disabled:bg-accent/50 disabled:cursor-not-allowed shadow-sm"
             >
               {isLoading ? (
                 <span className="flex items-center">

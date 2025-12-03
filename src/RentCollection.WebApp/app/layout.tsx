@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import MainLayout from '@/components/layout/MainLayout'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { urwClassico } from '@/lib/fonts'
+import { urwClassico, fenwick, edmondsans } from '@/lib/fonts'
 
 export const metadata: Metadata = {
   title: 'RentCollection - Property Management System',
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={urwClassico.variable}>
+    <html lang="en" className={`${urwClassico.variable} ${fenwick.variable} ${edmondsans.variable}`}>
       <body className="antialiased font-sans">
         <AuthProvider>
           <MainLayout>{children}</MainLayout>

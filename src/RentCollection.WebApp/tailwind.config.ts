@@ -9,7 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-urw-classico)', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['var(--font-edmondsans)', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['var(--font-urw-classico)', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        display: ['var(--font-fenwick)', 'Arial Black', 'sans-serif'],
       },
       colors: {
         // Primary Palette - Property Market Theme
