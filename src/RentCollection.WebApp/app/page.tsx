@@ -52,7 +52,7 @@ export default function PublicLandingPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg-light">
       <Navbar />
 
       {/* Main Container with Sidebar */}
@@ -133,7 +133,7 @@ export default function PublicLandingPage() {
           {/* Properties Section */}
           <div className="container mx-auto px-6 py-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-3xl font-serif font-bold text-primary tracking-tight">
                 {filteredUnits.length > 0 ? `${filteredUnits.length} properties available` : 'Available Properties'}
               </h2>
             </div>
@@ -165,60 +165,60 @@ export default function PublicLandingPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5">
             {filteredUnits.map((unit) => (
               <Link
                 key={unit.id}
                 href={`/units/${unit.id}/apply`}
-                className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-secondary/50 hover:border-accent/30"
               >
                 {/* Image Placeholder */}
                 <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-700 to-bg-dark flex items-center justify-center">
-                    <span className="text-accent text-2xl font-bold opacity-30">
+                    <span className="text-accent text-3xl font-display font-bold opacity-20">
                       {unit.bedrooms}BR
                     </span>
                   </div>
-                  <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full hover:scale-110 transition-transform shadow-md">
-                    <Heart className="text-gray-600" size={14} />
+                  <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform shadow-md hover:bg-white">
+                    <Heart className="text-muted hover:text-accent transition-colors" size={16} />
                   </button>
-                  <div className="absolute bottom-2 left-2">
-                    <span className="bg-white px-2 py-1 rounded-full text-[10px] font-bold text-gray-900 shadow-sm">
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold text-white shadow-lg tracking-wide">
                       {unit.unitNumber}
                     </span>
                   </div>
                 </div>
 
                 {/* Property Details */}
-                <div className="p-2.5">
-                  <div className="flex items-start justify-between mb-1.5">
-                    <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors text-xs line-clamp-1">
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-serif font-bold text-primary group-hover:text-accent transition-colors text-sm leading-snug tracking-tight line-clamp-1 flex-1">
                       {unit.propertyName}
                     </h3>
-                    <div className="flex items-center text-xs ml-1">
-                      <Star className="text-yellow-400 mr-0.5 fill-yellow-400" size={12} />
-                      <span className="font-semibold">4.8</span>
+                    <div className="flex items-center text-xs ml-2 flex-shrink-0">
+                      <Star className="text-accent mr-1 fill-accent" size={14} />
+                      <span className="font-semibold text-primary">4.8</span>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-[10px] mb-2 flex items-center line-clamp-1">
-                    <MapPin className="mr-1 text-gray-400 flex-shrink-0" size={10} />
-                    {unit.propertyLocation || 'Nairobi, Kenya'}
+                  <p className="text-muted text-xs mb-3 flex items-center line-clamp-1 leading-relaxed">
+                    <MapPin className="mr-1 text-muted/70 flex-shrink-0" size={12} />
+                    <span className="tracking-wide">{unit.propertyLocation || 'Nairobi, Kenya'}</span>
                   </p>
-                  <div className="flex items-center gap-2 text-[10px] text-gray-600 mb-2">
-                    <span className="flex items-center gap-0.5">
-                      <Bed className="text-gray-400" size={12} />
-                      {unit.bedrooms}
+                  <div className="flex items-center gap-3 text-xs text-primary/70 mb-3">
+                    <span className="flex items-center gap-1">
+                      <Bed className="text-muted" size={14} />
+                      <span className="font-medium">{unit.bedrooms}</span>
                     </span>
-                    <span className="flex items-center gap-0.5">
-                      <Bath className="text-gray-400" size={12} />
-                      {unit.bathrooms}
+                    <span className="flex items-center gap-1">
+                      <Bath className="text-muted" size={14} />
+                      <span className="font-medium">{unit.bathrooms}</span>
                     </span>
                   </div>
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-sm font-bold text-gray-900">
+                  <div className="pt-3 border-t border-secondary/50">
+                    <p className="text-accent font-serif font-bold text-lg tracking-tight leading-tight">
                       KES {unit.monthlyRent.toLocaleString()}
                     </p>
-                    <p className="text-[9px] text-gray-500">per month</p>
+                    <p className="text-xs text-muted/80 font-medium tracking-wide mt-0.5">per month</p>
                   </div>
                 </div>
               </Link>
