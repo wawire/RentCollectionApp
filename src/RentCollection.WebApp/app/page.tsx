@@ -7,7 +7,6 @@ import { useVacantUnits } from '@/lib/hooks/usePublicListings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import FilterSidebar from '@/components/public/FilterSidebar'
 
 export default function PublicLandingPage() {
   const { units, loading, error } = useVacantUnits()
