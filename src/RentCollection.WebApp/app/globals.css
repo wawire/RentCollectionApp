@@ -32,10 +32,10 @@
 
 @layer base {
   :root {
-    /* Custom Fonts */
-    --font-urw-classico: 'URWClassico', Georgia, Cambria, 'Times New Roman', serif;
-    --font-fenwick: 'Fenwick', 'Arial Black', sans-serif;
-    --font-edmondsans: 'Edmondsans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    /* Custom Fonts - Lean fallbacks for premium feel */
+    --font-urw-classico: 'URWClassico', 'Optima', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-fenwick: 'Fenwick', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-edmondsans: 'Edmondsans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 
     /* Primary Palette */
     --color-primary: #0B0B0D;        /* Charcoal Black - Headers, backgrounds */
@@ -57,11 +57,15 @@
 
   body {
     @apply bg-[var(--color-bg-light)] text-[var(--color-primary)];
-    font-family: var(--font-edmondsans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: var(--font-edmondsans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-urw-classico), Georgia, Cambria, serif;
+    font-family: var(--font-urw-classico), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
   }
 }
 
