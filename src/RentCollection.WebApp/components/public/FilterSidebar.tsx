@@ -30,6 +30,9 @@ export default function FilterSidebar(props: FilterSidebarProps) {
     onClose, isMobile = false
   } = props
 
+  // Client-side mounting state
+  const [isMounted, setIsMounted] = useState(false)
+
   // Section collapse states
   const [priceOpen, setPriceOpen] = useState(true)
   const [bedroomsOpen, setBedroomsOpen] = useState(true)
@@ -43,19 +46,25 @@ export default function FilterSidebar(props: FilterSidebarProps) {
     maxPrice || 150000
   ])
 
+  // Ensure component is mounted before rendering slider
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Sync slider with filter state
   useEffect(() => {
     setPriceRange([minPrice || 0, maxPrice || 150000])
   }, [minPrice, maxPrice])
 
   const handlePriceChange = (values: number | number[]) => {
-    const [min, max] = values as [number, number]
+    const [min, max] = Array.isArray(values) ? values : [values, values]
     setPriceRange([min, max])
   }
 
-  const handlePriceCommit = () => {
-    setMinPrice(priceRange[0] === 0 ? '' : priceRange[0])
-    setMaxPrice(priceRange[1] === 150000 ? '' : priceRange[1])
+  const handlePriceCommit = (values: number | number[]) => {
+    const [min, max] = Array.isArray(values) ? values : [values, values]
+    setMinPrice(min === 0 ? '' : min)
+    setMaxPrice(max === 150000 ? '' : max)
   }
 
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
@@ -284,24 +293,26 @@ export default function FilterSidebar(props: FilterSidebarProps) {
             count={(minPrice || maxPrice) ? 1 : 0}
           >
             <div className="px-2">
-              <Slider
-                range
-                min={0}
-                max={150000}
-                step={1000}
-                value={priceRange}
-                onChange={handlePriceChange}
-                onChangeComplete={handlePriceCommit}
-                styles={{
-                  track: { backgroundColor: '#16a34a' },
-                  handle: {
+              {isMounted ? (
+                <Slider
+                  range
+                  min={0}
+                  max={150000}
+                  step={1000}
+                  value={priceRange}
+                  onChange={handlePriceChange}
+                  onAfterChange={handlePriceCommit}
+                  trackStyle={{ backgroundColor: '#16a34a' }}
+                  handleStyle={{
                     borderColor: '#16a34a',
                     backgroundColor: '#fff',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  },
-                  rail: { backgroundColor: '#e5e7eb' },
-                }}
-              />
+                  }}
+                  railStyle={{ backgroundColor: '#e5e7eb' }}
+                />
+              ) : (
+                <div className="h-6 bg-gray-100 rounded animate-pulse" />
+              )}
               <div className="flex justify-between mt-4 mb-4">
                 <div className="text-sm">
                   <span className="text-gray-500">Min:</span>{' '}
