@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from '@/components/common'
 import TenantForm from '@/components/tenants/TenantForm'
@@ -8,7 +9,7 @@ import { CreateTenantDto } from '@/lib/types'
 import Link from 'next/link'
 import { FaArrowLeft } from 'react-icons/fa'
 
-export default function NewTenantPage() {
+function NewTenantContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedUnitId = searchParams.get('unitId') ? Number(searchParams.get('unitId')) : undefined
@@ -47,5 +48,13 @@ export default function NewTenantPage() {
         <TenantForm onSubmit={handleSubmit} loading={loading} preselectedUnitId={preselectedUnitId} />
       </Card>
     </div>
+  )
+}
+
+export default function NewTenantPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewTenantContent />
+    </Suspense>
   )
 }
