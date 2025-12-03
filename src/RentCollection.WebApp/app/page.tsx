@@ -192,7 +192,7 @@ export default function PublicLandingPage() {
                 {/* Property Details */}
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-serif font-normal text-primary group-hover:text-accent transition-colors text-sm leading-relaxed tracking-wide line-clamp-1 flex-1">
+                    <h3 className="font-serif font-medium text-primary group-hover:text-accent transition-colors text-sm leading-relaxed tracking-wide line-clamp-1 flex-1">
                       {unit.propertyName}
                     </h3>
                     <div className="flex items-center text-[10px] ml-2 flex-shrink-0">
