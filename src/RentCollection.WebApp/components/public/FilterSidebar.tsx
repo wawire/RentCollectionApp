@@ -259,14 +259,6 @@ export default function FilterSidebar(props: FilterSidebarProps) {
             })
           </button>
         )}
-
-        {/* Vacancy Status Badge */}
-        <div className="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-xs font-semibold text-green-800 flex items-center">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-            Showing vacant properties only
-          </p>
-        </div>
       </div>
     </div>
   )
