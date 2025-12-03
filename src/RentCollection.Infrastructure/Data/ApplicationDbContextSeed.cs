@@ -106,6 +106,108 @@ public class ApplicationDbContextSeed
             await context.SaveChangesAsync();
             logger.LogInformation("Seeded {Count} properties", properties.Count);
 
+            // ===== SEED AMENITIES =====
+            var amenities = new List<Amenity>
+            {
+                new Amenity
+                {
+                    Name = "WiFi",
+                    IconName = "Wifi",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Parking",
+                    IconName = "Car",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Power Backup",
+                    IconName = "Zap",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Water Supply",
+                    IconName = "Droplets",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Air Conditioning",
+                    IconName = "Wind",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Gas Connection",
+                    IconName = "Flame",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Security",
+                    IconName = "Shield",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            await context.Amenities.AddRangeAsync(amenities);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} amenities", amenities.Count);
+
+            // ===== SEED PROPERTY AMENITIES (Assign amenities to properties) =====
+            var propertyAmenities = new List<PropertyAmenity>
+            {
+                // Sunset Apartments Westlands - WiFi, Parking, Security
+                new PropertyAmenity { PropertyId = properties[0].Id, AmenityId = amenities[0].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[0].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[0].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Parklands Heights - Parking, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[1].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[1].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[1].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Kileleshwa Gardens - WiFi, Parking, Power Backup, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[0].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[2].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Lavington Court - All amenities (Premium property)
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[0].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[2].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[4].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[5].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Utawala Maisonettes - Parking, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[4].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[4].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[4].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Ruiru Bungalows - Parking, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[5].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[5].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[5].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+            };
+
+            await context.PropertyAmenities.AddRangeAsync(propertyAmenities);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} property amenities relationships", propertyAmenities.Count);
+
             // ===== SEED UNITS WITH KENYAN PROPERTY TYPES =====
 
             // PROPERTY 1: Sunset Apartments Westlands (Bedsitters & One-Bedroom)
