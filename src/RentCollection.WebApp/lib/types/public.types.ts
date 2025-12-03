@@ -12,6 +12,7 @@ export interface PublicUnitListing {
   propertyId: number
   propertyName: string | null
   propertyLocation: string | null
+  rentalType: number
 }
 
 export interface PublicPropertyListing {

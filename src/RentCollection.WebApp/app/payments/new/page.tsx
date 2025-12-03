@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from '@/components/common'
 import PaymentForm from '@/components/payments/PaymentForm'
@@ -8,7 +9,7 @@ import { CreatePaymentDto } from '@/lib/types'
 import Link from 'next/link'
 import { FaArrowLeft } from 'react-icons/fa'
 
-export default function NewPaymentPage() {
+function NewPaymentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedTenantId = searchParams.get('tenantId') ? Number(searchParams.get('tenantId')) : undefined
@@ -47,5 +48,13 @@ export default function NewPaymentPage() {
         <PaymentForm onSubmit={handleSubmit} loading={loading} preselectedTenantId={preselectedTenantId} />
       </Card>
     </div>
+  )
+}
+
+export default function NewPaymentPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewPaymentContent />
+    </Suspense>
   )
 }
