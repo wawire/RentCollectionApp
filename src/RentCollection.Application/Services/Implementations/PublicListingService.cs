@@ -55,6 +55,7 @@ public class PublicListingService : IPublicListingService
                             MonthlyRent = u.MonthlyRent,
                             Description = u.Description,
                             IsOccupied = u.IsOccupied,
+                            RentalType = u.RentalType,
                             PropertyId = p.Id,
                             PropertyName = p.Name,
                             PropertyLocation = p.Location
@@ -103,6 +104,7 @@ public class PublicListingService : IPublicListingService
                         MonthlyRent = u.MonthlyRent,
                         Description = u.Description,
                         IsOccupied = u.IsOccupied,
+                        RentalType = u.RentalType,
                         PropertyId = property.Id,
                         PropertyName = property.Name,
                         PropertyLocation = property.Location
@@ -137,6 +139,7 @@ public class PublicListingService : IPublicListingService
                     MonthlyRent = u.MonthlyRent,
                     Description = u.Description,
                     IsOccupied = u.IsOccupied,
+                    RentalType = u.RentalType,
                     PropertyId = u.PropertyId,
                     PropertyName = u.Property?.Name,
                     PropertyLocation = u.Property?.Location
@@ -175,6 +178,7 @@ public class PublicListingService : IPublicListingService
                     MonthlyRent = u.MonthlyRent,
                     Description = u.Description,
                     IsOccupied = u.IsOccupied,
+                    RentalType = u.RentalType,
                     PropertyId = property.Id,
                     PropertyName = property.Name,
                     PropertyLocation = property.Location
@@ -211,6 +215,7 @@ public class PublicListingService : IPublicListingService
                 MonthlyRent = unit.MonthlyRent,
                 Description = unit.Description,
                 IsOccupied = unit.IsOccupied,
+                RentalType = unit.RentalType,
                 PropertyId = unit.PropertyId,
                 PropertyName = unit.Property?.Name,
                 PropertyLocation = unit.Property?.Location

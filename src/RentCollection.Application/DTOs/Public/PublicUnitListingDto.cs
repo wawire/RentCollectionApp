@@ -1,3 +1,5 @@
+using RentCollection.Domain.Enums;
+
 namespace RentCollection.Application.DTOs.Public;
 
 /// <summary>
@@ -13,6 +15,7 @@ public class PublicUnitListingDto
     public decimal MonthlyRent { get; set; }
     public string? Description { get; set; }
     public bool IsOccupied { get; set; }
+    public RentalType RentalType { get; set; }
     public int PropertyId { get; set; }
     public string? PropertyName { get; set; }
     public string? PropertyLocation { get; set; }

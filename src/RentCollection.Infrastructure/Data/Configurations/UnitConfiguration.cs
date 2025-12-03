@@ -23,6 +23,10 @@ public class UnitConfiguration : IEntityTypeConfiguration<Unit>
         builder.Property(u => u.Description)
             .HasMaxLength(500);
 
+        builder.Property(u => u.RentalType)
+            .IsRequired()
+            .HasConversion<int>();
+
         builder.HasMany(u => u.Tenants)
             .WithOne(t => t.Unit)
             .HasForeignKey(t => t.UnitId)
