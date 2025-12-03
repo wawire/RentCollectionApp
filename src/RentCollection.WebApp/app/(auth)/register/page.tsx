@@ -61,12 +61,12 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Full width image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-bg-dark via-primary-800 to-primary-900">
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
             <h1 className="text-4xl font-bold mb-2">Welcome Tenants!</h1>
-            <p className="text-emerald-100">Access your rental account and manage payments</p>
+            <p className="text-secondary/80">Access your rental account and manage payments</p>
           </div>
 
           <div className="space-y-6">
@@ -79,21 +79,21 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Pay Rent Online</h3>
-                  <p className="text-sm text-emerald-100">Make secure payments from your phone via M-Pesa</p>
+                  <p className="text-sm text-secondary/70">Make secure payments from your phone via M-Pesa</p>
                 </div>
               </div>
             </div>
 
             <div>
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
+                  <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Track Your Payments</h3>
-                  <p className="text-sm text-emerald-100">View payment history and get instant receipts</p>
+                  <p className="text-sm text-secondary/70">View payment history and get instant receipts</p>
                 </div>
               </div>
             </div>
@@ -107,20 +107,20 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1">Submit Requests</h3>
-                  <p className="text-sm text-emerald-100">Report maintenance issues directly to your landlord</p>
+                  <p className="text-sm text-secondary/70">Report maintenance issues directly to your landlord</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-emerald-100">
+          <div className="text-sm text-secondary/60">
             © 2024 RentCollection. Designed for Kenyan property managers.
           </div>
         </div>
       </div>
 
       {/* Right side - Registration form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-bg-light">
         <div className="w-full max-w-md space-y-8 py-12">
           {/* Logo for mobile */}
           <div className="lg:hidden text-center">
@@ -129,13 +129,13 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Create Tenant Account</h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <h2 className="text-3xl font-bold text-primary">Create Tenant Account</h2>
+            <p className="mt-2 text-sm text-primary/70">
               Register for tenant self-service portal
             </p>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-primary/70">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-500">
+              <Link href="/login" className="font-medium text-accent hover:text-accent-600 transition-colors">
                 Sign in
               </Link>
             </p>
@@ -177,7 +177,7 @@ export default function RegisterPage() {
                       name="firstName"
                       type="text"
                       required
-                      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                      className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleChange}
@@ -198,7 +198,7 @@ export default function RegisterPage() {
                       name="lastName"
                       type="text"
                       required
-                      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                      className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleChange}
@@ -220,7 +220,7 @@ export default function RegisterPage() {
                     name="email"
                     type="email"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
@@ -241,7 +241,7 @@ export default function RegisterPage() {
                     name="phoneNumber"
                     type="tel"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
                     placeholder="+254712345678"
                     value={formData.phoneNumber}
                     onChange={handleChange}
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="block w-full pl-10 pr-10 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
                     placeholder="Enter password"
                     value={formData.password}
                     onChange={handleChange}
@@ -294,7 +294,7 @@ export default function RegisterPage() {
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="block w-full pl-10 pr-10 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
@@ -317,7 +317,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading || success}
-              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all disabled:bg-emerald-400 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-primary bg-accent hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all disabled:bg-accent/50 disabled:cursor-not-allowed shadow-sm"
             >
               {isLoading ? (
                 <span className="flex items-center">
