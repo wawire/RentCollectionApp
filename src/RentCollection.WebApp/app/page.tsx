@@ -7,6 +7,7 @@ import { useVacantUnits } from '@/lib/hooks/usePublicListings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import FilterSidebar from '@/components/public/FilterSidebar'
 
 export default function PublicLandingPage() {
   const { units, loading, error } = useVacantUnits()
@@ -54,102 +55,131 @@ export default function PublicLandingPage() {
     <div className="min-h-screen bg-bg-light">
       <Navbar />
 
-      {/* Main Content - Full Width */}
-      <main className="w-full">
-        {/* Search Bar Section */}
-        <div className="bg-white border-b border-secondary/30">
-          <div className="container mx-auto px-6 py-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40" size={18} />
-              <input
-                type="text"
-                placeholder="Search by property name or location..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
+      {/* Property Type Horizontal Bar */}
+      <div className="bg-white border-b border-secondary/30 sticky top-0 z-20">
+        <div className="container mx-auto px-6 py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setPropertyType('all')}
+              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
+                propertyType === 'all'
+                  ? 'bg-accent text-primary shadow-sm'
+                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
+              }`}
+            >
+              All Properties
+            </button>
+            <button
+              onClick={() => setPropertyType('apartment')}
+              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
+                propertyType === 'apartment'
+                  ? 'bg-accent text-primary shadow-sm'
+                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
+              }`}
+            >
+              Apartments
+            </button>
+            <button
+              onClick={() => setPropertyType('house')}
+              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
+                propertyType === 'house'
+                  ? 'bg-accent text-primary shadow-sm'
+                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
+              }`}
+            >
+              Houses
+            </button>
+            <button
+              onClick={() => setPropertyType('studio')}
+              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
+                propertyType === 'studio'
+                  ? 'bg-accent text-primary shadow-sm'
+                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
+              }`}
+            >
+              Studio
+            </button>
+            <span className="ml-auto text-sm font-medium text-primary/50 tracking-wide">
+              {filteredUnits.length} properties
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Container with Sidebar */}
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:block w-80 sticky top-16 h-screen">
+          <FilterSidebar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            minPrice={minPrice}
+            setMinPrice={setMinPrice}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
+            bedrooms={bedrooms}
+            setBedrooms={setBedrooms}
+            propertyType={propertyType}
+            setPropertyType={setPropertyType}
+            rentalType={rentalType}
+            setRentalType={setRentalType}
+          />
+        </aside>
+
+        {/* Mobile Filter Modal */}
+        {mobileFilterOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setMobileFilterOpen(false)} />
+            <div className="absolute left-0 top-0 bottom-0 w-80 bg-white">
+              <FilterSidebar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                minPrice={minPrice}
+                setMinPrice={setMinPrice}
+                maxPrice={maxPrice}
+                setMaxPrice={setMaxPrice}
+                bedrooms={bedrooms}
+                setBedrooms={setBedrooms}
+                propertyType={propertyType}
+                setPropertyType={setPropertyType}
+                rentalType={rentalType}
+                setRentalType={setRentalType}
+                onClose={() => setMobileFilterOpen(false)}
+                isMobile={true}
               />
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Horizontal Filter Bar */}
-        <div className="bg-white border-b border-secondary/30">
-          <div className="container mx-auto px-6 py-4">
-            {/* Property Type Filters */}
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <button
-                onClick={() => setPropertyType('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                  propertyType === 'all'
-                    ? 'bg-accent text-primary shadow-sm'
-                    : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-                }`}
-              >
-                All Properties
-              </button>
-              <button
-                onClick={() => setPropertyType('apartment')}
-                className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                  propertyType === 'apartment'
-                    ? 'bg-accent text-primary shadow-sm'
-                    : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-                }`}
-              >
-                Apartments
-              </button>
-              <button
-                onClick={() => setPropertyType('house')}
-                className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                  propertyType === 'house'
-                    ? 'bg-accent text-primary shadow-sm'
-                    : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-                }`}
-              >
-                Houses
-              </button>
-              <button
-                onClick={() => setPropertyType('studio')}
-                className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                  propertyType === 'studio'
-                    ? 'bg-accent text-primary shadow-sm'
-                    : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-                }`}
-              >
-                Studio
-              </button>
-            </div>
-
-            {/* Bedrooms and More Filters */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-primary/70 tracking-wide">Beds:</span>
-                {['any', 1, 2, 3, 4].map((bed) => (
-                  <button
-                    key={bed}
-                    onClick={() => setBedrooms(bed === 'any' ? '' : bed as number)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all ${
-                      (bed === 'any' && bedrooms === '') || bedrooms === bed
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-primary/70 border border-secondary/50 hover:border-primary/30'
-                    }`}
-                  >
-                    {bed === 'any' ? 'Any' : bed === 4 ? '4+' : bed}
-                  </button>
-                ))}
+        {/* Main Content */}
+        <main className="flex-1 min-h-screen">
+          {/* Search Bar Section */}
+          <div className="bg-white border-b border-gray-200 sticky top-16 z-10">
+            <div className="container mx-auto px-6 py-4">
+              <div className="flex gap-3">
+                {/* Mobile Filter Button */}
                 <button
                   onClick={() => setMobileFilterOpen(true)}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-primary/70 border border-secondary/50 hover:border-accent/50 transition-colors tracking-wide"
+                  className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  <Filter size={14} />
-                  More Filters
+                  <Filter size={16} />
+                  <span>Filters</span>
                 </button>
+
+                {/* Search Bar */}
+                <div className="flex-1 relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Search by property name or location..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
               </div>
-              <span className="text-sm font-medium text-primary/50 tracking-wide">
-                {filteredUnits.length} properties
-              </span>
             </div>
           </div>
-        </div>
 
         {/* Properties Section */}
         <div className="container mx-auto px-6 py-8">
@@ -241,93 +271,9 @@ export default function PublicLandingPage() {
             ))}
           </div>
         )}
-        </div>
-
-        {/* More Filters Modal */}
-        {mobileFilterOpen && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setMobileFilterOpen(false)}>
-            <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-serif font-medium text-primary tracking-wide">More Filters</h3>
-                  <button
-                    onClick={() => setMobileFilterOpen(false)}
-                    className="p-2 hover:bg-secondary/30 rounded-full transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Rental Type */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-primary/70 mb-3 tracking-wide">Rental Type</label>
-                  <div className="flex gap-2">
-                    {[
-                      { value: 'all', label: 'All' },
-                      { value: 'rent', label: 'Rent' },
-                      { value: 'lease', label: 'Lease' },
-                    ].map((type) => (
-                      <button
-                        key={type.value}
-                        onClick={() => setRentalType(type.value)}
-                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
-                          rentalType === type.value
-                            ? 'bg-accent text-primary'
-                            : 'bg-white text-primary/70 border border-secondary/50'
-                        }`}
-                      >
-                        {type.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Price Range */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-primary/70 mb-3 tracking-wide">
-                    Price Range (KES per month)
-                  </label>
-                  <div className="flex gap-3">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary"
-                    />
-                    <span className="text-primary/50">—</span>
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary"
-                    />
-                  </div>
-                </div>
-
-                {/* Clear Filters Button */}
-                <button
-                  onClick={() => {
-                    setSearchTerm('')
-                    setMinPrice('')
-                    setMaxPrice('')
-                    setBedrooms('')
-                    setPropertyType('all')
-                    setRentalType('all')
-                    setMobileFilterOpen(false)
-                  }}
-                  className="w-full px-4 py-3 bg-primary text-white rounded-lg font-medium tracking-wide hover:bg-primary/90 transition-colors"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            </div>
           </div>
-        )}
-      </main>
+        </main>
+      </div>
 
       <Footer />
     </div>
