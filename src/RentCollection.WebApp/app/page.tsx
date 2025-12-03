@@ -36,6 +36,18 @@ export default function PublicLandingPage() {
       (rentalType === 'rent' && (unit.rentalType === 1 || unit.rentalType === 3)) ||
       (rentalType === 'lease' && (unit.rentalType === 2 || unit.rentalType === 3))
 
+    // Debug: Log first unit to check values
+    if (units.indexOf(unit) === 0) {
+      console.log('Filter Debug:', {
+        minPrice,
+        maxPrice,
+        unitPrice: unit.monthlyRent,
+        matchesMinPrice,
+        matchesMaxPrice,
+        rentalType: unit.rentalType
+      })
+    }
+
     return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesRentalType
   })
 
