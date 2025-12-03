@@ -1,3 +1,5 @@
+using RentCollection.Domain.Enums;
+
 namespace RentCollection.Application.DTOs.Units;
 
 public class UpdateUnitDto
@@ -10,4 +12,5 @@ public class UpdateUnitDto
     public string? Description { get; set; }
     public bool IsOccupied { get; set; }
     public bool IsActive { get; set; }
+    public RentalType RentalType { get; set; }
 }

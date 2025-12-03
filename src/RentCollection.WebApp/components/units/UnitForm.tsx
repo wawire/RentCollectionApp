@@ -23,6 +23,7 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
     bathrooms: initialData?.bathrooms || 1,
     squareFeet: initialData?.squareFeet || undefined,
     description: initialData?.description || '',
+    rentalType: initialData?.rentalType || 1,
     isOccupied: initialData?.isOccupied || false,
     isActive: initialData?.isActive !== undefined ? initialData.isActive : true,
   })
@@ -129,6 +130,19 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
           fullWidth
         />
       </div>
+
+      <Select
+        label="Rental Type"
+        value={formData.rentalType}
+        onChange={(e) => setFormData({ ...formData, rentalType: Number(e.target.value) })}
+        options={[
+          { value: 1, label: 'For Rent Only' },
+          { value: 2, label: 'For Lease Only' },
+          { value: 3, label: 'For Rent or Lease' }
+        ]}
+        required
+        fullWidth
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

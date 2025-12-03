@@ -10,6 +10,7 @@ export interface Unit {
   description?: string
   isOccupied: boolean
   isActive: boolean
+  rentalType: number
   currentTenantName?: string
   createdAt: string
 }
@@ -22,6 +23,7 @@ export interface CreateUnitDto {
   bathrooms: number
   squareFeet?: number
   description?: string
+  rentalType: number
 }
 
 export interface UpdateUnitDto {
@@ -33,4 +35,5 @@ export interface UpdateUnitDto {
   description?: string
   isOccupied: boolean
   isActive: boolean
+  rentalType: number
 }
