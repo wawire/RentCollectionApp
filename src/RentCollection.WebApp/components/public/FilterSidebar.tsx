@@ -54,12 +54,12 @@ export default function FilterSidebar(props: FilterSidebarProps) {
   ]
 
   const bedroomOptions = [
-    { value: '', label: 'Any' },
-    { value: 1, label: '1' },
-    { value: 2, label: '2' },
-    { value: 3, label: '3' },
-    { value: 4, label: '4' },
-    { value: 5, label: '5+' },
+    { value: '', label: 'Any Bedrooms' },
+    { value: 1, label: '1 Bedroom' },
+    { value: 2, label: '2 Bedrooms' },
+    { value: 3, label: '3 Bedrooms' },
+    { value: 4, label: '4 Bedrooms' },
+    { value: 5, label: '5+ Bedrooms' },
   ]
 
   const toggleAmenity = (amenityId: string) => {
@@ -203,19 +203,19 @@ export default function FilterSidebar(props: FilterSidebarProps) {
           <label className="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wide">
             Bedrooms
           </label>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="space-y-2.5">
             {bedroomOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setBedrooms(option.value as any)}
-                className={`p-2.5 rounded-md font-semibold text-sm transition-all ${
-                  bedrooms === option.value
-                    ? 'bg-primary-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
-                }`}
-              >
-                {option.label}
-              </button>
+              <label key={option.value} className="flex items-center cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={bedrooms === option.value}
+                  onChange={() => setBedrooms(option.value as any)}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+                  {option.label}
+                </span>
+              </label>
             ))}
           </div>
         </div>
