@@ -140,7 +140,7 @@ export default function PublicLandingPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
             {filteredUnits.map((unit) => (
               <Link
                 key={unit.id}
@@ -148,7 +148,7 @@ export default function PublicLandingPage() {
                 className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
               >
                 {/* Image Placeholder */}
-                <div className="relative aspect-square overflow-hidden bg-gray-200">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
                     <span className="text-white text-2xl font-bold opacity-20">
                       {unit.bedrooms}BR
