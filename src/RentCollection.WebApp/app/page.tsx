@@ -211,64 +211,166 @@ export default function PublicLandingPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
-            {filteredUnits.map((unit) => (
-              <Link
-                key={unit.id}
-                href={`/units/${unit.id}/apply`}
-                className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-secondary/30 hover:border-accent/20"
-              >
-                {/* Image Placeholder */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-secondary/30">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 flex items-center justify-center">
-                    <span className="text-primary/10 text-4xl font-display font-normal tracking-wider">
-                      {unit.bedrooms}BR
-                    </span>
-                  </div>
-                  <button className="absolute top-3 right-3 p-2 bg-white/95 rounded-full hover:bg-white transition-colors">
-                    <Heart className="text-primary/40 hover:text-accent transition-colors" size={15} />
-                  </button>
-                  <div className="absolute bottom-3 left-3">
-                    <span className="bg-white/95 px-2.5 py-1 rounded text-[10px] font-medium text-primary tracking-wider">
-                      {unit.unitNumber}
-                    </span>
-                  </div>
-                </div>
+          <div className="space-y-12">
+            {/* Chunk properties into groups of 12 */}
+            {Array.from({ length: Math.ceil(filteredUnits.length / 12) }).map((_, chunkIndex) => {
+              const startIndex = chunkIndex * 12
+              const chunk = filteredUnits.slice(startIndex, startIndex + 12)
+              const ctaType = chunkIndex % 3 // Cycle through 3 CTA types
+              const showCTA = chunkIndex < Math.ceil(filteredUnits.length / 12) - 1 // Show CTA except after last chunk
 
-                {/* Property Details */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-serif font-medium text-primary group-hover:text-accent transition-colors text-sm leading-relaxed tracking-wide line-clamp-1 flex-1">
-                      {unit.propertyName}
-                    </h3>
-                    <div className="flex items-center text-[10px] ml-2 flex-shrink-0">
-                      <Star className="text-accent/80 mr-0.5 fill-accent/80" size={12} />
-                      <span className="font-normal text-primary/70">4.8</span>
-                    </div>
+              return (
+                <div key={`chunk-${chunkIndex}`}>
+                  {/* Property Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+                    {chunk.map((unit) => (
+                      <Link
+                        key={unit.id}
+                        href={`/units/${unit.id}/apply`}
+                        className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-secondary/30 hover:border-accent/20"
+                      >
+                        {/* Image Placeholder */}
+                        <div className="relative aspect-[4/3] overflow-hidden bg-secondary/30">
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 flex items-center justify-center">
+                            <span className="text-primary/10 text-4xl font-display font-normal tracking-wider">
+                              {unit.bedrooms}BR
+                            </span>
+                          </div>
+                          <button className="absolute top-3 right-3 p-2 bg-white/95 rounded-full hover:bg-white transition-colors">
+                            <Heart className="text-primary/40 hover:text-accent transition-colors" size={15} />
+                          </button>
+                          <div className="absolute bottom-3 left-3">
+                            <span className="bg-white/95 px-2.5 py-1 rounded text-[10px] font-medium text-primary tracking-wider">
+                              {unit.unitNumber}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Property Details */}
+                        <div className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <h3 className="font-serif font-medium text-primary group-hover:text-accent transition-colors text-sm leading-relaxed tracking-wide line-clamp-1 flex-1">
+                              {unit.propertyName}
+                            </h3>
+                            <div className="flex items-center text-[10px] ml-2 flex-shrink-0">
+                              <Star className="text-accent/80 mr-0.5 fill-accent/80" size={12} />
+                              <span className="font-normal text-primary/70">4.8</span>
+                            </div>
+                          </div>
+                          <p className="text-primary/50 text-[11px] mb-3 flex items-center line-clamp-1 leading-relaxed tracking-wide">
+                            <MapPin className="mr-1 text-primary/30 flex-shrink-0" size={11} />
+                            <span>{unit.propertyLocation || 'Nairobi, Kenya'}</span>
+                          </p>
+                          <div className="flex items-center gap-3 text-[11px] text-primary/50 mb-3 tracking-wide">
+                            <span className="flex items-center gap-1">
+                              <Bed className="text-primary/40" size={13} />
+                              <span className="font-normal">{unit.bedrooms}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Bath className="text-primary/40" size={13} />
+                              <span className="font-normal">{unit.bathrooms}</span>
+                            </span>
+                          </div>
+                          <div className="pt-3 border-t border-secondary/30">
+                            <p className="text-accent font-serif font-normal text-base tracking-wide leading-tight">
+                              KES {unit.monthlyRent.toLocaleString()}
+                            </p>
+                            <p className="text-[10px] text-primary/40 font-normal tracking-wider mt-0.5">per month</p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                  <p className="text-primary/50 text-[11px] mb-3 flex items-center line-clamp-1 leading-relaxed tracking-wide">
-                    <MapPin className="mr-1 text-primary/30 flex-shrink-0" size={11} />
-                    <span>{unit.propertyLocation || 'Nairobi, Kenya'}</span>
-                  </p>
-                  <div className="flex items-center gap-3 text-[11px] text-primary/50 mb-3 tracking-wide">
-                    <span className="flex items-center gap-1">
-                      <Bed className="text-primary/40" size={13} />
-                      <span className="font-normal">{unit.bedrooms}</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Bath className="text-primary/40" size={13} />
-                      <span className="font-normal">{unit.bathrooms}</span>
-                    </span>
-                  </div>
-                  <div className="pt-3 border-t border-secondary/30">
-                    <p className="text-accent font-serif font-normal text-base tracking-wide leading-tight">
-                      KES {unit.monthlyRent.toLocaleString()}
-                    </p>
-                    <p className="text-[10px] text-primary/40 font-normal tracking-wider mt-0.5">per month</p>
-                  </div>
+
+                  {/* CTA Section after chunk (except last one) */}
+                  {showCTA && (
+                    <>
+                      {ctaType === 0 && (
+                        <div className="mt-12 bg-gradient-to-br from-primary/5 to-accent/10 rounded-2xl p-8 border border-accent/20">
+                          <div className="max-w-2xl mx-auto text-center">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+                              <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                            </div>
+                            <h3 className="text-2xl font-serif font-medium text-primary mb-3 tracking-wide">
+                              Can't find what you're looking for?
+                            </h3>
+                            <p className="text-primary/70 mb-6 tracking-wide">
+                              Let us help you find your perfect home. Our team can show you properties that match your exact needs.
+                            </p>
+                            <Link
+                              href="/#contact"
+                              className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-600 text-primary font-medium rounded-full transition-all shadow-sm tracking-wide"
+                            >
+                              Contact Us
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+
+                      {ctaType === 1 && (
+                        <div className="mt-12 bg-white rounded-2xl p-8 border-2 border-accent/30 shadow-sm">
+                          <div className="max-w-2xl mx-auto text-center">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary flex items-center justify-center">
+                              <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                              </svg>
+                            </div>
+                            <h3 className="text-2xl font-serif font-medium text-primary mb-3 tracking-wide">
+                              Property Owner?
+                            </h3>
+                            <p className="text-primary/70 mb-6 tracking-wide">
+                              List your property with RentCollection and reach thousands of verified tenants. Zero listing fees.
+                            </p>
+                            <Link
+                              href="/#for-landlords"
+                              className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-full transition-all shadow-sm tracking-wide"
+                            >
+                              List Your Property
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+
+                      {ctaType === 2 && (
+                        <div className="mt-12 bg-gradient-to-r from-accent/10 to-primary/5 rounded-2xl p-8 border border-secondary/30">
+                          <div className="max-w-2xl mx-auto text-center">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white flex items-center justify-center shadow-sm">
+                              <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                              </svg>
+                            </div>
+                            <h3 className="text-2xl font-serif font-medium text-primary mb-3 tracking-wide">
+                              Get New Listings First
+                            </h3>
+                            <p className="text-primary/70 mb-6 tracking-wide">
+                              Subscribe to receive instant notifications when properties matching your preferences become available.
+                            </p>
+                            <div className="flex gap-2 max-w-md mx-auto">
+                              <input
+                                type="email"
+                                placeholder="Enter your email"
+                                className="flex-1 px-4 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none bg-transparent text-primary placeholder:text-primary/40 tracking-wide"
+                              />
+                              <button className="px-6 py-3 bg-accent hover:bg-accent-600 text-primary font-medium rounded-full transition-all shadow-sm tracking-wide whitespace-nowrap">
+                                Subscribe
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              </Link>
-            ))}
+              )
+            })}
           </div>
         )}
           </div>
