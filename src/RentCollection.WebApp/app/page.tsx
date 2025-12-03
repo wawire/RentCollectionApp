@@ -132,8 +132,8 @@ export default function PublicLandingPage() {
 
           {/* Properties Section */}
           <div className="container mx-auto px-6 py-8">
-            <div className="mb-6">
-              <h2 className="text-3xl font-serif font-medium text-primary tracking-wide leading-tight">
+            <div className="mb-8">
+              <h2 className="text-2xl font-serif font-normal text-primary tracking-wide leading-relaxed">
                 {filteredUnits.length > 0 ? `${filteredUnits.length} properties available` : 'Available Properties'}
               </h2>
             </div>
@@ -165,25 +165,25 @@ export default function PublicLandingPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
             {filteredUnits.map((unit) => (
               <Link
                 key={unit.id}
                 href={`/units/${unit.id}/apply`}
-                className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-secondary/50 hover:border-accent/30"
+                className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-secondary/30 hover:border-accent/20"
               >
                 {/* Image Placeholder */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-700 to-bg-dark flex items-center justify-center">
-                    <span className="text-accent text-3xl font-display font-bold opacity-20">
+                <div className="relative aspect-[4/3] overflow-hidden bg-secondary/30">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 flex items-center justify-center">
+                    <span className="text-primary/10 text-4xl font-display font-normal tracking-wider">
                       {unit.bedrooms}BR
                     </span>
                   </div>
-                  <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform shadow-md hover:bg-white">
-                    <Heart className="text-muted hover:text-accent transition-colors" size={16} />
+                  <button className="absolute top-3 right-3 p-2 bg-white/95 rounded-full hover:bg-white transition-colors">
+                    <Heart className="text-primary/40 hover:text-accent transition-colors" size={15} />
                   </button>
                   <div className="absolute bottom-3 left-3">
-                    <span className="bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold text-white shadow-lg tracking-wide">
+                    <span className="bg-white/95 px-2.5 py-1 rounded text-[10px] font-medium text-primary tracking-wider">
                       {unit.unitNumber}
                     </span>
                   </div>
@@ -192,33 +192,33 @@ export default function PublicLandingPage() {
                 {/* Property Details */}
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-serif font-medium text-primary group-hover:text-accent transition-colors text-base leading-snug tracking-wide line-clamp-1 flex-1">
+                    <h3 className="font-serif font-normal text-primary group-hover:text-accent transition-colors text-sm leading-relaxed tracking-wide line-clamp-1 flex-1">
                       {unit.propertyName}
                     </h3>
-                    <div className="flex items-center text-xs ml-2 flex-shrink-0">
-                      <Star className="text-accent mr-1 fill-accent" size={14} />
-                      <span className="font-semibold text-primary">4.8</span>
+                    <div className="flex items-center text-[10px] ml-2 flex-shrink-0">
+                      <Star className="text-accent/80 mr-0.5 fill-accent/80" size={12} />
+                      <span className="font-normal text-primary/70">4.8</span>
                     </div>
                   </div>
-                  <p className="text-muted text-xs mb-3 flex items-center line-clamp-1 leading-relaxed tracking-wide">
-                    <MapPin className="mr-1 text-muted/70 flex-shrink-0" size={12} />
+                  <p className="text-primary/50 text-[11px] mb-3 flex items-center line-clamp-1 leading-relaxed tracking-wide">
+                    <MapPin className="mr-1 text-primary/30 flex-shrink-0" size={11} />
                     <span>{unit.propertyLocation || 'Nairobi, Kenya'}</span>
                   </p>
-                  <div className="flex items-center gap-3 text-xs text-primary/70 mb-3 tracking-wide">
+                  <div className="flex items-center gap-3 text-[11px] text-primary/50 mb-3 tracking-wide">
                     <span className="flex items-center gap-1">
-                      <Bed className="text-muted" size={14} />
-                      <span className="font-medium">{unit.bedrooms}</span>
+                      <Bed className="text-primary/40" size={13} />
+                      <span className="font-normal">{unit.bedrooms}</span>
                     </span>
                     <span className="flex items-center gap-1">
-                      <Bath className="text-muted" size={14} />
-                      <span className="font-medium">{unit.bathrooms}</span>
+                      <Bath className="text-primary/40" size={13} />
+                      <span className="font-normal">{unit.bathrooms}</span>
                     </span>
                   </div>
-                  <div className="pt-3 border-t border-secondary/50">
-                    <p className="text-accent font-serif font-semibold text-xl tracking-wide leading-tight">
+                  <div className="pt-3 border-t border-secondary/30">
+                    <p className="text-accent font-serif font-normal text-base tracking-wide leading-tight">
                       KES {unit.monthlyRent.toLocaleString()}
                     </p>
-                    <p className="text-xs text-muted/80 font-normal tracking-wider mt-1 leading-relaxed">per month</p>
+                    <p className="text-[10px] text-primary/40 font-normal tracking-wider mt-0.5">per month</p>
                   </div>
                 </div>
               </Link>
