@@ -3,8 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Primary Palette */
+    --color-primary: #0B0B0D;        /* Charcoal Black - Headers, backgrounds */
+    --color-surface: #FFFFFF;         /* Pure White - Cards, content panels */
+    --color-accent: #D4AF37;          /* Matte Gold - CTAs, icons, highlights */
+    --color-muted: #BFC2C5;           /* Soft Grey - Borders, dividers, subtle text */
+
+    /* Secondary Palette */
+    --color-bg-light: #FAF7F2;        /* Ivory Tint - Light backgrounds */
+    --color-bg-dark: #000000;         /* Ultra Black - Dark hero sections */
+    --color-secondary: #DDE1E4;       /* Silver - Stats, filters, cards */
+
+    /* Semantic colors */
+    --color-success: #10b981;         /* Green for success states */
+    --color-warning: #f59e0b;         /* Orange for warnings */
+    --color-error: #ef4444;           /* Red for errors */
+    --color-info: #3b82f6;            /* Blue for info */
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-[var(--color-bg-light)] text-[var(--color-primary)];
+    font-family: var(--font-urw-classico), ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 }
 
