@@ -1,52 +1,45 @@
 // Font configuration for custom fonts
-// Place your font files in: public/fonts/
+// INSTRUCTIONS: Copy your font files to src/RentCollection.WebApp/public/fonts/
 //
-// For URWClassico family:
-//   - URWClassico-Regular.ttf (or .eot, .woff, .woff2)
-//   - URWClassico-Italic.ttf
-//   - URWClassico-Bold.ttf
-//   - URWClassico-BoldItalic.ttf
-//
-// For alternative fonts:
+// Required files:
 //   - URWClassico-Reg.eot
 //   - FenwickRg-Bold.eot
 //   - Edmondsans-Regular.eot
 
 import localFont from 'next/font/local'
 
-// Uncomment and configure after adding your font files to public/fonts/
-/*
+// URWClassico - Primary font for headers and elegant text
 export const urwClassico = localFont({
-  src: [
-    {
-      path: '../public/fonts/URWClassico-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/URWClassico-Italic.ttf',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '../public/fonts/URWClassico-Bold.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: '../public/fonts/URWClassico-BoldItalic.ttf',
-      weight: '700',
-      style: 'italic',
-    },
-  ],
+  src: '../public/fonts/URWClassico-Reg.eot',
   variable: '--font-urw-classico',
+  weight: '400',
+  style: 'normal',
   display: 'swap',
+  fallback: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
 })
-*/
 
-// Temporary fallback - using system fonts until custom fonts are added
-export const urwClassico = {
-  variable: '--font-urw-classico',
-  style: { fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }
-}
+// Fenwick - Bold display font for impact headings
+export const fenwick = localFont({
+  src: '../public/fonts/FenwickRg-Bold.eot',
+  variable: '--font-fenwick',
+  weight: '700',
+  style: 'normal',
+  display: 'swap',
+  fallback: ['Arial Black', 'sans-serif'],
+})
+
+// Edmondsans - Clean sans-serif for body text
+export const edmondsans = localFont({
+  src: '../public/fonts/Edmondsans-Regular.eot',
+  variable: '--font-edmondsans',
+  weight: '400',
+  style: 'normal',
+  display: 'swap',
+  fallback: ['system-ui', '-apple-system', 'sans-serif'],
+})
+
+// Font usage guide:
+// - urwClassico: Property names, prices, elegant headers
+// - fenwick: Large hero headings, impact statements
+// - edmondsans: Body text, descriptions, UI elements
 

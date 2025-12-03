@@ -24,7 +24,11 @@
 
   body {
     @apply bg-[var(--color-bg-light)] text-[var(--color-primary)];
-    font-family: var(--font-urw-classico), ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: var(--font-edmondsans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-urw-classico), Georgia, Cambria, serif;
   }
 }
 
