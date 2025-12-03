@@ -18,6 +18,7 @@ export default function PublicLandingPage() {
   const [propertyType, setPropertyType] = useState<string>('all')
   const [rentalType, setRentalType] = useState<string>('all')
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
+  const [sortBy, setSortBy] = useState<string>('featured')
 
   const filteredUnits = units.filter((unit) => {
     const matchesSearch =
@@ -36,19 +37,24 @@ export default function PublicLandingPage() {
       (rentalType === 'rent' && (unit.rentalType === 1 || unit.rentalType === 3)) ||
       (rentalType === 'lease' && (unit.rentalType === 2 || unit.rentalType === 3))
 
-    // Debug: Log first unit to check values
-    if (units.indexOf(unit) === 0) {
-      console.log('Filter Debug:', {
-        minPrice,
-        maxPrice,
-        unitPrice: unit.monthlyRent,
-        matchesMinPrice,
-        matchesMaxPrice,
-        rentalType: unit.rentalType
-      })
-    }
-
     return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesRentalType
+  })
+
+  // Sort filtered units
+  const sortedUnits = [...filteredUnits].sort((a, b) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.monthlyRent - b.monthlyRent
+      case 'price-high':
+        return b.monthlyRent - a.monthlyRent
+      case 'bedrooms':
+        return b.bedrooms - a.bedrooms
+      case 'newest':
+        return (b.id || 0) - (a.id || 0) // Assuming higher ID = newer
+      case 'featured':
+      default:
+        return 0 // Keep original order
+    }
   })
 
   return (
@@ -151,31 +157,59 @@ export default function PublicLandingPage() {
         {/* Main Content */}
         <main className="flex-1 min-h-screen">
           {/* Search Bar Section */}
-          <div className="bg-white border-b border-gray-200 sticky top-16 z-10">
+          <div className="bg-white border-b border-secondary/20 sticky top-16 z-10">
             <div className="container mx-auto px-6 py-4">
               <div className="flex gap-3">
                 {/* Mobile Filter Button */}
                 <button
                   onClick={() => setMobileFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="lg:hidden flex items-center gap-2 px-4 py-2 border border-secondary/50 rounded-lg hover:bg-secondary/10 transition-colors"
                 >
-                  <Filter size={16} />
-                  <span>Filters</span>
+                  <Filter size={16} className="text-primary/60" />
+                  <span className="text-sm font-medium text-primary tracking-wide">Filters</span>
                 </button>
 
                 {/* Search Bar */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Search className="absolute left-0 bottom-3 text-primary/40" size={18} />
                   <input
                     type="text"
                     placeholder="Search by property name or location..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full pl-7 pr-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 tracking-wide"
                   />
                 </div>
               </div>
             </div>
+
+            {/* Filter Summary Bar */}
+            {!loading && !error && (
+              <div className="border-t border-secondary/20 py-3">
+                <div className="container mx-auto px-6 flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary/60 tracking-wide">
+                      Showing <strong className="text-primary font-medium">{filteredUnits.length}</strong> {filteredUnits.length === 1 ? 'property' : 'properties'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-primary/60 tracking-wide hidden sm:inline">Sort by:</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="border-b-2 border-secondary/30 focus:border-accent outline-none bg-transparent text-primary py-1 cursor-pointer text-sm font-medium tracking-wide"
+                    >
+                      <option value="featured">Featured</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="bedrooms">Most Bedrooms</option>
+                      <option value="newest">Newest First</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         {/* Properties Section */}
@@ -191,30 +225,43 @@ export default function PublicLandingPage() {
             <p className="text-gray-600 mt-2">Please try again later</p>
           </div>
         ) : filteredUnits.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-16 text-center">
-            <p className="text-gray-600 text-xl mb-4">No properties match your search</p>
-            <button
-              onClick={() => {
-                setSearchTerm('')
-                setMinPrice('')
-                setMaxPrice('')
-                setBedrooms('')
-                setPropertyType('all')
-                setRentalType('all')
-              }}
-              className="text-primary-600 font-semibold hover:underline text-lg"
-            >
-              Clear filters
-            </button>
+          <div className="col-span-full py-20">
+            <div className="max-w-md mx-auto text-center">
+              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-serif font-normal text-primary mb-3 tracking-wide">No Properties Found</h3>
+              <p className="text-primary/60 mb-8 tracking-wide leading-relaxed">
+                We couldn't find any properties matching your criteria. Try adjusting your filters or search terms.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchTerm('')
+                  setMinPrice('')
+                  setMaxPrice('')
+                  setBedrooms('')
+                  setPropertyType('all')
+                  setRentalType('all')
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-600 text-primary font-medium rounded-full transition-all shadow-sm tracking-wide"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Clear All Filters
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-12">
             {/* Chunk properties into groups of 12 */}
-            {Array.from({ length: Math.ceil(filteredUnits.length / 12) }).map((_, chunkIndex) => {
+            {Array.from({ length: Math.ceil(sortedUnits.length / 12) }).map((_, chunkIndex) => {
               const startIndex = chunkIndex * 12
-              const chunk = filteredUnits.slice(startIndex, startIndex + 12)
+              const chunk = sortedUnits.slice(startIndex, startIndex + 12)
               const ctaType = chunkIndex % 3 // Cycle through 3 CTA types
-              const showCTA = chunkIndex < Math.ceil(filteredUnits.length / 12) - 1 // Show CTA except after last chunk
+              const showCTA = chunkIndex < Math.ceil(sortedUnits.length / 12) - 1 // Show CTA except after last chunk
 
               return (
                 <div key={`chunk-${chunkIndex}`}>
@@ -233,7 +280,24 @@ export default function PublicLandingPage() {
                               {unit.bedrooms}BR
                             </span>
                           </div>
-                          <button className="absolute top-3 right-3 p-2 bg-white/95 rounded-full hover:bg-white transition-colors">
+
+                          {/* NEW Badge for recently added properties */}
+                          {unit.id && unit.id > units.length - 10 && (
+                            <div className="absolute top-3 left-3 z-10">
+                              <span className="bg-accent text-primary text-[10px] font-bold px-2 py-1 rounded shadow-sm tracking-wider">
+                                NEW
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Available Now Badge */}
+                          <div className="absolute top-3 left-3 z-10" style={{ marginTop: unit.id && unit.id > units.length - 10 ? '26px' : '0' }}>
+                            <span className="bg-white/95 text-primary/70 text-[10px] font-medium px-2 py-0.5 rounded tracking-wide">
+                              Available Now
+                            </span>
+                          </div>
+
+                          <button className="absolute top-3 right-3 p-2 bg-white/95 rounded-full hover:bg-white transition-colors z-10">
                             <Heart className="text-primary/40 hover:text-accent transition-colors" size={15} />
                           </button>
                           <div className="absolute bottom-3 left-3">

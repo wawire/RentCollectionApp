@@ -35,8 +35,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">RentCollection</h1>
-            <p className="text-secondary/80">Modern Property Management System</p>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">RentCollection</h1>
+            <p className="text-white/70 text-lg tracking-wide">Simplifying property management for modern landlords</p>
           </div>
 
           <div className="space-y-8">
@@ -48,8 +48,8 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Manage Properties</h3>
-                  <p className="text-sm text-secondary/70">Track all your properties, units, and tenants in one place</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Centralized Dashboard</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Monitor all properties, tenants, and payments from one intuitive dashboard</p>
                 </div>
               </div>
             </div>
@@ -62,8 +62,8 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">M-Pesa Integration</h3>
-                  <p className="text-sm text-secondary/70">Accept rent payments via M-Pesa with automatic reconciliation</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Instant Payment Tracking</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Real-time M-Pesa integration with automatic receipt generation</p>
                 </div>
               </div>
             </div>
@@ -72,12 +72,12 @@ export default function LoginPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">SMS Reminders</h3>
-                  <p className="text-sm text-secondary/70">Automated rent reminders and payment confirmations</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Smart Analytics</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Generate financial reports and track occupancy rates effortlessly</p>
                 </div>
               </div>
             </div>
@@ -93,15 +93,15 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="w-full max-w-md space-y-8">
           {/* Logo for mobile */}
-          <div className="lg:hidden text-center">
-            <h1 className="text-3xl font-bold text-gray-900">RentCollection</h1>
-            <p className="text-gray-600 mt-2">Property Management System</p>
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentCollection</h1>
+            <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Please sign in to your account
+            <h2 className="text-3xl font-serif font-normal text-primary mb-3 tracking-wide">Welcome Back</h2>
+            <p className="text-base text-primary/70 tracking-wide leading-relaxed">
+              Sign in to manage your properties, track payments, and connect with tenants.
             </p>
           </div>
 
@@ -205,15 +205,16 @@ export default function LoginPage() {
                   Signing in...
                 </span>
               ) : (
-                'Sign in'
+                'Sign In'
               )}
             </button>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Demo credentials:{' '}
-                <span className="font-medium text-gray-900">admin@rentcollection.com</span> /{' '}
-                <span className="font-medium text-gray-900">Admin@123</span>
+              <p className="text-sm text-primary/70 tracking-wide">
+                Don't have an account?{' '}
+                <Link href="/register" className="font-medium text-accent hover:text-accent-600 transition-colors">
+                  Create account
+                </Link>
               </p>
             </div>
           </form>

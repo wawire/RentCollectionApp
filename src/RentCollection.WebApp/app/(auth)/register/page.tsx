@@ -65,8 +65,8 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Welcome Tenants!</h1>
-            <p className="text-secondary/80">Access your rental account and manage payments</p>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Join RentCollection</h1>
+            <p className="text-white/70 text-lg tracking-wide">Discover your next home with Kenya's trusted rental platform</p>
           </div>
 
           <div className="space-y-6">
@@ -74,12 +74,12 @@ export default function RegisterPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Pay Rent Online</h3>
-                  <p className="text-sm text-secondary/70">Make secure payments from your phone via M-Pesa</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Browse Verified Listings</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Search hundreds of verified properties across Nairobi with instant booking</p>
                 </div>
               </div>
             </div>
@@ -88,12 +88,12 @@ export default function RegisterPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
                   <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Track Your Payments</h3>
-                  <p className="text-sm text-secondary/70">View payment history and get instant receipts</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Secure M-Pesa Payments</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Pay rent safely via M-Pesa with automatic receipts and payment tracking</p>
                 </div>
               </div>
             </div>
@@ -102,12 +102,12 @@ export default function RegisterPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Submit Requests</h3>
-                  <p className="text-sm text-secondary/70">Report maintenance issues directly to your landlord</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Direct Landlord Communication</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Message landlords, schedule viewings, and submit maintenance requests instantly</p>
                 </div>
               </div>
             </div>
@@ -123,17 +123,17 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-bg-light">
         <div className="w-full max-w-md space-y-8 py-12">
           {/* Logo for mobile */}
-          <div className="lg:hidden text-center">
-            <h1 className="text-3xl font-bold text-gray-900">RentCollection</h1>
-            <p className="text-gray-600 mt-2">Property Management System</p>
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentCollection</h1>
+            <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-primary">Create Tenant Account</h2>
-            <p className="mt-2 text-sm text-primary/70">
-              Register for tenant self-service portal
+            <h2 className="text-3xl font-serif font-normal text-primary mb-3 tracking-wide">Find Your Perfect Home</h2>
+            <p className="text-base text-primary/70 tracking-wide leading-relaxed mb-4">
+              Create your account to browse properties, book viewings, and manage your rental payments seamlessly.
             </p>
-            <p className="mt-1 text-sm text-primary/70">
+            <p className="text-sm text-primary/60 tracking-wide">
               Already have an account?{' '}
               <Link href="/login" className="font-medium text-accent hover:text-accent-600 transition-colors">
                 Sign in
@@ -325,10 +325,10 @@ export default function RegisterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating account...
+                  Creating your account...
                 </span>
               ) : (
-                'Create account'
+                'Get Started'
               )}
             </button>
 
