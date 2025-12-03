@@ -22,8 +22,8 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-        <p className="text-gray-600 mt-1">View and export detailed financial and operational reports</p>
+        <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Reports & Analytics</h1>
+        <p className="text-primary/60 mt-2 tracking-wide">View and export detailed financial and operational reports</p>
       </div>
 
       {/* Tabs */}

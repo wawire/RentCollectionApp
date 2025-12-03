@@ -119,8 +119,8 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Payments</h1>
-          <p className="text-gray-600 mt-1">Track and manage rent payments</p>
+          <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Payments</h1>
+          <p className="text-primary/60 mt-2 tracking-wide">Track and manage rent payments</p>
         </div>
         <Button variant="primary" onClick={() => router.push('/payments/new')}>
           <FaPlus className="mr-2" />
