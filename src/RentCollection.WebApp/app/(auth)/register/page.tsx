@@ -169,15 +169,15 @@ export default function RegisterPage() {
                     First Name
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiUser className="h-5 w-5 text-gray-400" />
+                    <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                      <FiUser className="h-5 w-5 text-primary/40" />
                     </div>
                     <input
                       id="firstName"
                       name="firstName"
                       type="text"
                       required
-                      className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                      className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleChange}
@@ -190,15 +190,15 @@ export default function RegisterPage() {
                     Last Name
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiUser className="h-5 w-5 text-gray-400" />
+                    <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                      <FiUser className="h-5 w-5 text-primary/40" />
                     </div>
                     <input
                       id="lastName"
                       name="lastName"
                       type="text"
                       required
-                      className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                      className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleChange}
@@ -212,15 +212,15 @@ export default function RegisterPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiMail className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="email"
                     name="email"
                     type="email"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
@@ -233,15 +233,15 @@ export default function RegisterPage() {
                   Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiPhone className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiPhone className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="phoneNumber"
                     name="phoneNumber"
                     type="tel"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="+254712345678"
                     value={formData.phoneNumber}
                     onChange={handleChange}
@@ -254,28 +254,28 @@ export default function RegisterPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiLock className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-10 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="Enter password"
                     value={formData.password}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-0 bottom-2.5 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     )}
                   </button>
                 </div>
@@ -286,28 +286,28 @@ export default function RegisterPage() {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiLock className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 border border-muted rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-10 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-0 bottom-2.5 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     )}
                   </button>
                 </div>

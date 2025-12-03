@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MapPin, X, ChevronDown, ChevronUp, Home, Building2, DoorOpen, Wifi, Car, Zap, Droplets, Wind, Flame, Shield } from 'lucide-react'
+import { MapPin, X, ChevronDown, ChevronUp, Wifi, Car, Zap, Droplets, Wind, Flame, Shield } from 'lucide-react'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 
@@ -36,7 +36,6 @@ export default function FilterSidebar(props: FilterSidebarProps) {
   // Section collapse states
   const [priceOpen, setPriceOpen] = useState(true)
   const [bedroomsOpen, setBedroomsOpen] = useState(true)
-  const [propertyTypeOpen, setPropertyTypeOpen] = useState(true)
   const [amenitiesOpen, setAmenitiesOpen] = useState(false)
   const [rentalTypeOpen, setRentalTypeOpen] = useState(true)
 
@@ -68,13 +67,6 @@ export default function FilterSidebar(props: FilterSidebarProps) {
   }
 
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-
-  const propertyTypes = [
-    { id: 'all', label: 'All Properties', icon: Home },
-    { id: 'apartment', label: 'Apartments', icon: Building2 },
-    { id: 'house', label: 'Houses', icon: Home },
-    { id: 'studio', label: 'Studios', icon: DoorOpen },
-  ]
 
   const amenities = [
     { id: 'wifi', label: 'WiFi', icon: Wifi },
@@ -153,13 +145,12 @@ export default function FilterSidebar(props: FilterSidebarProps) {
   }
 
   const hasActiveFilters = searchTerm || minPrice || maxPrice || bedrooms ||
-    propertyType !== 'all' || selectedAmenities.length > 0 || rentalType !== 'all'
+    selectedAmenities.length > 0 || rentalType !== 'all'
 
   const activeFilterCount =
     (searchTerm ? 1 : 0) +
     (minPrice || maxPrice ? 1 : 0) +
     (bedrooms ? 1 : 0) +
-    (propertyType !== 'all' ? 1 : 0) +
     selectedAmenities.length +
     (rentalType !== 'all' ? 1 : 0)
 
@@ -246,15 +237,6 @@ export default function FilterSidebar(props: FilterSidebarProps) {
                     <X size={12} />
                   </button>
                 )}
-                {propertyType !== 'all' && (
-                  <button
-                    onClick={() => removeFilter('propertyType')}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-medium hover:bg-primary-100 transition-colors"
-                  >
-                    <span>{propertyTypes.find(t => t.id === propertyType)?.label}</span>
-                    <X size={12} />
-                  </button>
-                )}
                 {rentalType !== 'all' && (
                   <button
                     onClick={() => removeFilter('rentalType')}
@@ -270,17 +252,17 @@ export default function FilterSidebar(props: FilterSidebarProps) {
 
           {/* Location Search */}
           <div className="mb-6">
-            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+            <label className="block text-xs font-bold text-primary/70 mb-3 uppercase tracking-wide">
               Location
             </label>
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <MapPin className="absolute left-0 bottom-3 text-primary/40" size={18} />
               <input
                 type="text"
                 placeholder="Search location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full pl-7 pr-2 py-2 text-sm border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
               />
             </div>
           </div>
@@ -385,44 +367,16 @@ export default function FilterSidebar(props: FilterSidebarProps) {
                     name="rentalType"
                     checked={rentalType === type.id}
                     onChange={() => setRentalType(type.id)}
-                    className="mt-0.5 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                    className="mt-0.5 h-4 w-4 text-accent focus:ring-accent border-gray-300"
                   />
                   <div className="ml-3">
-                    <span className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
+                    <span className="text-sm font-medium text-primary group-hover:text-accent transition-colors tracking-wide">
                       {type.label}
                     </span>
-                    <p className="text-xs text-gray-500 mt-0.5">{type.description}</p>
+                    <p className="text-xs text-primary/50 mt-0.5">{type.description}</p>
                   </div>
                 </label>
               ))}
-            </div>
-          </FilterSection>
-
-          {/* Property Type */}
-          <FilterSection
-            title="Property Type"
-            isOpen={propertyTypeOpen}
-            toggle={() => setPropertyTypeOpen(!propertyTypeOpen)}
-            count={propertyType !== 'all' ? 1 : 0}
-          >
-            <div className="grid grid-cols-2 gap-2">
-              {propertyTypes.map((type) => {
-                const Icon = type.icon
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => setPropertyType(type.id)}
-                    className={`flex flex-col items-center p-3 rounded-lg transition-all ${
-                      propertyType === type.id
-                        ? 'bg-primary-600 text-white shadow-md'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-                    }`}
-                  >
-                    <Icon size={22} className="mb-1.5" />
-                    <span className="text-xs font-medium">{type.label}</span>
-                  </button>
-                )
-              })}
             </div>
           </FilterSection>
 
