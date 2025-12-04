@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace RentCollection.Application.Services.Implementations;
+namespace RentCollection.Infrastructure.Services;
 
 /// <summary>
 /// Service for M-Pesa Daraja API integration

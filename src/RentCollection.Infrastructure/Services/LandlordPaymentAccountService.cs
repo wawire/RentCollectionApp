@@ -7,7 +7,7 @@ using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Infrastructure.Data;
 
-namespace RentCollection.Application.Services.Implementations;
+namespace RentCollection.Infrastructure.Services;
 
 public class LandlordPaymentAccountService : ILandlordPaymentAccountService
 {
