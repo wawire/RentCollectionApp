@@ -9,7 +9,7 @@ using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
 using RentCollection.Infrastructure.Data;
 
-namespace RentCollection.Application.Services.Implementations;
+namespace RentCollection.Infrastructure.Services;
 
 public class PaymentService : IPaymentService
 {

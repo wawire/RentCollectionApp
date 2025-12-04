@@ -37,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<ISmsService, AfricasTalkingSmsService>();
         services.AddScoped<IPdfService, PdfGenerationService>();
         services.AddScoped<IPublicListingService, PublicListingService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ILandlordPaymentAccountService, LandlordPaymentAccountService>();
+        services.AddScoped<IMPesaService, MPesaService>();
 
         return services;
     }
