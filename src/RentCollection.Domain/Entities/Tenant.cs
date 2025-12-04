@@ -43,6 +43,9 @@ public class Tenant : BaseEntity
 
     public string? Notes { get; set; }
 
+    // Computed properties
+    public string FullName => $"{FirstName} {LastName}".Trim();
+
     // Navigation properties
     public Unit Unit { get; set; } = null!;
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();

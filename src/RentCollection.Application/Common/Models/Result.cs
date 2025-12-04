@@ -6,6 +6,11 @@ public class Result
     public string? Message { get; set; }
     public List<string> Errors { get; set; } = new();
 
+    /// <summary>
+    /// Convenience property to get the first error message or the general message
+    /// </summary>
+    public string ErrorMessage => Errors.FirstOrDefault() ?? Message ?? "An error occurred";
+
     public static Result Success(string? message = null) => new()
     {
         IsSuccess = true,
