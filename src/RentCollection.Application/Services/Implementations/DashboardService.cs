@@ -44,16 +44,16 @@ public class DashboardService : IDashboardService
             // Filter data by LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    properties = properties.Where(p => p.LandlordId == landlordId).ToList();
-                    units = units.Where(u => u.Property?.LandlordId == landlordId).ToList();
-                    tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
-                    activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                    properties = properties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                    units = units.Where(u => u.Property?.LandlordId == landlordId.Value).ToList();
+                    tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
                 }
             }
 
@@ -66,13 +66,13 @@ public class DashboardService : IDashboardService
             var currentMonthPayments = allPayments;
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                    currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
                 }
             }
 
@@ -131,13 +131,13 @@ public class DashboardService : IDashboardService
                 var monthlyPayments = allMonthlyPayments;
                 if (!_currentUserService.IsSystemAdmin)
                 {
-                    var landlordIdStr = _currentUserService.IsLandlord
-                        ? _currentUserService.UserId
-                        : _currentUserService.LandlordId;
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserIdInt
+                        : _currentUserService.LandlordIdInt;
 
-                    if (int.TryParse(landlordIdStr, out var landlordId))
+                    if (landlordId.HasValue)
                     {
-                        monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                        monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
                     }
                 }
 
@@ -148,13 +148,13 @@ public class DashboardService : IDashboardService
                 var activeTenants = allActiveTenants;
                 if (!_currentUserService.IsSystemAdmin)
                 {
-                    var landlordIdStr = _currentUserService.IsLandlord
-                        ? _currentUserService.UserId
-                        : _currentUserService.LandlordId;
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserIdInt
+                        : _currentUserService.LandlordIdInt;
 
-                    if (int.TryParse(landlordIdStr, out var landlordId))
+                    if (landlordId.HasValue)
                     {
-                        activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                        activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
                     }
                 }
 
