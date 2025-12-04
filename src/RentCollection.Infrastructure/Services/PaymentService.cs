@@ -45,13 +45,13 @@ public class PaymentService : IPaymentService
             // Filter payments by tenant's unit's property's LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    payments = payments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                    payments = payments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
                 }
             }
 
@@ -79,13 +79,13 @@ public class PaymentService : IPaymentService
             // Check access permission to the tenant's unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (tenant.Unit?.Property?.LandlordId != landlordId)
+                    if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
                     {
                         return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
                     }
@@ -118,13 +118,13 @@ public class PaymentService : IPaymentService
             // Check access permission via tenant's unit's property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId)
+                    if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId.Value)
                     {
                         return Result<PaymentDto>.Failure("You do not have permission to access this payment");
                     }
@@ -155,13 +155,13 @@ public class PaymentService : IPaymentService
             // Check access permission - user must have access to the tenant's unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (tenant.Unit?.Property?.LandlordId != landlordId)
+                    if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
                     {
                         return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
                     }
@@ -231,11 +231,11 @@ public class PaymentService : IPaymentService
 
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.UserId; // Must be landlord at this point
+                var landlordId = _currentUserService.UserIdInt; // Must be landlord at this point
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId)
+                    if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId.Value)
                     {
                         return Result.Failure("You do not have permission to delete this payment");
                     }
@@ -270,13 +270,13 @@ public class PaymentService : IPaymentService
             // Filter payments by tenant's unit's property's LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                var landlordId = _currentUserService.IsLandlord
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    allPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                    allPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
                 }
             }
 
