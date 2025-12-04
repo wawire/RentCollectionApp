@@ -54,8 +54,8 @@ export default function TenantsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Tenants</h1>
-          <p className="text-gray-600 mt-1">Manage tenant information and leases</p>
+          <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Tenants</h1>
+          <p className="text-primary/60 mt-2 tracking-wide">Manage tenant information and leases</p>
         </div>
         <Link href="/tenants/new">
           <Button variant="primary">

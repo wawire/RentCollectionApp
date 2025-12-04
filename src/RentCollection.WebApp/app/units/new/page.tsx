@@ -29,13 +29,13 @@ function NewUnitContent() {
       <div>
         <Link
           href="/units"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
           <FaArrowLeft className="mr-2" />
           Back to Units
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Unit</h1>
-        <p className="text-gray-600 mt-1">Create a new rental unit</p>
+        <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Add New Unit</h1>
+        <p className="text-primary/60 mt-2 tracking-wide">Create a new rental unit</p>
       </div>
 
       {/* Form */}

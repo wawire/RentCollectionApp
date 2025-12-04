@@ -31,13 +31,22 @@ export default function PublicLandingPage() {
     const matchesMaxPrice = maxPrice === '' || unit.monthlyRent <= maxPrice
     const matchesBedrooms = bedrooms === '' || unit.bedrooms === bedrooms
 
+    // Property type filtering
+    // TODO: Backend needs to add propertyType field to units table
+    // For now, attempt to infer from bedrooms and property name
+    const matchesPropertyType =
+      propertyType === 'all' ||
+      (propertyType === 'studio' && unit.bedrooms <= 1) ||
+      (propertyType === 'apartment' && unit.bedrooms > 1 && unit.bedrooms <= 3) ||
+      (propertyType === 'house' && (unit.bedrooms > 3 || unit.propertyName?.toLowerCase().includes('house')))
+
     // Rental type filtering (1=Rent, 2=Lease, 3=Both)
     const matchesRentalType =
       rentalType === 'all' ||
       (rentalType === 'rent' && (unit.rentalType === 1 || unit.rentalType === 3)) ||
       (rentalType === 'lease' && (unit.rentalType === 2 || unit.rentalType === 3))
 
-    return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesRentalType
+    return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesPropertyType && matchesRentalType
   })
 
   // Sort filtered units
@@ -60,54 +69,6 @@ export default function PublicLandingPage() {
   return (
     <div className="min-h-screen bg-bg-light">
       <Navbar />
-
-      {/* Property Type Horizontal Bar */}
-      <div className="bg-white border-b border-secondary/30 sticky top-0 z-20">
-        <div className="container mx-auto px-6 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setPropertyType('all')}
-              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                propertyType === 'all'
-                  ? 'bg-accent text-primary shadow-sm'
-                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-              }`}
-            >
-              All Properties
-            </button>
-            <button
-              onClick={() => setPropertyType('apartment')}
-              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                propertyType === 'apartment'
-                  ? 'bg-accent text-primary shadow-sm'
-                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-              }`}
-            >
-              Apartments
-            </button>
-            <button
-              onClick={() => setPropertyType('house')}
-              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                propertyType === 'house'
-                  ? 'bg-accent text-primary shadow-sm'
-                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-              }`}
-            >
-              Houses
-            </button>
-            <button
-              onClick={() => setPropertyType('studio')}
-              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                propertyType === 'studio'
-                  ? 'bg-accent text-primary shadow-sm'
-                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
-              }`}
-            >
-              Studio
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Main Container with Sidebar */}
       <div className="flex">
@@ -186,26 +147,44 @@ export default function PublicLandingPage() {
             {/* Filter Summary Bar */}
             {!loading && !error && (
               <div className="border-t border-secondary/20 py-3">
-                <div className="container mx-auto px-6 flex items-center justify-between text-sm">
+                <div className="container mx-auto px-6 flex items-center justify-between text-sm flex-wrap gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-primary/60 tracking-wide">
                       Showing <strong className="text-primary font-medium">{filteredUnits.length}</strong> {filteredUnits.length === 1 ? 'property' : 'properties'}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-primary/60 tracking-wide hidden sm:inline">Sort by:</span>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="border-b-2 border-secondary/30 focus:border-accent outline-none bg-transparent text-primary py-1 cursor-pointer text-sm font-medium tracking-wide"
-                    >
-                      <option value="featured">Featured</option>
-                      <option value="price-low">Price: Low to High</option>
-                      <option value="price-high">Price: High to Low</option>
-                      <option value="bedrooms">Most Bedrooms</option>
-                      <option value="newest">Newest First</option>
-                    </select>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {/* Property Type Filter */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-primary/60 tracking-wide text-xs">Type:</span>
+                      <select
+                        value={propertyType}
+                        onChange={(e) => setPropertyType(e.target.value)}
+                        className="border-b-2 border-secondary/30 focus:border-accent outline-none bg-transparent text-primary py-1 cursor-pointer text-sm font-medium tracking-wide"
+                      >
+                        <option value="all">All Properties</option>
+                        <option value="apartment">Apartments</option>
+                        <option value="house">Houses</option>
+                        <option value="studio">Studios</option>
+                      </select>
+                    </div>
+
+                    {/* Sort Dropdown */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-primary/60 tracking-wide text-xs hidden sm:inline">Sort:</span>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="border-b-2 border-secondary/30 focus:border-accent outline-none bg-transparent text-primary py-1 cursor-pointer text-sm font-medium tracking-wide"
+                      >
+                        <option value="featured">Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="bedrooms">Most Bedrooms</option>
+                        <option value="newest">Newest First</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>

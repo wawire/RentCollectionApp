@@ -133,4 +133,78 @@ public class PaymentsController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Get pending payments awaiting confirmation (Landlord/Caretaker only)
+    /// </summary>
+    /// <param name="propertyId">Optional property filter</param>
+    /// <returns>List of pending payments</returns>
+    [HttpGet("pending")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPendingPayments([FromQuery] int? propertyId = null)
+    {
+        // Get current user ID (would come from authentication context)
+        // For now, assuming landlordId is passed or derived from auth
+        var landlordId = 1; // TODO: Get from authenticated user context
+
+        var result = await _paymentService.GetPendingPaymentsAsync(landlordId, propertyId);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Confirm a payment (Landlord/Caretaker only)
+    /// </summary>
+    /// <param name="id">Payment ID</param>
+    /// <returns>Updated payment</returns>
+    [HttpPut("{id}/confirm")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmPayment(int id)
+    {
+        // Get current user ID from authentication context
+        var confirmedByUserId = 1; // TODO: Get from authenticated user
+
+        var result = await _paymentService.ConfirmPaymentAsync(id, confirmedByUserId);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Reject a payment (Landlord/Caretaker only)
+    /// </summary>
+    /// <param name="id">Payment ID</param>
+    /// <param name="request">Rejection request with reason</param>
+    /// <returns>Updated payment</returns>
+    [HttpPut("{id}/reject")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RejectPayment(int id, [FromBody] RejectPaymentRequest request)
+    {
+        var result = await _paymentService.RejectPaymentAsync(id, request.Reason);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+}
+
+/// <summary>
+/// Request model for rejecting a payment
+/// </summary>
+public class RejectPaymentRequest
+{
+    public string Reason { get; set; } = string.Empty;
 }

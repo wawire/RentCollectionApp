@@ -64,10 +64,10 @@ export default function Home() {
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div className="container mx-auto px-6 py-20">
           <div className="max-w-3xl">
-            <h1 className="text-5xl font-bold mb-4">
-              Welcome to RentPro
+            <h1 className="text-5xl font-serif font-normal mb-4 tracking-wide">
+              Welcome to RentCollection
             </h1>
-            <p className="text-xl text-primary-100 mb-8">
+            <p className="text-xl text-primary-100 mb-8 tracking-wide">
               A comprehensive property management system to streamline your rental business.
               Manage properties, tenants, and payments all in one place.
             </p>

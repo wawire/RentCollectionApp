@@ -22,6 +22,11 @@ public static class DependencyInjection
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ILandlordPaymentAccountService, LandlordPaymentAccountService>();
+        services.AddScoped<IMPesaService, MPesaService>();
+
+        // Register HttpClient for M-Pesa API
+        services.AddHttpClient();
 
         return services;
     }

@@ -17,10 +17,11 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, options, placeholder, fullWidth = false, className = '', ...props }, ref) => {
     const selectClasses = `
-      w-full px-3 py-2 border rounded-lg
-      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+      w-full px-2 py-3 border-b-2
+      focus:outline-none focus:border-accent outline-none
       disabled:bg-gray-100 disabled:cursor-not-allowed
-      ${error ? 'border-red-500' : 'border-gray-300'}
+      bg-transparent text-primary transition-colors cursor-pointer
+      ${error ? 'border-red-500' : 'border-secondary/30'}
       ${className}
     `
 

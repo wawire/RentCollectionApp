@@ -16,7 +16,15 @@ public class Unit : BaseEntity
     public bool IsActive { get; set; } = true;
     public RentalType RentalType { get; set; } = RentalType.Rent;
 
+    /// <summary>
+    /// Payment account number for this unit (used in M-Pesa Paybill as Account Number)
+    /// Example: "A101", "SUN-A101", etc.
+    /// This is the account number tenants use when paying via M-Pesa Paybill
+    /// </summary>
+    public string? PaymentAccountNumber { get; set; }
+
     // Navigation properties
     public Property Property { get; set; } = null!;
     public ICollection<Tenant> Tenants { get; set; } = new List<Tenant>();
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

@@ -77,6 +77,26 @@ public class TenantsController : ControllerBase
     }
 
     /// <summary>
+    /// Get all tenants in occupied units (active tenants only)
+    /// </summary>
+    /// <returns>List of active tenants in occupied units</returns>
+    [HttpGet("occupied")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetOccupiedTenants()
+    {
+        var result = await _tenantService.GetAllTenantsAsync();
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        // Filter to only active tenants (IsActive = true means tenant is currently occupying the unit)
+        var occupiedTenants = result.Data?.Where(t => t.IsActive).ToList();
+
+        return Ok(new { isSuccess = true, data = occupiedTenants });
+    }
+
+    /// <summary>
     /// Create a new tenant
     /// </summary>
     /// <param name="createDto">Tenant creation data</param>

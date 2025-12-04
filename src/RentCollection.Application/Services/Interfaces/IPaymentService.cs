@@ -11,4 +11,44 @@ public interface IPaymentService
     Task<Result<PaymentDto>> CreatePaymentAsync(CreatePaymentDto createDto);
     Task<Result> DeletePaymentAsync(int id);
     Task<Result<PaginatedList<PaymentDto>>> GetPaymentsPaginatedAsync(int pageNumber, int pageSize);
+
+    // New payment flow methods
+    /// <summary>
+    /// Get payment instructions for a tenant
+    /// </summary>
+    /// <param name="tenantId">Tenant ID</param>
+    /// <returns>Payment instructions</returns>
+    Task<Result<PaymentInstructionsDto>> GetPaymentInstructionsAsync(int tenantId);
+
+    /// <summary>
+    /// Record a payment made by a tenant
+    /// </summary>
+    /// <param name="tenantId">Tenant ID</param>
+    /// <param name="dto">Payment recording data</param>
+    /// <returns>Created payment</returns>
+    Task<Result<PaymentDto>> RecordTenantPaymentAsync(int tenantId, TenantRecordPaymentDto dto);
+
+    /// <summary>
+    /// Get pending payments awaiting landlord confirmation
+    /// </summary>
+    /// <param name="landlordId">Landlord ID</param>
+    /// <param name="propertyId">Optional property filter</param>
+    /// <returns>List of pending payments</returns>
+    Task<Result<IEnumerable<PaymentDto>>> GetPendingPaymentsAsync(int landlordId, int? propertyId = null);
+
+    /// <summary>
+    /// Confirm a payment (landlord action)
+    /// </summary>
+    /// <param name="paymentId">Payment ID</param>
+    /// <param name="confirmedByUserId">User ID of confirmer</param>
+    /// <returns>Updated payment</returns>
+    Task<Result<PaymentDto>> ConfirmPaymentAsync(int paymentId, int confirmedByUserId);
+
+    /// <summary>
+    /// Reject a payment (landlord action)
+    /// </summary>
+    /// <param name="paymentId">Payment ID</param>
+    /// <param name="reason">Reason for rejection</param>
+    /// <returns>Updated payment</returns>
+    Task<Result<PaymentDto>> RejectPaymentAsync(int paymentId, string reason);
 }
