@@ -2,18 +2,27 @@
 
 Modern property management system for landlords, caretakers, and tenants in Kenya. Built with .NET 8 and Next.js 15.
 
+## Features
+
+- Multi-property management with role-based access control
+- Payment tracking (M-Pesa, Bank Transfer, Cash)
+- Tenant payment portal with M-Pesa STK Push integration
+- Payment confirmation workflow for landlords
+- SMS notifications and reminders
+- PDF receipt generation
+- Financial reports and dashboards
+
 ## Quick Start
 
 ```bash
-# 1. Reset database and create migration
-./reset-database.sh   # Linux/Mac
-reset-database.bat    # Windows
+# Clone and navigate to the project
+cd RentCollectionApp
 
-# 2. Run backend API
+# Start backend API
 cd src/RentCollection.API
 dotnet run
 
-# 3. Run frontend (separate terminal)
+# Start frontend (in a new terminal)
 cd src/RentCollection.WebApp
 npm install
 npm run dev
@@ -30,53 +39,53 @@ Access the application:
 |------|-------|----------|
 | **System Admin** | admin@rentcollection.com | Admin@123 |
 | **Landlord** | landlord@example.com | Landlord@123 |
+| **Tenant** | peter.mwangi@gmail.com | Tenant@123 |
 | **Caretaker** | caretaker@example.com | Caretaker@123 |
-| **Accountant** | accountant@example.com | Accountant@123 |
-
-## Architecture
-
-Clean Architecture with DDD principles:
-
-```
-├── Domain/          # Entities, enums, interfaces
-├── Application/     # Business logic, DTOs, services
-├── Infrastructure/  # Data access, external services
-├── API/             # REST API endpoints
-└── WebApp/          # Next.js frontend
-```
 
 ## Tech Stack
 
-**Backend**: .NET 8, EF Core, SQL Server, JWT Auth
-**Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
-**Services**: M-Pesa integration, SMS (Africa's Talking), PDF generation
+**Backend**
+- .NET 8 with Clean Architecture + DDD
+- Entity Framework Core with SQL Server
+- JWT Authentication
+- M-Pesa Daraja API integration
+- SMS via Africa's Talking
 
-## Features
+**Frontend**
+- Next.js 15 with TypeScript
+- React 18
+- Tailwind CSS
+- Client-side auth with JWT
 
-- 🏢 Multi-property management
-- 👥 User roles: SystemAdmin, Landlord, Caretaker, Accountant, Tenant
-- 💰 Payment tracking (M-Pesa, Bank Transfer, Cash)
-- 📱 SMS notifications and reminders
-- 📊 Financial reports and dashboards
-- 📄 PDF receipt generation
-- 🔐 JWT authentication with role-based access control
+## User Roles
 
-## Development
+- **SystemAdmin**: Access to all properties across all landlords
+- **Landlord**: Manages their own properties, units, tenants, and payments
+- **Caretaker**: Manages a single assigned property
+- **Accountant**: Read-only access to financial reports
+- **Tenant**: View payment instructions and record payments
 
-```bash
-# Build solution
-dotnet build
+## Project Structure
 
-# Run tests
-dotnet test
-
-# Apply migrations
-cd src/RentCollection.API
-dotnet ef database update --project ../RentCollection.Infrastructure
+```
+├── src/
+│   ├── RentCollection.Domain/       # Entities, enums, interfaces
+│   ├── RentCollection.Application/  # Business logic, DTOs, services
+│   ├── RentCollection.Infrastructure/  # Data access, external services
+│   ├── RentCollection.API/          # REST API controllers
+│   └── RentCollection.WebApp/       # Next.js frontend
+└── docs/
+    ├── ARCHITECTURE.md              # System design and data models
+    ├── API.md                       # Complete API documentation
+    └── DEVELOPMENT.md               # Setup, testing, contributing
 ```
 
-See [SETUP.md](SETUP.md) for detailed setup instructions and user role documentation.
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) - System design, payment flows, database schema
+- [API Reference](docs/API.md) - Complete API endpoint documentation
+- [Development Guide](docs/DEVELOPMENT.md) - Setup instructions, testing, contributing
 
 ## License
 
-MIT License
+MIT
