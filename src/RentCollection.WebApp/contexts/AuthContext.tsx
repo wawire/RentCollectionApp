@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Redirect based on role
     if (authData.role === UserRole.Tenant) {
-      router.push('/tenant/dashboard')
+      router.push('/tenant-portal')
     } else {
       router.push('/dashboard')
     }
