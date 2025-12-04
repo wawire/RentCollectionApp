@@ -254,6 +254,9 @@ public class AuthService : IAuthService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+        // Determine LandlordId: for Landlords, it's their user ID
+        var landlordId = user.Role == UserRole.Landlord ? user.Id.ToString() : "";
+
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -265,6 +268,7 @@ public class AuthService : IAuthService
             new Claim("PhoneNumber", user.PhoneNumber),
             new Claim("PropertyId", user.PropertyId?.ToString() ?? ""),
             new Claim("TenantId", user.TenantId?.ToString() ?? ""),
+            new Claim("LandlordId", landlordId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
