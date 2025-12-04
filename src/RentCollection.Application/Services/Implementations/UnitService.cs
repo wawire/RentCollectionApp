@@ -43,9 +43,9 @@ public class UnitService : IUnitService
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    units = units.Where(u => u.Property?.LandlordId == landlordId).ToList();
+                    units = units.Where(u => u.Property?.LandlordId == landlordId.Value).ToList();
                 }
             }
 
@@ -77,9 +77,9 @@ public class UnitService : IUnitService
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (property.LandlordId != landlordId)
+                    if (property.LandlordId != landlordId.Value)
                     {
                         return Result<IEnumerable<UnitDto>>.Failure("You do not have permission to access units for this property");
                     }
@@ -116,9 +116,9 @@ public class UnitService : IUnitService
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (unit.Property?.LandlordId != landlordId)
+                    if (unit.Property?.LandlordId != landlordId.Value)
                     {
                         return Result<UnitDto>.Failure("You do not have permission to access this unit");
                     }
@@ -153,9 +153,9 @@ public class UnitService : IUnitService
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (property.LandlordId != landlordId)
+                    if (property.LandlordId != landlordId.Value)
                     {
                         return Result<UnitDto>.Failure("You do not have permission to create units for this property");
                     }
@@ -215,9 +215,9 @@ public class UnitService : IUnitService
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (existingUnit.Property?.LandlordId != landlordId)
+                    if (existingUnit.Property?.LandlordId != landlordId.Value)
                     {
                         return Result<UnitDto>.Failure("You do not have permission to update this unit");
                     }
@@ -276,11 +276,11 @@ public class UnitService : IUnitService
 
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.UserId; // Must be landlord at this point
+                var landlordId = _currentUserService.UserIdInt; // Must be landlord at this point
 
-                if (int.TryParse(landlordIdStr, out var landlordId))
+                if (landlordId.HasValue)
                 {
-                    if (unit.Property?.LandlordId != landlordId)
+                    if (unit.Property?.LandlordId != landlordId.Value)
                     {
                         return Result.Failure("You do not have permission to delete this unit");
                     }
