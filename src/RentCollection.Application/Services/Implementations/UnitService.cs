@@ -39,7 +39,7 @@ public class UnitService : IUnitService
             // Filter units by property's LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -73,7 +73,7 @@ public class UnitService : IUnitService
             // Check access permission to the property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -112,7 +112,7 @@ public class UnitService : IUnitService
             // Check access permission via property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -149,7 +149,7 @@ public class UnitService : IUnitService
             // Check access permission - user must have access to the property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -211,7 +211,7 @@ public class UnitService : IUnitService
             // Check access permission via property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 

@@ -48,7 +48,7 @@ public class TenantService : ITenantService
             // Filter tenants by unit's property's LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -82,7 +82,7 @@ public class TenantService : ITenantService
             // Check access permission to the unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -121,7 +121,7 @@ public class TenantService : ITenantService
             // Check access permission via unit's property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -158,7 +158,7 @@ public class TenantService : ITenantService
             // Check access permission - user must have access to the unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -229,7 +229,7 @@ public class TenantService : ITenantService
             // Check access permission via unit's property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -439,7 +439,7 @@ public class TenantService : ITenantService
             // Filter by landlord's properties
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
@@ -499,7 +499,7 @@ public class TenantService : ITenantService
             // Check access permission
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordIdStr = _currentUserService.IsLandlord
+                var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserId
                     : _currentUserService.LandlordId;
 
