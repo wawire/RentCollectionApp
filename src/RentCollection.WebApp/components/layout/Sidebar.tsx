@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { UserRole } from '@/lib/types/auth.types'
 import {
   FaHome,
   FaChartLine,
@@ -14,6 +15,8 @@ import {
   FaSms,
   FaCog,
   FaTimes,
+  FaWallet,
+  FaClipboardCheck,
 } from 'react-icons/fa'
 
 interface SidebarProps {
@@ -23,23 +26,34 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   // Don't show sidebar on login/register pages or if not authenticated
   if (pathname === '/login' || pathname === '/register' || !isAuthenticated) {
     return null
   }
 
-  const navItems = [
+  // Role-based navigation items
+  const isTenant = user?.role === UserRole.Tenant
+  const isLandlordOrAdmin = user?.role === UserRole.Landlord || user?.role === UserRole.SystemAdmin || user?.role === UserRole.Accountant || user?.role === UserRole.Caretaker
+
+  const tenantNavItems = [
+    { name: 'Tenant Portal', path: '/tenant-portal', icon: FaWallet },
+  ]
+
+  const landlordNavItems = [
     { name: 'Home', path: '/', icon: FaHome },
     { name: 'Dashboard', path: '/dashboard', icon: FaChartLine },
     { name: 'Properties', path: '/properties', icon: FaBuilding },
     { name: 'Units', path: '/units', icon: FaDoorOpen },
     { name: 'Tenants', path: '/tenants', icon: FaUsers },
     { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
+    { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
     { name: 'Reports', path: '/reports', icon: FaFileAlt },
     { name: 'SMS', path: '/notifications', icon: FaSms },
   ]
+
+  const navItems = isTenant ? tenantNavItems : landlordNavItems
 
   const isActive = (path: string) => {
     if (path === '/') {
