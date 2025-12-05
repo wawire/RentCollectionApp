@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from '@/components/common'
 import UnitForm from '@/components/units/UnitForm'
@@ -8,7 +9,7 @@ import { CreateUnitDto } from '@/lib/types'
 import Link from 'next/link'
 import { FaArrowLeft } from 'react-icons/fa'
 
-export default function NewUnitPage() {
+function NewUnitContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedPropertyId = searchParams.get('propertyId') ? Number(searchParams.get('propertyId')) : undefined
@@ -28,13 +29,13 @@ export default function NewUnitPage() {
       <div>
         <Link
           href="/units"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
           <FaArrowLeft className="mr-2" />
           Back to Units
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Unit</h1>
-        <p className="text-gray-600 mt-1">Create a new rental unit</p>
+        <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Add New Unit</h1>
+        <p className="text-primary/60 mt-2 tracking-wide">Create a new rental unit</p>
       </div>
 
       {/* Form */}
@@ -47,5 +48,13 @@ export default function NewUnitPage() {
         <UnitForm onSubmit={handleSubmit} loading={loading} preselectedPropertyId={preselectedPropertyId} />
       </Card>
     </div>
+  )
+}
+
+export default function NewUnitPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewUnitContent />
+    </Suspense>
   )
 }

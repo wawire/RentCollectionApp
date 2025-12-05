@@ -2,92 +2,113 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FaBars, FaTimes, FaUser } from 'react-icons/fa'
+import { FaBars, FaTimes } from 'react-icons/fa'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white border-b border-secondary/30 sticky top-0 z-50">
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <div className="text-primary-600 font-bold text-2xl">
-              RentPro
+            <div className="text-primary font-serif font-normal text-xl tracking-wide">
+              RentCollection
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/#properties" className="text-gray-700 hover:text-primary-600 font-medium transition-colors">
-              Browse Properties
+            <Link href="/" className="text-primary/70 hover:text-accent font-normal tracking-wide transition-colors text-sm">
+              Properties
             </Link>
-            <Link href="/#how-it-works" className="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+            <Link href="/#how-it-works" className="text-primary/70 hover:text-accent font-normal tracking-wide transition-colors text-sm">
               How It Works
             </Link>
-            <Link href="/#about" className="text-gray-700 hover:text-primary-600 font-medium transition-colors">
-              About Us
+            <Link href="/#for-landlords" className="text-primary/70 hover:text-accent font-normal tracking-wide transition-colors text-sm">
+              For Landlords
+            </Link>
+            <Link href="/#contact" className="text-primary/70 hover:text-accent font-normal tracking-wide transition-colors text-sm">
+              Contact
             </Link>
           </div>
 
-          {/* Right side - Login Button */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Right side - Login & Sign Up */}
+          <div className="hidden md:flex items-center space-x-3">
             <Link
               href="/login"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-gray-300 hover:shadow-md transition-all"
+              className="px-4 py-2 text-sm font-medium text-primary/70 hover:text-primary transition-colors tracking-wide"
             >
-              <FaBars className="text-gray-700" />
-              <FaUser className="text-gray-700" />
+              Login
+            </Link>
+            <Link
+              href="/register"
+              className="px-4 py-2 text-sm font-medium text-primary bg-accent hover:bg-accent-600 rounded-full transition-all tracking-wide shadow-sm"
+            >
+              Sign Up
             </Link>
           </div>
 
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-secondary/30 transition-colors"
           >
             {mobileMenuOpen ? (
-              <FaTimes className="text-2xl text-gray-700" />
+              <FaTimes className="text-xl text-primary" />
             ) : (
-              <FaBars className="text-2xl text-gray-700" />
+              <FaBars className="text-xl text-primary" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
-            <div className="flex flex-col space-y-4">
+          <div className="md:hidden py-4 border-t border-secondary/30">
+            <div className="flex flex-col space-y-3">
               <Link
-                href="/#properties"
-                className="text-gray-700 hover:text-primary-600 font-medium py-2"
+                href="/"
+                className="text-primary/70 hover:text-accent font-normal py-2 tracking-wide text-sm"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Browse Properties
+                Properties
               </Link>
               <Link
                 href="/#how-it-works"
-                className="text-gray-700 hover:text-primary-600 font-medium py-2"
+                className="text-primary/70 hover:text-accent font-normal py-2 tracking-wide text-sm"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 How It Works
               </Link>
               <Link
-                href="/#about"
-                className="text-gray-700 hover:text-primary-600 font-medium py-2"
+                href="/#for-landlords"
+                className="text-primary/70 hover:text-accent font-normal py-2 tracking-wide text-sm"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                About Us
+                For Landlords
               </Link>
-              <div className="border-t border-gray-200 pt-4">
+              <Link
+                href="/#contact"
+                className="text-primary/70 hover:text-accent font-normal py-2 tracking-wide text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              <div className="border-t border-secondary/30 pt-4 flex flex-col space-y-2">
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 font-medium py-2"
+                  className="text-primary/70 hover:text-accent font-normal py-2 tracking-wide text-sm"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <FaUser />
                   Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 text-sm font-medium text-primary bg-accent hover:bg-accent-600 rounded-full transition-all tracking-wide text-center shadow-sm"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign Up
                 </Link>
               </div>
             </div>

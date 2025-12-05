@@ -53,7 +53,7 @@ export default function TenantDetailPage() {
       <div>
         <Link
           href="/tenants"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
           <FaArrowLeft className="mr-2" />
           Back to Tenants
@@ -61,12 +61,12 @@ export default function TenantDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">{tenant.fullName}</h1>
+              <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">{tenant.fullName}</h1>
               <Badge variant={tenant.isActive ? 'success' : 'default'}>
                 {tenant.isActive ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <p className="text-gray-600 mt-1">{tenant.idNumber || 'No ID Number'}</p>
+            <p className="text-primary/60 mt-2 tracking-wide">{tenant.idNumber || 'No ID Number'}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={handleSendReminder} loading={sendingReminder}>

@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased font-sans">
         <AuthProvider>
           <MainLayout>{children}</MainLayout>
         </AuthProvider>

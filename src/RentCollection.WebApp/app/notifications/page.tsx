@@ -57,8 +57,8 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Notifications & SMS</h1>
-        <p className="text-gray-600 mt-1">Send messages and track communication with tenants</p>
+        <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Notifications & SMS</h1>
+        <p className="text-primary/60 mt-2 tracking-wide">Send messages and track communication with tenants</p>
       </div>
 
       {/* Tabs */}

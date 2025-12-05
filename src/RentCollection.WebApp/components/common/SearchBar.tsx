@@ -42,8 +42,8 @@ export default function SearchBar({
 
   return (
     <div className={`relative ${className}`}>
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <FaSearch className="text-gray-400" />
+      <div className="absolute left-0 bottom-3 pointer-events-none">
+        <FaSearch className="text-primary/40" />
       </div>
       <input
         type="text"
@@ -51,12 +51,12 @@ export default function SearchBar({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        className="w-full pl-7 pr-10 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
       />
       {value && (
         <button
           onClick={handleClear}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+          className="absolute right-0 bottom-3 flex items-center text-primary/40 hover:text-primary/60 transition-colors"
         >
           <FaTimes />
         </button>

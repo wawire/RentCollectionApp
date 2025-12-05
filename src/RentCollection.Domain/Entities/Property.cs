@@ -17,4 +17,6 @@ public class Property : BaseEntity
 
     // Navigation properties
     public ICollection<Unit> Units { get; set; } = new List<Unit>();
+    public ICollection<PropertyAmenity> PropertyAmenities { get; set; } = new List<PropertyAmenity>();
+    public ICollection<LandlordPaymentAccount> PaymentAccounts { get; set; } = new List<LandlordPaymentAccount>();
 }

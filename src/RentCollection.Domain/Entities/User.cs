@@ -43,6 +43,11 @@ public class User
     public ICollection<Property> OwnedProperties { get; set; } = new List<Property>();
 
     /// <summary>
+    /// For Landlord role - payment accounts they own
+    /// </summary>
+    public ICollection<LandlordPaymentAccount> PaymentAccounts { get; set; } = new List<LandlordPaymentAccount>();
+
+    /// <summary>
     /// Full name for display
     /// </summary>
     public string FullName => $"{FirstName} {LastName}";

@@ -31,12 +31,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Full width image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-bg-dark via-primary-800 to-primary-900">
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">RentCollection</h1>
-            <p className="text-blue-100">Modern Property Management System</p>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">RentCollection</h1>
+            <p className="text-white/70 text-lg tracking-wide">Simplifying property management for modern landlords</p>
           </div>
 
           <div className="space-y-8">
@@ -48,22 +48,22 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Manage Properties</h3>
-                  <p className="text-sm text-blue-100">Track all your properties, units, and tenants in one place</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Centralized Dashboard</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Monitor all properties, tenants, and payments from one intuitive dashboard</p>
                 </div>
               </div>
             </div>
 
             <div>
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
+                  <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">M-Pesa Integration</h3>
-                  <p className="text-sm text-blue-100">Accept rent payments via M-Pesa with automatic reconciliation</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Instant Payment Tracking</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Real-time M-Pesa integration with automatic receipt generation</p>
                 </div>
               </div>
             </div>
@@ -72,18 +72,18 @@ export default function LoginPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">SMS Reminders</h3>
-                  <p className="text-sm text-blue-100">Automated rent reminders and payment confirmations</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Smart Analytics</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Generate financial reports and track occupancy rates effortlessly</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-blue-100">
+          <div className="text-sm text-secondary/60">
             © 2024 RentCollection. Designed for Kenyan property managers.
           </div>
         </div>
@@ -93,15 +93,15 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="w-full max-w-md space-y-8">
           {/* Logo for mobile */}
-          <div className="lg:hidden text-center">
-            <h1 className="text-3xl font-bold text-gray-900">RentCollection</h1>
-            <p className="text-gray-600 mt-2">Property Management System</p>
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentCollection</h1>
+            <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Please sign in to your account
+            <h2 className="text-3xl font-serif font-normal text-primary mb-3 tracking-wide">Welcome Back</h2>
+            <p className="text-base text-primary/70 tracking-wide leading-relaxed">
+              Sign in to manage your properties, track payments, and connect with tenants.
             </p>
           </div>
 
@@ -122,15 +122,15 @@ export default function LoginPage() {
                   Email or Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-3 pointer-events-none">
+                    <FiMail className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="emailOrPhone"
                     name="emailOrPhone"
                     type="text"
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-7 pr-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
                     placeholder="admin@rentcollection.com or 0712345678"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
@@ -143,28 +143,28 @@ export default function LoginPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-3 pointer-events-none">
+                    <FiLock className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-7 pr-10 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-0 bottom-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     )}
                   </button>
                 </div>
@@ -177,15 +177,15 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-accent focus:ring-accent border-muted rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-primary">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                <a href="#" className="font-medium text-accent hover:text-accent-600 transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -194,7 +194,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-primary bg-accent hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all disabled:bg-accent/50 disabled:cursor-not-allowed shadow-sm"
             >
               {isLoading ? (
                 <span className="flex items-center">
@@ -205,15 +205,16 @@ export default function LoginPage() {
                   Signing in...
                 </span>
               ) : (
-                'Sign in'
+                'Sign In'
               )}
             </button>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Demo credentials:{' '}
-                <span className="font-medium text-gray-900">admin@rentcollection.com</span> /{' '}
-                <span className="font-medium text-gray-900">Admin@123</span>
+              <p className="text-sm text-primary/70 tracking-wide">
+                Don't have an account?{' '}
+                <Link href="/register" className="font-medium text-accent hover:text-accent-600 transition-colors">
+                  Create account
+                </Link>
               </p>
             </div>
           </form>

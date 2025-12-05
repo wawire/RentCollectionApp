@@ -38,7 +38,7 @@ export default function UnitDetailPage() {
       <div>
         <Link
           href="/units"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
           <FaArrowLeft className="mr-2" />
           Back to Units
@@ -46,7 +46,7 @@ export default function UnitDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">{unit.unitNumber}</h1>
+              <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">{unit.unitNumber}</h1>
               <Badge variant={unit.isOccupied ? 'success' : 'default'}>
                 {unit.isOccupied ? 'Occupied' : 'Vacant'}
               </Badge>
@@ -54,7 +54,7 @@ export default function UnitDetailPage() {
                 {unit.isActive ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <p className="text-gray-600 mt-1">{unit.propertyName}</p>
+            <p className="text-primary/60 mt-2 tracking-wide">{unit.propertyName}</p>
           </div>
           <Link href={`/units/${unit.id}/edit`}>
             <Button variant="secondary">

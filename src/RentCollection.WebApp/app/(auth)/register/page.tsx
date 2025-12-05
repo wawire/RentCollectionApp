@@ -61,12 +61,12 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Full width image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-bg-dark via-primary-800 to-primary-900">
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Welcome Tenants!</h1>
-            <p className="text-emerald-100">Access your rental account and manage payments</p>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Join RentCollection</h1>
+            <p className="text-white/70 text-lg tracking-wide">Discover your next home with Kenya's trusted rental platform</p>
           </div>
 
           <div className="space-y-6">
@@ -74,12 +74,26 @@ export default function RegisterPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Pay Rent Online</h3>
-                  <p className="text-sm text-emerald-100">Make secure payments from your phone via M-Pesa</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Browse Verified Listings</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Search hundreds of verified properties across Nairobi with instant booking</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
+                  <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Secure M-Pesa Payments</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Pay rent safely via M-Pesa with automatic receipts and payment tracking</p>
                 </div>
               </div>
             </div>
@@ -88,54 +102,40 @@ export default function RegisterPage() {
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Track Your Payments</h3>
-                  <p className="text-sm text-emerald-100">View payment history and get instant receipts</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-1">Submit Requests</h3>
-                  <p className="text-sm text-emerald-100">Report maintenance issues directly to your landlord</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Direct Landlord Communication</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Message landlords, schedule viewings, and submit maintenance requests instantly</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-emerald-100">
+          <div className="text-sm text-secondary/60">
             © 2024 RentCollection. Designed for Kenyan property managers.
           </div>
         </div>
       </div>
 
       {/* Right side - Registration form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-bg-light">
         <div className="w-full max-w-md space-y-8 py-12">
           {/* Logo for mobile */}
-          <div className="lg:hidden text-center">
-            <h1 className="text-3xl font-bold text-gray-900">RentCollection</h1>
-            <p className="text-gray-600 mt-2">Property Management System</p>
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentCollection</h1>
+            <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Create Tenant Account</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Register for tenant self-service portal
+            <h2 className="text-3xl font-serif font-normal text-primary mb-3 tracking-wide">Find Your Perfect Home</h2>
+            <p className="text-base text-primary/70 tracking-wide leading-relaxed mb-4">
+              Create your account to browse properties, book viewings, and manage your rental payments seamlessly.
             </p>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="text-sm text-primary/60 tracking-wide">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-500">
+              <Link href="/login" className="font-medium text-accent hover:text-accent-600 transition-colors">
                 Sign in
               </Link>
             </p>
@@ -169,15 +169,15 @@ export default function RegisterPage() {
                     First Name
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiUser className="h-5 w-5 text-gray-400" />
+                    <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                      <FiUser className="h-5 w-5 text-primary/40" />
                     </div>
                     <input
                       id="firstName"
                       name="firstName"
                       type="text"
                       required
-                      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                      className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleChange}
@@ -190,15 +190,15 @@ export default function RegisterPage() {
                     Last Name
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiUser className="h-5 w-5 text-gray-400" />
+                    <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                      <FiUser className="h-5 w-5 text-primary/40" />
                     </div>
                     <input
                       id="lastName"
                       name="lastName"
                       type="text"
                       required
-                      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                      className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleChange}
@@ -212,15 +212,15 @@ export default function RegisterPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiMail className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="email"
                     name="email"
                     type="email"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
@@ -233,15 +233,15 @@ export default function RegisterPage() {
                   Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiPhone className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiPhone className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="phoneNumber"
                     name="phoneNumber"
                     type="tel"
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="+254712345678"
                     value={formData.phoneNumber}
                     onChange={handleChange}
@@ -254,28 +254,28 @@ export default function RegisterPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiLock className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-10 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="Enter password"
                     value={formData.password}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-0 bottom-2.5 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     )}
                   </button>
                 </div>
@@ -286,28 +286,28 @@ export default function RegisterPage() {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
+                    <FiLock className="h-5 w-5 text-primary/40" />
                   </div>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+                    className="w-full pl-7 pr-10 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-0 bottom-2.5 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
                     )}
                   </button>
                 </div>
@@ -317,7 +317,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading || success}
-              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all disabled:bg-emerald-400 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-primary bg-accent hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all disabled:bg-accent/50 disabled:cursor-not-allowed shadow-sm"
             >
               {isLoading ? (
                 <span className="flex items-center">
@@ -325,10 +325,10 @@ export default function RegisterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating account...
+                  Creating your account...
                 </span>
               ) : (
-                'Create account'
+                'Get Started'
               )}
             </button>
 

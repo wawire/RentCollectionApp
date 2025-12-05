@@ -41,8 +41,8 @@ export default function PropertiesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-          <p className="text-gray-600 mt-1">Manage your rental properties</p>
+          <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Properties</h1>
+          <p className="text-primary/60 mt-2 tracking-wide">Manage your rental properties</p>
         </div>
         <Link href="/properties/new">
           <Button variant="primary">
@@ -64,20 +64,20 @@ export default function PropertiesPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode('grid')}
-            className={`px-4 py-2 rounded-lg border ${
+            className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
               viewMode === 'grid'
-                ? 'bg-primary-600 text-white border-primary-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'bg-accent text-primary shadow-sm'
+                : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
             }`}
           >
             Grid
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`px-4 py-2 rounded-lg border ${
+            className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
               viewMode === 'list'
-                ? 'bg-primary-600 text-white border-primary-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'bg-accent text-primary shadow-sm'
+                : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
             }`}
           >
             List

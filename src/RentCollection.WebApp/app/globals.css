@@ -2,9 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Fonts */
+@font-face {
+  font-family: 'URWClassico';
+  src: url('/fonts/URWClassico-Reg.eot');
+  src: url('/fonts/URWClassico-Reg.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fenwick';
+  src: url('/fonts/FenwickRg-Bold.eot');
+  src: url('/fonts/FenwickRg-Bold.eot?#iefix') format('embedded-opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Edmondsans';
+  src: url('/fonts/Edmondsans-Regular.eot');
+  src: url('/fonts/Edmondsans-Regular.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
+  :root {
+    /* Custom Fonts - Lean fallbacks for premium feel */
+    --font-urw-classico: 'URWClassico', 'Optima', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-fenwick: 'Fenwick', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-edmondsans: 'Edmondsans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+
+    /* Primary Palette */
+    --color-primary: #0B0B0D;        /* Charcoal Black - Headers, backgrounds */
+    --color-surface: #FFFFFF;         /* Pure White - Cards, content panels */
+    --color-accent: #D4AF37;          /* Matte Gold - CTAs, icons, highlights */
+    --color-muted: #BFC2C5;           /* Soft Grey - Borders, dividers, subtle text */
+
+    /* Secondary Palette */
+    --color-bg-light: #FAF7F2;        /* Ivory Tint - Light backgrounds */
+    --color-bg-dark: #000000;         /* Ultra Black - Dark hero sections */
+    --color-secondary: #DDE1E4;       /* Silver - Stats, filters, cards */
+
+    /* Semantic colors */
+    --color-success: #10b981;         /* Green for success states */
+    --color-warning: #f59e0b;         /* Orange for warnings */
+    --color-error: #ef4444;           /* Red for errors */
+    --color-info: #3b82f6;            /* Blue for info */
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-[var(--color-bg-light)] text-[var(--color-primary)];
+    font-family: var(--font-edmondsans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-urw-classico), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
   }
 }
 

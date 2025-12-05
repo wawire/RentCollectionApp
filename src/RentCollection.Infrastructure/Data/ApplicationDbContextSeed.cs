@@ -106,6 +106,108 @@ public class ApplicationDbContextSeed
             await context.SaveChangesAsync();
             logger.LogInformation("Seeded {Count} properties", properties.Count);
 
+            // ===== SEED AMENITIES =====
+            var amenities = new List<Amenity>
+            {
+                new Amenity
+                {
+                    Name = "WiFi",
+                    IconName = "Wifi",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Parking",
+                    IconName = "Car",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Power Backup",
+                    IconName = "Zap",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Water Supply",
+                    IconName = "Droplets",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Air Conditioning",
+                    IconName = "Wind",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Gas Connection",
+                    IconName = "Flame",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Amenity
+                {
+                    Name = "Security",
+                    IconName = "Shield",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            await context.Amenities.AddRangeAsync(amenities);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} amenities", amenities.Count);
+
+            // ===== SEED PROPERTY AMENITIES (Assign amenities to properties) =====
+            var propertyAmenities = new List<PropertyAmenity>
+            {
+                // Sunset Apartments Westlands - WiFi, Parking, Security
+                new PropertyAmenity { PropertyId = properties[0].Id, AmenityId = amenities[0].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[0].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[0].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Parklands Heights - Parking, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[1].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[1].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[1].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Kileleshwa Gardens - WiFi, Parking, Power Backup, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[0].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[2].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[2].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Lavington Court - All amenities (Premium property)
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[0].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[2].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[4].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[5].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[3].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Utawala Maisonettes - Parking, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[4].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[4].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[4].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+
+                // Ruiru Bungalows - Parking, Water Supply, Security
+                new PropertyAmenity { PropertyId = properties[5].Id, AmenityId = amenities[1].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[5].Id, AmenityId = amenities[3].Id, CreatedAt = DateTime.UtcNow },
+                new PropertyAmenity { PropertyId = properties[5].Id, AmenityId = amenities[6].Id, CreatedAt = DateTime.UtcNow },
+            };
+
+            await context.PropertyAmenities.AddRangeAsync(propertyAmenities);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} property amenities relationships", propertyAmenities.Count);
+
             // ===== SEED UNITS WITH KENYAN PROPERTY TYPES =====
 
             // PROPERTY 1: Sunset Apartments Westlands (Bedsitters & One-Bedroom)
@@ -123,6 +225,7 @@ public class ApplicationDbContextSeed
                     Description = "Bedsitter with own bathroom and kitchenette. Ground floor.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -136,6 +239,7 @@ public class ApplicationDbContextSeed
                     Description = "Bedsitter with balcony. First floor.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -149,6 +253,7 @@ public class ApplicationDbContextSeed
                     Description = "Spacious bedsitter. Second floor with city view.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 // One-Bedroom
@@ -163,6 +268,7 @@ public class ApplicationDbContextSeed
                     Description = "One bedroom with separate kitchen and sitting room.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -176,6 +282,7 @@ public class ApplicationDbContextSeed
                     Description = "One bedroom apartment with balcony.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -194,6 +301,7 @@ public class ApplicationDbContextSeed
                     Description = "Affordable bedsitter for students/young professionals.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -207,6 +315,7 @@ public class ApplicationDbContextSeed
                     Description = "Bedsitter with shared laundry area.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Rent,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -220,6 +329,7 @@ public class ApplicationDbContextSeed
                     Description = "One bedroom apartment.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -238,6 +348,7 @@ public class ApplicationDbContextSeed
                     Description = "Two bedroom apartment with master ensuite. DSQ included.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -251,6 +362,7 @@ public class ApplicationDbContextSeed
                     Description = "Two bedroom with balcony facing garden.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -264,6 +376,7 @@ public class ApplicationDbContextSeed
                     Description = "Three bedroom apartment with master ensuite and DSQ.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -277,6 +390,7 @@ public class ApplicationDbContextSeed
                     Description = "Spacious three bedroom with dining area.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -295,6 +409,7 @@ public class ApplicationDbContextSeed
                     Description = "Premium two bedroom with gym and pool access. Fiber internet.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -308,6 +423,7 @@ public class ApplicationDbContextSeed
                     Description = "Luxury three bedroom with all bedrooms ensuite. DSQ, balcony.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -326,6 +442,7 @@ public class ApplicationDbContextSeed
                     Description = "Three bedroom maisonette (own compound) with DSQ, parking for 2 cars, garden.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -339,6 +456,7 @@ public class ApplicationDbContextSeed
                     Description = "Maisonette with own gate, perimeter wall, and compound. DSQ included.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -352,6 +470,7 @@ public class ApplicationDbContextSeed
                     Description = "Corner maisonette with larger compound and garden space.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -370,6 +489,7 @@ public class ApplicationDbContextSeed
                     Description = "Two bedroom bungalow (own compound) with garden, parking, perimeter wall.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -383,6 +503,7 @@ public class ApplicationDbContextSeed
                     Description = "Standalone bungalow with own compound. Family-friendly.",
                     IsOccupied = false,
                     IsActive = true,
+                    RentalType = RentalType.Both,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Unit
@@ -396,6 +517,7 @@ public class ApplicationDbContextSeed
                     Description = "Three bedroom bungalow with spacious compound and kitchen garden.",
                     IsOccupied = true,
                     IsActive = true,
+                    RentalType = RentalType.Lease,
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -576,116 +698,270 @@ public class ApplicationDbContextSeed
             await context.SaveChangesAsync();
             logger.LogInformation("Seeded {Count} tenants", tenants.Count);
 
+            // ===== UPDATE UNITS WITH PAYMENT ACCOUNT NUMBERS =====
+            // Assign payment account numbers to units for M-Pesa Paybill identification
+            sunsetUnits[0].PaymentAccountNumber = "B1";
+            sunsetUnits[1].PaymentAccountNumber = "B2";
+            sunsetUnits[2].PaymentAccountNumber = "B3";
+            sunsetUnits[3].PaymentAccountNumber = "1A";
+            sunsetUnits[4].PaymentAccountNumber = "1B";
+
+            parklandsUnits[0].PaymentAccountNumber = "P1";
+            parklandsUnits[1].PaymentAccountNumber = "P2";
+            parklandsUnits[2].PaymentAccountNumber = "P3";
+
+            kileleshwaUnits[0].PaymentAccountNumber = "K-2A";
+            kileleshwaUnits[1].PaymentAccountNumber = "K-2B";
+            kileleshwaUnits[2].PaymentAccountNumber = "K-3A";
+            kileleshwaUnits[3].PaymentAccountNumber = "K-3B";
+
+            lavingtonUnits[0].PaymentAccountNumber = "L201";
+            lavingtonUnits[1].PaymentAccountNumber = "L301";
+
+            utawalaUnits[0].PaymentAccountNumber = "M1";
+            utawalaUnits[1].PaymentAccountNumber = "M2";
+            utawalaUnits[2].PaymentAccountNumber = "M3";
+
+            ruiruUnits[0].PaymentAccountNumber = "BG1";
+            ruiruUnits[1].PaymentAccountNumber = "BG2";
+            ruiruUnits[2].PaymentAccountNumber = "BG3";
+
+            context.Units.UpdateRange(allUnits);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Updated units with payment account numbers");
+
+            // ===== SEED LANDLORD PAYMENT ACCOUNTS =====
+            var paymentAccounts = new List<LandlordPaymentAccount>
+            {
+                // John Landlord - M-Pesa Paybill for Sunset Apartments
+                new LandlordPaymentAccount
+                {
+                    LandlordId = johnLandlord.Id,
+                    PropertyId = properties[0].Id, // Sunset Apartments
+                    AccountName = "Sunset Apartments M-Pesa",
+                    AccountType = PaymentAccountType.MPesaPaybill,
+                    PaybillNumber = "123456",
+                    PaybillName = "John Landlord Properties",
+                    IsDefault = true,
+                    IsActive = true,
+                    AutoReconciliation = false,
+                    PaymentInstructions = "Pay to M-Pesa Paybill 123456. Use your unit number (e.g., B1, 1A) as the Account Number.",
+                    CreatedAt = DateTime.UtcNow
+                },
+
+                // John Landlord - Equity Bank for Parklands Heights
+                new LandlordPaymentAccount
+                {
+                    LandlordId = johnLandlord.Id,
+                    PropertyId = properties[1].Id, // Parklands Heights
+                    AccountName = "Parklands Heights Bank Account",
+                    AccountType = PaymentAccountType.BankAccount,
+                    BankName = "Equity Bank",
+                    BankAccountNumber = "0150123456789",
+                    BankAccountName = "John Landlord",
+                    BankBranch = "Westlands Branch",
+                    SwiftCode = "EQBLKENA",
+                    IsDefault = false,
+                    IsActive = true,
+                    PaymentInstructions = "Transfer to Equity Bank Account 0150123456789. Use 'RENT-[YOUR UNIT NUMBER]' as reference (e.g., RENT-P1).",
+                    CreatedAt = DateTime.UtcNow
+                },
+
+                // Mary Wanjiku - M-Pesa Paybill for Kileleshwa Gardens
+                new LandlordPaymentAccount
+                {
+                    LandlordId = maryLandlord.Id,
+                    PropertyId = properties[2].Id, // Kileleshwa Gardens
+                    AccountName = "Kileleshwa Gardens Paybill",
+                    AccountType = PaymentAccountType.MPesaPaybill,
+                    PaybillNumber = "789012",
+                    PaybillName = "Mary Wanjiku Rentals",
+                    IsDefault = true,
+                    IsActive = true,
+                    AutoReconciliation = false,
+                    PaymentInstructions = "M-Pesa Paybill 789012. Account Number: Your unit (K-2A, K-3A, etc.).",
+                    CreatedAt = DateTime.UtcNow
+                },
+
+                // Mary Wanjiku - KCB Bank for Lavington Court
+                new LandlordPaymentAccount
+                {
+                    LandlordId = maryLandlord.Id,
+                    PropertyId = properties[3].Id, // Lavington Court
+                    AccountName = "Lavington Court KCB",
+                    AccountType = PaymentAccountType.BankAccount,
+                    BankName = "KCB Bank",
+                    BankAccountNumber = "1234567890",
+                    BankAccountName = "Mary Wanjiku",
+                    BankBranch = "Lavington Branch",
+                    SwiftCode = "KCBLKENX",
+                    IsDefault = true,
+                    IsActive = true,
+                    PaymentInstructions = "KCB Bank 1234567890. Reference: RENT-[UNIT] (e.g., RENT-L201).",
+                    CreatedAt = DateTime.UtcNow
+                },
+
+                // David Kamau - M-Pesa Paybill for all properties
+                new LandlordPaymentAccount
+                {
+                    LandlordId = davidLandlord.Id,
+                    PropertyId = null, // General account for all properties
+                    AccountName = "David Kamau Properties M-Pesa",
+                    AccountType = PaymentAccountType.MPesaPaybill,
+                    PaybillNumber = "345678",
+                    PaybillName = "David Kamau Rentals",
+                    IsDefault = true,
+                    IsActive = true,
+                    AutoReconciliation = false,
+                    PaymentInstructions = "M-Pesa Paybill 345678. Use your unit number as Account (M1, BG1, etc.).",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            await context.LandlordPaymentAccounts.AddRangeAsync(paymentAccounts);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} landlord payment accounts", paymentAccounts.Count);
+
             // ===== SEED SAMPLE PAYMENTS =====
             var payments = new List<Payment>
             {
-                // Peter Mwangi (Bedsitter KSh 12,000)
+                // Peter Mwangi (Bedsitter KSh 12,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[0].Id,
+                    UnitId = sunsetUnits[0].Id,
+                    LandlordAccountId = paymentAccounts[0].Id, // Sunset Apartments M-Pesa
                     Amount = 12000,
                     PaymentDate = DateTime.UtcNow.AddMonths(-1).AddDays(3),
                     PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
                     TransactionReference = "QHK2NP9X7M",
+                    PaybillAccountNumber = "B1",
+                    MPesaPhoneNumber = "+254723870917",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddMonths(-1).AddDays(3)
                 },
 
-                // Grace Akinyi (One-bedroom KSh 18,000)
+                // Grace Akinyi (One-bedroom KSh 18,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[1].Id,
+                    UnitId = sunsetUnits[3].Id,
+                    LandlordAccountId = paymentAccounts[0].Id,
                     Amount = 18000,
                     PaymentDate = DateTime.UtcNow.AddMonths(-1).AddDays(1),
                     PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
                     TransactionReference = "QHM7LP4X2N",
+                    PaybillAccountNumber = "1A",
+                    MPesaPhoneNumber = "+254716539952",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddMonths(-1).AddDays(1)
                 },
 
-                // Alice Wambui (Two-bedroom KSh 35,000)
+                // Alice Wambui (Two-bedroom KSh 35,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[3].Id,
+                    UnitId = kileleshwaUnits[0].Id,
+                    LandlordAccountId = paymentAccounts[2].Id, // Kileleshwa Gardens Paybill
                     Amount = 35000,
                     PaymentDate = DateTime.UtcNow.AddMonths(-1).AddDays(2),
-                    PaymentMethod = PaymentMethod.BankTransfer,
+                    PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
-                    TransactionReference = "BANK20231129001",
+                    TransactionReference = "QHM9KP2X7N",
+                    PaybillAccountNumber = "K-2A",
+                    MPesaPhoneNumber = "+254745678901",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddMonths(-1).AddDays(2)
                 },
 
-                // Michael Kimani (Three-bedroom KSh 45,000)
+                // Michael Kimani (Three-bedroom KSh 45,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[4].Id,
+                    UnitId = kileleshwaUnits[2].Id,
+                    LandlordAccountId = paymentAccounts[2].Id,
                     Amount = 45000,
                     PaymentDate = DateTime.UtcNow.AddDays(-5),
-                    PaymentMethod = PaymentMethod.BankTransfer,
+                    PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
-                    TransactionReference = "BANK20231129002",
+                    TransactionReference = "QHN7MP4K2X",
+                    PaybillAccountNumber = "K-3A",
+                    MPesaPhoneNumber = "+254756789012",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddDays(-5)
                 },
 
-                // Sarah Njeri (Luxury three-bedroom KSh 70,000)
+                // Sarah Njeri (Luxury three-bedroom KSh 70,000) - Bank Transfer
                 new Payment
                 {
                     TenantId = tenants[5].Id,
+                    UnitId = lavingtonUnits[1].Id,
+                    LandlordAccountId = paymentAccounts[3].Id, // Lavington Court KCB
                     Amount = 70000,
                     PaymentDate = DateTime.UtcNow.AddDays(-2),
                     PaymentMethod = PaymentMethod.BankTransfer,
                     Status = PaymentStatus.Completed,
-                    TransactionReference = "BANK20231129003",
+                    TransactionReference = "BANK20241202001",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddDays(-2)
                 },
 
-                // Daniel Otieno (Maisonette KSh 40,000)
+                // Daniel Otieno (Maisonette KSh 40,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[6].Id,
+                    UnitId = utawalaUnits[0].Id,
+                    LandlordAccountId = paymentAccounts[4].Id, // David Kamau M-Pesa
                     Amount = 40000,
                     PaymentDate = DateTime.UtcNow.AddMonths(-1).AddDays(5),
                     PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
                     TransactionReference = "QHP9NX2M4L",
+                    PaybillAccountNumber = "M1",
+                    MPesaPhoneNumber = "+254778901234",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddMonths(-1).AddDays(5)
                 },
 
-                // Lucy Wanjiru (Bungalow KSh 30,000)
+                // Lucy Wanjiru (Bungalow KSh 30,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[7].Id,
+                    UnitId = ruiruUnits[0].Id,
+                    LandlordAccountId = paymentAccounts[4].Id,
                     Amount = 30000,
                     PaymentDate = DateTime.UtcNow.AddMonths(-1).AddDays(7),
-                    PaymentMethod = PaymentMethod.Cash,
+                    PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
-                    TransactionReference = "CASH-001",
+                    TransactionReference = "QHK4MX7N2P",
+                    PaybillAccountNumber = "BG1",
+                    MPesaPhoneNumber = "+254789012345",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddMonths(-1).AddDays(7)
                 },
 
-                // Joseph Mutua (Bungalow KSh 35,000)
+                // Joseph Mutua (Bungalow KSh 35,000) - M-Pesa Paybill
                 new Payment
                 {
                     TenantId = tenants[8].Id,
+                    UnitId = ruiruUnits[2].Id,
+                    LandlordAccountId = paymentAccounts[4].Id,
                     Amount = 35000,
                     PaymentDate = DateTime.UtcNow.AddDays(-3),
                     PaymentMethod = PaymentMethod.MPesa,
                     Status = PaymentStatus.Completed,
                     TransactionReference = "QHN4MX7P9K",
+                    PaybillAccountNumber = "BG3",
+                    MPesaPhoneNumber = "+254790123456",
                     PeriodStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1),
                     PeriodEnd = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1).AddDays(-1),
                     CreatedAt = DateTime.UtcNow.AddDays(-3)
