@@ -698,6 +698,50 @@ public class ApplicationDbContextSeed
             await context.SaveChangesAsync();
             logger.LogInformation("Seeded {Count} tenants", tenants.Count);
 
+            // ===== CREATE USER ACCOUNTS FOR TENANTS =====
+            // Now that tenants are created with IDs, create corresponding User accounts for authentication
+            logger.LogInformation("Creating user accounts for tenants...");
+
+            var tenantUsers = new List<User>();
+
+            foreach (var tenant in tenants)
+            {
+                var tenantUser = new User
+                {
+                    FirstName = tenant.FirstName,
+                    LastName = tenant.LastName,
+                    Email = tenant.Email,
+                    PhoneNumber = tenant.PhoneNumber,
+                    // Password: Tenant@123 (same for all tenants for testing)
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Tenant@123"),
+                    Role = UserRole.Tenant,
+                    Status = UserStatus.Active,
+                    PropertyId = null,
+                    TenantId = tenant.Id, // Link User to Tenant entity
+                    CreatedAt = tenant.CreatedAt
+                };
+
+                tenantUsers.Add(tenantUser);
+            }
+
+            await context.Users.AddRangeAsync(tenantUsers);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Created {Count} tenant user accounts", tenantUsers.Count);
+
+            // Log tenant login credentials
+            logger.LogInformation("");
+            logger.LogInformation("=== TENANT LOGIN CREDENTIALS ===");
+            foreach (var tenant in tenants)
+            {
+                logger.LogInformation("📧 {Name} - {Email} / {Phone}",
+                    $"{tenant.FirstName} {tenant.LastName}",
+                    tenant.Email,
+                    tenant.PhoneNumber);
+            }
+            logger.LogInformation("🔑 Password (all tenants): Tenant@123");
+            logger.LogInformation("================================");
+            logger.LogInformation("");
+
             // ===== UPDATE UNITS WITH PAYMENT ACCOUNT NUMBERS =====
             // Assign payment account numbers to units for M-Pesa Paybill identification
             sunsetUnits[0].PaymentAccountNumber = "B1";
