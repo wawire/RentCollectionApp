@@ -140,68 +140,10 @@ public static class DefaultUsers
                 Status = UserStatus.Active,
                 PropertyId = null, // Accountant can view ALL properties (read-only)
                 CreatedAt = DateTime.UtcNow
-            },
-
-            // ===== TENANTS =====
-            // Tenant 1: Peter Mwangi (Unit B1 - Sunset Apartments)
-            new User
-            {
-                FirstName = "Peter",
-                LastName = "Mwangi",
-                Email = "peter.mwangi@gmail.com",
-                PhoneNumber = "+254723870917",
-                // Password: Tenant@123
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Tenant@123"),
-                Role = UserRole.Tenant,
-                Status = UserStatus.Active,
-                PropertyId = null,
-                CreatedAt = DateTime.UtcNow
-            },
-
-            // Tenant 2: Grace Akinyi (Unit 1A - Sunset Apartments)
-            new User
-            {
-                FirstName = "Grace",
-                LastName = "Akinyi",
-                Email = "grace.akinyi@yahoo.com",
-                PhoneNumber = "+254734567890",
-                // Password: Tenant@123
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Tenant@123"),
-                Role = UserRole.Tenant,
-                Status = UserStatus.Active,
-                PropertyId = null,
-                CreatedAt = DateTime.UtcNow
-            },
-
-            // Tenant 3: Alice Wambui (Unit K-2A - Kileleshwa Gardens)
-            new User
-            {
-                FirstName = "Alice",
-                LastName = "Wambui",
-                Email = "alice.wambui@gmail.com",
-                PhoneNumber = "+254745678901",
-                // Password: Tenant@123
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Tenant@123"),
-                Role = UserRole.Tenant,
-                Status = UserStatus.Active,
-                PropertyId = null,
-                CreatedAt = DateTime.UtcNow
-            },
-
-            // Tenant 4: James Kamau (Unit W-3B - Westlands Towers)
-            new User
-            {
-                FirstName = "James",
-                LastName = "Kamau",
-                Email = "james.kamau@gmail.com",
-                PhoneNumber = "+254756789012",
-                // Password: Tenant@123
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Tenant@123"),
-                Role = UserRole.Tenant,
-                Status = UserStatus.Active,
-                PropertyId = null,
-                CreatedAt = DateTime.UtcNow
             }
+
+            // NOTE: Tenant user accounts are created in ApplicationDbContextSeed.cs
+            // after the Tenant entities are seeded, so they can be properly linked via TenantId
         };
 
         await context.Users.AddRangeAsync(users);
@@ -253,11 +195,8 @@ public static class DefaultUsers
         logger.LogInformation("   Access: View ALL properties (read-only financial reports)");
         logger.LogInformation("");
         logger.LogInformation("🏠 TENANTS:");
-        logger.LogInformation("   1. Peter Mwangi - peter.mwangi@gmail.com");
-        logger.LogInformation("   2. Grace Akinyi - grace.akinyi@yahoo.com");
-        logger.LogInformation("   3. Alice Wambui - alice.wambui@gmail.com");
-        logger.LogInformation("   4. James Kamau - james.kamau@gmail.com");
-        logger.LogInformation("   Password (all): Tenant@123");
+        logger.LogInformation("   Tenant user accounts will be created during application data seeding");
+        logger.LogInformation("   All tenants will have password: Tenant@123");
         logger.LogInformation("");
         logger.LogInformation("================================");
     }
