@@ -49,8 +49,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
@@ -83,8 +83,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
@@ -122,8 +122,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
@@ -159,8 +159,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
@@ -230,8 +230,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
@@ -440,8 +440,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
@@ -500,8 +500,8 @@ public class TenantService : ITenantService
             if (!_currentUserService.IsSystemAdmin)
             {
                 var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserId
-                    : _currentUserService.LandlordId;
+                    ? _currentUserService.UserIdInt
+                    : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
                 {
