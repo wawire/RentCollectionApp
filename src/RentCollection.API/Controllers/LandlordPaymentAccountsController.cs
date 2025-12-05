@@ -36,7 +36,7 @@ public class LandlordPaymentAccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyAccounts()
     {
-        var userId = _currentUserService.UserId;
+        var userId = int.Parse(_currentUserService.UserId!);
         var result = await _accountService.GetLandlordAccountsAsync(userId);
 
         if (!result.IsSuccess)
@@ -90,7 +90,7 @@ public class LandlordPaymentAccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetDefaultAccount([FromQuery] int? propertyId = null)
     {
-        var userId = _currentUserService.UserId;
+        var userId = int.Parse(_currentUserService.UserId!);
         var result = await _accountService.GetDefaultAccountAsync(userId, propertyId);
 
         if (!result.IsSuccess)
@@ -109,7 +109,7 @@ public class LandlordPaymentAccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateLandlordPaymentAccountDto dto)
     {
-        var userId = _currentUserService.UserId;
+        var userId = int.Parse(_currentUserService.UserId!);
         var result = await _accountService.CreateAccountAsync(userId, dto);
 
         if (!result.IsSuccess)
