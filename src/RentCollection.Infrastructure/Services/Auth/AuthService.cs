@@ -22,6 +22,7 @@ namespace RentCollection.Infrastructure.Services.Auth;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPropertyRepository _propertyRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<AuthService> _logger;
     private readonly IConfiguration _configuration;
@@ -29,12 +30,14 @@ public class AuthService : IAuthService
 
     public AuthService(
         IUserRepository userRepository,
+        IPropertyRepository propertyRepository,
         IMapper mapper,
         ILogger<AuthService> logger,
         IConfiguration configuration,
         ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
+        _propertyRepository = propertyRepository;
         _mapper = mapper;
         _logger = logger;
         _configuration = configuration;
@@ -119,8 +122,18 @@ public class AuthService : IAuthService
                     // Validate that the user being created is assigned to the landlord's properties
                     if (registerDto.PropertyId.HasValue)
                     {
-                        // TODO: Verify the property belongs to the current landlord
-                        // This requires checking the property's LandlordId
+                        var property = await _propertyRepository.GetByIdAsync(registerDto.PropertyId.Value, cancellationToken);
+
+                        if (property == null)
+                        {
+                            throw new BadRequestException($"Property with ID {registerDto.PropertyId.Value} not found");
+                        }
+
+                        var landlordId = _currentUserService.UserIdInt;
+                        if (!landlordId.HasValue || property.LandlordId != landlordId.Value)
+                        {
+                            throw new BadRequestException("You can only assign users to your own properties");
+                        }
                     }
                 }
                 else
