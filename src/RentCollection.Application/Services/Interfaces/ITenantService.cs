@@ -25,4 +25,5 @@ public interface ITenantService
     // Tenant portal methods (authenticated tenant)
     Task<Result<TenantPortalDto>> GetMyTenantInfoAsync();
     Task<Result<IEnumerable<PaymentDto>>> GetMyPaymentsAsync();
+    Task<Result<TenantDto>> UpdateMyInfoAsync(UpdateTenantSelfDto updateDto);
 }

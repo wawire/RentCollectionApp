@@ -159,4 +159,24 @@ public class TenantsController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Update current tenant's own information (Tenant Portal)
+    /// </summary>
+    /// <param name="updateDto">Update data (limited fields: phone, email, notes)</param>
+    /// <returns>Updated tenant information</returns>
+    [HttpPatch("me")]
+    [Authorize(Roles = "Tenant")]
+    [ProducesResponseType(typeof(Result<TenantDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateMyInfo([FromBody] UpdateTenantSelfDto updateDto)
+    {
+        var result = await _tenantService.UpdateMyInfoAsync(updateDto);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
