@@ -43,6 +43,11 @@ public static class DependencyInjection
         services.AddScoped<IMPesaService, MPesaService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
 
+        // File storage service - Use Local for development, Azure for production
+        // To use Azure Blob Storage in production, update this registration to:
+        // services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
         return services;
     }
 }
