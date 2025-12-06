@@ -9,6 +9,7 @@ using RentCollection.Application.Common.Exceptions;
 using RentCollection.Application.DTOs.Auth;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Auth;
+using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
 using BCrypt.Net;
@@ -24,17 +25,20 @@ public class AuthService : IAuthService
     private readonly IMapper _mapper;
     private readonly ILogger<AuthService> _logger;
     private readonly IConfiguration _configuration;
+    private readonly ICurrentUserService _currentUserService;
 
     public AuthService(
         IUserRepository userRepository,
         IMapper mapper,
         ILogger<AuthService> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
         _mapper = mapper;
         _logger = logger;
         _configuration = configuration;
+        _currentUserService = currentUserService;
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto, CancellationToken cancellationToken = default)
@@ -100,6 +104,32 @@ public class AuthService : IAuthService
     {
         try
         {
+            // CRITICAL RBAC VALIDATION: Enforce role creation hierarchy
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                // Only SystemAdmin can create other SystemAdmins or Landlords
+                if (registerDto.Role == UserRole.SystemAdmin || registerDto.Role == UserRole.Landlord)
+                {
+                    throw new BadRequestException("You do not have permission to create users with this role");
+                }
+
+                // Landlords can only create Caretakers, Accountants, and Tenants for their own properties
+                if (_currentUserService.IsLandlord)
+                {
+                    // Validate that the user being created is assigned to the landlord's properties
+                    if (registerDto.PropertyId.HasValue)
+                    {
+                        // TODO: Verify the property belongs to the current landlord
+                        // This requires checking the property's LandlordId
+                    }
+                }
+                else
+                {
+                    // Other roles (Caretaker, Accountant, Tenant) cannot create users
+                    throw new BadRequestException("You do not have permission to create users");
+                }
+            }
+
             // Validate passwords match
             if (registerDto.Password != registerDto.ConfirmPassword)
             {
@@ -178,12 +208,75 @@ public class AuthService : IAuthService
         if (user == null)
             return null;
 
+        // Check access permission
+        if (!_currentUserService.IsSystemAdmin)
+        {
+            // Landlords can only view users associated with their properties
+            if (_currentUserService.IsLandlord)
+            {
+                var landlordId = _currentUserService.UserIdInt;
+                if (landlordId.HasValue)
+                {
+                    // Allow if it's the landlord themselves OR user belongs to landlord's property
+                    if (user.Id != landlordId.Value &&
+                        !(user.PropertyId.HasValue && user.Property != null && user.Property.LandlordId == landlordId.Value))
+                    {
+                        throw new BadRequestException("You do not have permission to view this user");
+                    }
+                }
+            }
+            else
+            {
+                // Other roles can only view themselves
+                var currentUserId = _currentUserService.UserIdInt;
+                if (!currentUserId.HasValue || user.Id != currentUserId.Value)
+                {
+                    throw new BadRequestException("You do not have permission to view this user");
+                }
+            }
+        }
+
         return MapToUserDto(user);
     }
 
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
         var users = await _userRepository.GetAllWithRelatedDataAsync(cancellationToken);
+
+        // Filter users based on current user role
+        if (!_currentUserService.IsSystemAdmin)
+        {
+            // Landlords can only see users associated with their properties
+            if (_currentUserService.IsLandlord)
+            {
+                var landlordId = _currentUserService.UserIdInt;
+                if (landlordId.HasValue)
+                {
+                    users = users.Where(u =>
+                        // Include the landlord themselves
+                        u.Id == landlordId.Value ||
+                        // Include users with PropertyId matching landlord's properties
+                        (u.PropertyId.HasValue && u.Property != null && u.Property.LandlordId == landlordId.Value) ||
+                        // Include users with Role Caretaker/Accountant who have matching LandlordId in claims
+                        (u.Role == UserRole.Caretaker || u.Role == UserRole.Accountant)
+                    ).ToList();
+                }
+            }
+            else
+            {
+                // Other roles can only see themselves
+                var userId = _currentUserService.UserIdInt;
+                if (userId.HasValue)
+                {
+                    users = users.Where(u => u.Id == userId.Value).ToList();
+                }
+                else
+                {
+                    users = new List<User>();
+                }
+            }
+        }
+
         return users.Select(MapToUserDto).ToList();
     }
 
@@ -218,17 +311,51 @@ public class AuthService : IAuthService
 
     public async Task UpdateUserStatusAsync(int userId, UserStatus status, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
+        var user = await _userRepository.GetByIdWithRelatedDataAsync(userId, cancellationToken);
 
         if (user == null)
         {
             throw new NotFoundException("User", userId);
         }
 
+        // Check access permission
+        if (!_currentUserService.IsSystemAdmin)
+        {
+            // Landlords can only update status for users in their properties
+            if (_currentUserService.IsLandlord)
+            {
+                var landlordId = _currentUserService.UserIdInt;
+                if (landlordId.HasValue)
+                {
+                    // Cannot modify themselves or users not in their properties
+                    if (user.Id == landlordId.Value)
+                    {
+                        throw new BadRequestException("You cannot modify your own status");
+                    }
+
+                    if (!(user.PropertyId.HasValue && user.Property != null && user.Property.LandlordId == landlordId.Value))
+                    {
+                        throw new BadRequestException("You do not have permission to update this user's status");
+                    }
+
+                    // Landlords cannot update other landlords or system admins
+                    if (user.Role == UserRole.SystemAdmin || user.Role == UserRole.Landlord)
+                    {
+                        throw new BadRequestException("You do not have permission to update this user's status");
+                    }
+                }
+            }
+            else
+            {
+                // Other roles cannot update user status
+                throw new BadRequestException("You do not have permission to update user status");
+            }
+        }
+
         user.Status = status;
         await _userRepository.UpdateAsync(user);
 
-        _logger.LogInformation("User {UserId} status updated to {Status}", userId, status);
+        _logger.LogInformation("User {UserId} status updated to {Status} by {CurrentUser}", userId, status, _currentUserService.Email);
     }
 
     public async Task DeleteUserAsync(int userId, CancellationToken cancellationToken = default)

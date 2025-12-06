@@ -45,13 +45,30 @@ public class PaymentService : IPaymentService
             // Filter payments by tenant's unit's property's LandlordId (unless SystemAdmin)
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                // Tenants can only see their own payments
+                if (_currentUserService.IsTenant)
                 {
-                    payments = payments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    if (_currentUserService.TenantId.HasValue)
+                    {
+                        payments = payments.Where(p => p.TenantId == _currentUserService.TenantId.Value).ToList();
+                    }
+                    else
+                    {
+                        // Tenant ID not found - return empty list
+                        payments = new List<Payment>();
+                    }
+                }
+                // Landlords, Caretakers, and Accountants filter by landlordId
+                else
+                {
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserIdInt
+                        : _currentUserService.LandlordIdInt;
+
+                    if (landlordId.HasValue)
+                    {
+                        payments = payments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    }
                 }
             }
 
@@ -79,15 +96,27 @@ public class PaymentService : IPaymentService
             // Check access permission to the tenant's unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                // Tenants can only access their own payments
+                if (_currentUserService.IsTenant)
                 {
-                    if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
+                    if (!_currentUserService.TenantId.HasValue || tenantId != _currentUserService.TenantId.Value)
                     {
                         return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
+                    }
+                }
+                // Landlords, Caretakers, and Accountants check by landlordId
+                else
+                {
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserIdInt
+                        : _currentUserService.LandlordIdInt;
+
+                    if (landlordId.HasValue)
+                    {
+                        if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
+                        {
+                            return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
+                        }
                     }
                 }
             }
@@ -118,15 +147,27 @@ public class PaymentService : IPaymentService
             // Check access permission via tenant's unit's property's LandlordId
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                // Tenants can only access their own payments
+                if (_currentUserService.IsTenant)
                 {
-                    if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId.Value)
+                    if (!_currentUserService.TenantId.HasValue || payment.TenantId != _currentUserService.TenantId.Value)
                     {
                         return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                // Landlords, Caretakers, and Accountants check by landlordId
+                else
+                {
+                    var landlordId = _currentUserService.IsLandlord
+                        ? _currentUserService.UserIdInt
+                        : _currentUserService.LandlordIdInt;
+
+                    if (landlordId.HasValue)
+                    {
+                        if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId.Value)
+                        {
+                            return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                        }
                     }
                 }
             }
@@ -155,6 +196,19 @@ public class PaymentService : IPaymentService
             // Check access permission - user must have access to the tenant's unit's property
             if (!_currentUserService.IsSystemAdmin)
             {
+                // Tenants cannot create payments
+                if (_currentUserService.IsTenant)
+                {
+                    return Result<PaymentDto>.Failure("Tenants do not have permission to record payments");
+                }
+
+                // Accountants cannot record payments (read-only access)
+                if (_currentUserService.IsAccountant)
+                {
+                    return Result<PaymentDto>.Failure("Accountants do not have permission to record payments");
+                }
+
+                // Landlords and Caretakers must own the property
                 var landlordId = _currentUserService.IsLandlord
                     ? _currentUserService.UserIdInt
                     : _currentUserService.LandlordIdInt;
@@ -165,12 +219,6 @@ public class PaymentService : IPaymentService
                     {
                         return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
                     }
-                }
-
-                // Accountants cannot record payments (read-only access)
-                if (_currentUserService.IsAccountant)
-                {
-                    return Result<PaymentDto>.Failure("Accountants do not have permission to record payments");
                 }
             }
 
