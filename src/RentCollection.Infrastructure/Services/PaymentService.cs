@@ -15,6 +15,7 @@ public class PaymentService : IPaymentService
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly ITenantRepository _tenantRepository;
+    private readonly IAuditLogService _auditLogService;
     private readonly IMapper _mapper;
     private readonly ILogger<PaymentService> _logger;
     private readonly ICurrentUserService _currentUserService;
@@ -23,6 +24,7 @@ public class PaymentService : IPaymentService
     public PaymentService(
         IPaymentRepository paymentRepository,
         ITenantRepository tenantRepository,
+        IAuditLogService auditLogService,
         IMapper mapper,
         ILogger<PaymentService> logger,
         ICurrentUserService currentUserService,
@@ -30,6 +32,7 @@ public class PaymentService : IPaymentService
     {
         _paymentRepository = paymentRepository;
         _tenantRepository = tenantRepository;
+        _auditLogService = auditLogService;
         _mapper = mapper;
         _logger = logger;
         _currentUserService = currentUserService;
@@ -586,6 +589,9 @@ public class PaymentService : IPaymentService
 
             _logger.LogInformation("Payment {PaymentId} confirmed by user {UserId}", paymentId, confirmedByUserId);
 
+            // Audit log: Payment confirmed
+            await _auditLogService.LogPaymentConfirmedAsync(paymentId, payment.TenantId, payment.Amount);
+
             return Result<PaymentDto>.Success(paymentDto, "Payment confirmed successfully");
         }
         catch (Exception ex)
@@ -628,6 +634,9 @@ public class PaymentService : IPaymentService
             var paymentDto = _mapper.Map<PaymentDto>(payment);
 
             _logger.LogInformation("Payment {PaymentId} rejected. Reason: {Reason}", paymentId, reason);
+
+            // Audit log: Payment rejected
+            await _auditLogService.LogPaymentRejectedAsync(paymentId, payment.TenantId, payment.Amount, reason);
 
             return Result<PaymentDto>.Success(paymentDto, "Payment rejected");
         }

@@ -23,6 +23,7 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPropertyRepository _propertyRepository;
+    private readonly IAuditLogService _auditLogService;
     private readonly IMapper _mapper;
     private readonly ILogger<AuthService> _logger;
     private readonly IConfiguration _configuration;
@@ -31,6 +32,7 @@ public class AuthService : IAuthService
     public AuthService(
         IUserRepository userRepository,
         IPropertyRepository propertyRepository,
+        IAuditLogService auditLogService,
         IMapper mapper,
         ILogger<AuthService> logger,
         IConfiguration configuration,
@@ -38,6 +40,7 @@ public class AuthService : IAuthService
     {
         _userRepository = userRepository;
         _propertyRepository = propertyRepository;
+        _auditLogService = auditLogService;
         _mapper = mapper;
         _logger = logger;
         _configuration = configuration;
@@ -184,6 +187,9 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("New user registered: {UserId} ({Email}), Role: {Role}",
                 user.Id, user.Email, user.Role);
+
+            // Audit log: User created
+            await _auditLogService.LogUserCreatedAsync(user.Id, user.Email, user.Role.ToString());
 
             // Generate JWT token
             var token = GenerateJwtToken(user);
@@ -365,10 +371,14 @@ public class AuthService : IAuthService
             }
         }
 
+        var oldStatus = user.Status.ToString();
         user.Status = status;
         await _userRepository.UpdateAsync(user);
 
         _logger.LogInformation("User {UserId} status updated to {Status} by {CurrentUser}", userId, status, _currentUserService.Email);
+
+        // Audit log: User status changed
+        await _auditLogService.LogUserStatusChangedAsync(userId, oldStatus, status.ToString());
     }
 
     public async Task DeleteUserAsync(int userId, CancellationToken cancellationToken = default)
@@ -380,9 +390,13 @@ public class AuthService : IAuthService
             throw new NotFoundException("User", userId);
         }
 
+        var userEmail = user.Email;
         await _userRepository.DeleteAsync(user);
 
         _logger.LogInformation("User {UserId} deleted", userId);
+
+        // Audit log: User deleted
+        await _auditLogService.LogUserDeletedAsync(userId, userEmail);
     }
 
     private string GenerateJwtToken(User user)

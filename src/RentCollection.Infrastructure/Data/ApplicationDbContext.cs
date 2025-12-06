@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Amenity> Amenities { get; set; } = null!;
     public DbSet<PropertyAmenity> PropertyAmenities { get; set; } = null!;
     public DbSet<LandlordPaymentAccount> LandlordPaymentAccounts { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

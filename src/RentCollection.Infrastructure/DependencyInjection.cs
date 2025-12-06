@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ILandlordPaymentAccountService, LandlordPaymentAccountService>();
         services.AddScoped<IMPesaService, MPesaService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
 
         return services;
     }
