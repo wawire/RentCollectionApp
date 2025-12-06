@@ -86,7 +86,7 @@ public class PropertiesController : ControllerBase
     /// <param name="createDto">Property creation data</param>
     /// <returns>Created property</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreatePropertyDto createDto)
@@ -106,7 +106,7 @@ public class PropertiesController : ControllerBase
     /// <param name="updateDto">Property update data</param>
     /// <returns>Updated property</returns>
     [HttpPut("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
