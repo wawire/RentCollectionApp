@@ -28,6 +28,7 @@ public class PaymentsController : ControllerBase
     /// </summary>
     /// <returns>List of all payments</returns>
     [HttpGet]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -47,6 +48,7 @@ public class PaymentsController : ControllerBase
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <returns>Paginated list of payments</returns>
     [HttpGet("paginated")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaginated([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -65,6 +67,7 @@ public class PaymentsController : ControllerBase
     /// <param name="id">Payment ID</param>
     /// <returns>Payment details</returns>
     [HttpGet("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -83,6 +86,7 @@ public class PaymentsController : ControllerBase
     /// <param name="tenantId">Tenant ID</param>
     /// <returns>List of payments for the specified tenant</returns>
     [HttpGet("tenant/{tenantId}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByTenantId(int tenantId)
