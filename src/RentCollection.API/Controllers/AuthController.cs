@@ -193,4 +193,41 @@ public class AuthController : ControllerBase
         await _authService.ResetPasswordAsync(resetPasswordDto);
         return Ok(new { message = "Password reset successful. You can now login with your new password." });
     }
+
+    /// <summary>
+    /// Verify email address using a valid token
+    /// </summary>
+    /// <param name="token">Email verification token</param>
+    /// <returns>Success message</returns>
+    [HttpGet("verify-email")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return BadRequest(new { message = "Token is required" });
+        }
+
+        await _authService.VerifyEmailAsync(token);
+        return Ok(new { message = "Email verified successfully. You can now login." });
+    }
+
+    /// <summary>
+    /// Resend email verification link
+    /// </summary>
+    /// <param name="forgotPasswordDto">Email address</param>
+    /// <returns>Success message</returns>
+    [HttpPost("resend-verification")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResendEmailVerification([FromBody] ForgotPasswordDto forgotPasswordDto)
+    {
+        await _authService.ResendEmailVerificationAsync(forgotPasswordDto.Email);
+
+        // Always return success message (security best practice - don't reveal if email exists)
+        return Ok(new { message = "If the email exists in our system, a verification link has been sent." });
+    }
 }

@@ -204,6 +204,34 @@ public class AuthService : IAuthService
             // Audit log: User created
             await _auditLogService.LogUserCreatedAsync(user.Id, user.Email, user.Role.ToString());
 
+            // Send email verification token (non-blocking, silent failure)
+            try
+            {
+                var verificationToken = GenerateSecureToken();
+                var ipAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
+                var emailVerificationToken = new EmailVerificationToken
+                {
+                    UserId = user.Id,
+                    Token = verificationToken,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddDays(1), // Token valid for 24 hours
+                    IsUsed = false,
+                    IpAddress = ipAddress
+                };
+
+                await _context.EmailVerificationTokens.AddAsync(emailVerificationToken, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await _emailService.SendEmailVerificationAsync(user.Email, verificationToken, user.FullName);
+                _logger.LogInformation("Email verification sent to: {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send email verification to: {Email}", user.Email);
+                // Don't fail registration if email fails
+            }
+
             // Generate JWT token
             var token = GenerateJwtToken(user);
 
@@ -553,6 +581,123 @@ public class AuthService : IAuthService
         {
             _logger.LogError(ex, "Error resetting password with token");
             throw new BadRequestException("An error occurred while resetting the password");
+        }
+    }
+
+    public async Task VerifyEmailAsync(string token, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Find token
+            var verificationToken = await _context.EmailVerificationTokens
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.Token == token, cancellationToken);
+
+            if (verificationToken == null)
+            {
+                throw new BadRequestException("Invalid or expired verification token");
+            }
+
+            // Check if token is valid
+            if (!verificationToken.IsValid)
+            {
+                if (verificationToken.IsUsed)
+                {
+                    throw new BadRequestException("This verification token has already been used");
+                }
+                else
+                {
+                    throw new BadRequestException("This verification token has expired");
+                }
+            }
+
+            // Check if email is already verified
+            if (verificationToken.User.IsEmailVerified)
+            {
+                throw new BadRequestException("Email address is already verified");
+            }
+
+            // Mark email as verified
+            verificationToken.User.IsEmailVerified = true;
+            verificationToken.User.EmailVerifiedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(verificationToken.User);
+
+            // Mark token as used
+            verificationToken.IsUsed = true;
+            verificationToken.UsedAt = DateTime.UtcNow;
+            _context.EmailVerificationTokens.Update(verificationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Email verified successfully for user: {Email}", verificationToken.User.Email);
+        }
+        catch (BadRequestException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error verifying email with token");
+            throw new BadRequestException("An error occurred while verifying the email");
+        }
+    }
+
+    public async Task ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Find user by email
+            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+
+            // Don't reveal if user exists or not (security best practice)
+            if (user == null)
+            {
+                _logger.LogWarning("Email verification resend requested for non-existent email: {Email}", email);
+                return; // Silently return without error
+            }
+
+            // Check if email is already verified
+            if (user.IsEmailVerified)
+            {
+                _logger.LogWarning("Email verification resend requested for already verified email: {Email}", email);
+                return; // Silently return without error
+            }
+
+            // Check if user is active
+            if (user.Status != UserStatus.Active)
+            {
+                _logger.LogWarning("Email verification resend requested for inactive user: {Email}", email);
+                return; // Silently return without error
+            }
+
+            // Generate secure random token
+            var token = GenerateSecureToken();
+
+            // Get IP address
+            var ipAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
+            // Create email verification token
+            var verificationToken = new EmailVerificationToken
+            {
+                UserId = user.Id,
+                Token = token,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(1), // Token valid for 24 hours
+                IsUsed = false,
+                IpAddress = ipAddress
+            };
+
+            await _context.EmailVerificationTokens.AddAsync(verificationToken, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Send email verification email
+            await _emailService.SendEmailVerificationAsync(user.Email, token, user.FullName);
+
+            _logger.LogInformation("Email verification resent to: {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resending email verification for email: {Email}", email);
+            // Don't throw - silently fail to avoid revealing user existence
         }
     }
 

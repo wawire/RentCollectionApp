@@ -51,4 +51,14 @@ public interface IAuthService
     /// Reset password using a valid token
     /// </summary>
     Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Verify email address using a valid token
+    /// </summary>
+    Task VerifyEmailAsync(string token, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Resend email verification token
+    /// </summary>
+    Task ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default);
 }
