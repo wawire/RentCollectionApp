@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.Common.Exceptions;
 using RentCollection.Application.Common.Models;
@@ -12,17 +13,20 @@ namespace RentCollection.Application.Services.Implementations;
 public class PropertyService : IPropertyService
 {
     private readonly IPropertyRepository _propertyRepository;
+    private readonly IFileStorageService _fileStorageService;
     private readonly IMapper _mapper;
     private readonly ILogger<PropertyService> _logger;
     private readonly ICurrentUserService _currentUserService;
 
     public PropertyService(
         IPropertyRepository propertyRepository,
+        IFileStorageService fileStorageService,
         IMapper mapper,
         ILogger<PropertyService> logger,
         ICurrentUserService currentUserService)
     {
         _propertyRepository = propertyRepository;
+        _fileStorageService = fileStorageService;
         _mapper = mapper;
         _logger = logger;
         _currentUserService = currentUserService;
@@ -311,6 +315,122 @@ public class PropertyService : IPropertyService
         {
             _logger.LogError(ex, "Error retrieving paginated properties");
             return Result<PaginatedList<PropertyDto>>.Failure("An error occurred while retrieving properties");
+        }
+    }
+
+    public async Task<Result<PropertyDto>> UploadPropertyImageAsync(int propertyId, IFormFile file)
+    {
+        try
+        {
+            var property = await _propertyRepository.GetByIdAsync(propertyId);
+
+            if (property == null)
+            {
+                return Result<PropertyDto>.Failure($"Property with ID {propertyId} not found");
+            }
+
+            // RBAC: Only SystemAdmin or property owner can upload images
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                if (!_currentUserService.IsLandlord)
+                {
+                    return Result<PropertyDto>.Failure("Only landlords can upload property images");
+                }
+
+                var landlordId = _currentUserService.UserIdInt;
+                if (!landlordId.HasValue || property.LandlordId != landlordId.Value)
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to upload images for this property");
+                }
+            }
+
+            // Validate file (images only)
+            var (isValid, errorMessage) = await _fileStorageService.ValidateFileAsync(
+                file,
+                allowedExtensions: new[] { ".jpg", ".jpeg", ".png", ".webp" },
+                maxSizeInBytes: 5 * 1024 * 1024 // 5MB max for property images
+            );
+
+            if (!isValid)
+            {
+                return Result<PropertyDto>.Failure(errorMessage);
+            }
+
+            // Delete old image if exists
+            if (!string.IsNullOrEmpty(property.ImageUrl))
+            {
+                await _fileStorageService.DeleteFileAsync(property.ImageUrl);
+            }
+
+            // Upload new image
+            var imageUrl = await _fileStorageService.UploadFileAsync(file, "properties");
+
+            // Update property
+            property.ImageUrl = imageUrl;
+            property.UpdatedAt = DateTime.UtcNow;
+            await _propertyRepository.UpdateAsync(property);
+
+            var propertyDto = _mapper.Map<PropertyDto>(property);
+
+            _logger.LogInformation("Property image uploaded successfully: Property#{PropertyId}, URL: {ImageUrl}",
+                propertyId, imageUrl);
+
+            return Result<PropertyDto>.Success(propertyDto, "Property image uploaded successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading property image for property {PropertyId}", propertyId);
+            return Result<PropertyDto>.Failure("An error occurred while uploading the property image");
+        }
+    }
+
+    public async Task<Result> DeletePropertyImageAsync(int propertyId)
+    {
+        try
+        {
+            var property = await _propertyRepository.GetByIdAsync(propertyId);
+
+            if (property == null)
+            {
+                return Result.Failure($"Property with ID {propertyId} not found");
+            }
+
+            // RBAC: Only SystemAdmin or property owner can delete images
+            if (!_currentUserService.IsSystemAdmin)
+            {
+                if (!_currentUserService.IsLandlord)
+                {
+                    return Result.Failure("Only landlords can delete property images");
+                }
+
+                var landlordId = _currentUserService.UserIdInt;
+                if (!landlordId.HasValue || property.LandlordId != landlordId.Value)
+                {
+                    return Result.Failure("You do not have permission to delete images for this property");
+                }
+            }
+
+            if (string.IsNullOrEmpty(property.ImageUrl))
+            {
+                return Result.Failure("Property has no image to delete");
+            }
+
+            // Delete file
+            await _fileStorageService.DeleteFileAsync(property.ImageUrl);
+
+            // Update property
+            property.ImageUrl = null;
+            property.UpdatedAt = DateTime.UtcNow;
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("Property image deleted successfully: Property#{PropertyId}", propertyId);
+
+            return Result.Success("Property image deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting property image for property {PropertyId}", propertyId);
+            return Result.Failure("An error occurred while deleting the property image");
         }
     }
 }
