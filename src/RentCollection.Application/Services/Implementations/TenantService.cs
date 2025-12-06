@@ -799,6 +799,87 @@ public class TenantService : ITenantService
         }
     }
 
+    public async Task<Result<TenantDto>> UpdateMyInfoAsync(UpdateTenantSelfDto updateDto)
+    {
+        try
+        {
+            // Get current user's tenant record
+            var userId = _currentUserService.UserId;
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out var userIdInt))
+            {
+                return Result<TenantDto>.Failure("User not authenticated");
+            }
+
+            var user = await _userRepository.GetByIdAsync(userIdInt);
+            if (user == null || user.TenantId == null)
+            {
+                return Result<TenantDto>.Failure("Tenant record not found for current user");
+            }
+
+            // Get tenant
+            var tenant = await _tenantRepository.GetByIdAsync(user.TenantId.Value);
+            if (tenant == null)
+            {
+                return Result<TenantDto>.Failure("Tenant record not found");
+            }
+
+            // Update only allowed fields
+            var hasChanges = false;
+
+            if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber) && updateDto.PhoneNumber != tenant.PhoneNumber)
+            {
+                // Check if phone number is already used by another tenant
+                var existingTenant = await _tenantRepository.GetByPhoneNumberAsync(updateDto.PhoneNumber);
+                if (existingTenant != null && existingTenant.Id != tenant.Id)
+                {
+                    return Result<TenantDto>.Failure("Phone number is already in use");
+                }
+
+                tenant.PhoneNumber = updateDto.PhoneNumber;
+                hasChanges = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(updateDto.Email) && updateDto.Email != tenant.Email)
+            {
+                // Check if email is already used by another tenant
+                var existingTenant = await _tenantRepository.GetByEmailAsync(updateDto.Email);
+                if (existingTenant != null && existingTenant.Id != tenant.Id)
+                {
+                    return Result<TenantDto>.Failure("Email is already in use");
+                }
+
+                tenant.Email = updateDto.Email;
+                hasChanges = true;
+            }
+
+            if (updateDto.Notes != null && updateDto.Notes != tenant.Notes)
+            {
+                tenant.Notes = updateDto.Notes;
+                hasChanges = true;
+            }
+
+            if (!hasChanges)
+            {
+                // No changes were made
+                var currentDto = _mapper.Map<TenantDto>(tenant);
+                return Result<TenantDto>.Success(currentDto, "No changes were made");
+            }
+
+            // Save changes
+            await _tenantRepository.UpdateAsync(tenant);
+
+            var tenantDto = _mapper.Map<TenantDto>(tenant);
+            _logger.LogInformation("Tenant {TenantId} updated their own information", tenant.Id);
+
+            return Result<TenantDto>.Success(tenantDto, "Your information has been updated successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating tenant self-information");
+            return Result<TenantDto>.Failure("An error occurred while updating your information");
+        }
+    }
+
     // Helper method to generate random password
     private static string GenerateRandomPassword()
     {

@@ -86,7 +86,7 @@ public class PropertiesController : ControllerBase
     /// <param name="createDto">Property creation data</param>
     /// <returns>Created property</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreatePropertyDto createDto)
@@ -106,7 +106,7 @@ public class PropertiesController : ControllerBase
     /// <param name="updateDto">Property update data</param>
     /// <returns>Updated property</returns>
     [HttpPut("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -138,5 +138,56 @@ public class PropertiesController : ControllerBase
             return BadRequest(result);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Upload property image
+    /// </summary>
+    /// <param name="id">Property ID</param>
+    /// <param name="file">Image file (JPG, PNG, WEBP, max 5MB)</param>
+    /// <returns>Updated property with new image URL</returns>
+    [HttpPost("{id}/image")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UploadImage(int id, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { isSuccess = false, message = "No file provided" });
+        }
+
+        var result = await _propertyService.UploadPropertyImageAsync(id, file);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Delete property image
+    /// </summary>
+    /// <param name="id">Property ID</param>
+    /// <returns>Success message</returns>
+    [HttpDelete("{id}/image")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteImage(int id)
+    {
+        var result = await _propertyService.DeletePropertyImageAsync(id);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
     }
 }

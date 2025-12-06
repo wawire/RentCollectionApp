@@ -38,6 +38,12 @@ public class User
     public DateTime? LastLoginAt { get; set; }
 
     /// <summary>
+    /// Email verification status
+    /// </summary>
+    public bool IsEmailVerified { get; set; } = false;
+    public DateTime? EmailVerifiedAt { get; set; }
+
+    /// <summary>
     /// For Landlord role - properties they own
     /// </summary>
     public ICollection<Property> OwnedProperties { get; set; } = new List<Property>();

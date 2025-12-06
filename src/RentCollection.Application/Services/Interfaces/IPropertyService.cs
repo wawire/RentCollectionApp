@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Properties;
 
@@ -11,4 +12,6 @@ public interface IPropertyService
     Task<Result<PropertyDto>> UpdatePropertyAsync(int id, UpdatePropertyDto updateDto);
     Task<Result> DeletePropertyAsync(int id);
     Task<Result<PaginatedList<PropertyDto>>> GetPropertiesPaginatedAsync(int pageNumber, int pageSize);
+    Task<Result<PropertyDto>> UploadPropertyImageAsync(int propertyId, IFormFile file);
+    Task<Result> DeletePropertyImageAsync(int propertyId);
 }
