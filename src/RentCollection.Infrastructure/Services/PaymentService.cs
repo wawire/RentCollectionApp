@@ -16,6 +16,7 @@ public class PaymentService : IPaymentService
     private readonly IPaymentRepository _paymentRepository;
     private readonly ITenantRepository _tenantRepository;
     private readonly IAuditLogService _auditLogService;
+    private readonly IFileStorageService _fileStorageService;
     private readonly IMapper _mapper;
     private readonly ILogger<PaymentService> _logger;
     private readonly ICurrentUserService _currentUserService;
@@ -25,6 +26,7 @@ public class PaymentService : IPaymentService
         IPaymentRepository paymentRepository,
         ITenantRepository tenantRepository,
         IAuditLogService auditLogService,
+        IFileStorageService fileStorageService,
         IMapper mapper,
         ILogger<PaymentService> logger,
         ICurrentUserService currentUserService,
@@ -33,6 +35,7 @@ public class PaymentService : IPaymentService
         _paymentRepository = paymentRepository;
         _tenantRepository = tenantRepository;
         _auditLogService = auditLogService;
+        _fileStorageService = fileStorageService;
         _mapper = mapper;
         _logger = logger;
         _currentUserService = currentUserService;
@@ -644,6 +647,68 @@ public class PaymentService : IPaymentService
         {
             _logger.LogError(ex, "Error rejecting payment {PaymentId}", paymentId);
             return Result<PaymentDto>.Failure("An error occurred while rejecting the payment");
+        }
+    }
+
+    public async Task<Result<PaymentDto>> UploadPaymentProofAsync(int paymentId, int tenantId, IFormFile file)
+    {
+        try
+        {
+            var payment = await _context.Payments
+                .Include(p => p.Tenant)
+                .Include(p => p.Unit)
+                .FirstOrDefaultAsync(p => p.Id == paymentId);
+
+            if (payment == null)
+            {
+                return Result<PaymentDto>.Failure($"Payment with ID {paymentId} not found");
+            }
+
+            // Verify payment belongs to tenant
+            if (payment.TenantId != tenantId)
+            {
+                return Result<PaymentDto>.Failure("You do not have permission to upload proof for this payment");
+            }
+
+            // Validate file (images and PDFs)
+            var (isValid, errorMessage) = await _fileStorageService.ValidateFileAsync(
+                file,
+                allowedExtensions: new[] { ".jpg", ".jpeg", ".png", ".webp", ".pdf" },
+                maxSizeInBytes: 10 * 1024 * 1024 // 10MB max for payment proofs
+            );
+
+            if (!isValid)
+            {
+                return Result<PaymentDto>.Failure(errorMessage);
+            }
+
+            // Delete old proof if exists
+            if (!string.IsNullOrEmpty(payment.PaymentProofUrl))
+            {
+                await _fileStorageService.DeleteFileAsync(payment.PaymentProofUrl);
+            }
+
+            // Upload new proof
+            var proofUrl = await _fileStorageService.UploadFileAsync(file, "payment-proofs");
+
+            // Update payment
+            payment.PaymentProofUrl = proofUrl;
+            payment.UpdatedAt = DateTime.UtcNow;
+
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+
+            var paymentDto = _mapper.Map<PaymentDto>(payment);
+
+            _logger.LogInformation("Payment proof uploaded: Payment#{PaymentId}, Tenant#{TenantId}, URL: {ProofUrl}",
+                paymentId, tenantId, proofUrl);
+
+            return Result<PaymentDto>.Success(paymentDto, "Payment proof uploaded successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading payment proof for payment {PaymentId}", paymentId);
+            return Result<PaymentDto>.Failure("An error occurred while uploading the payment proof");
         }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Payments;
 
@@ -51,4 +52,13 @@ public interface IPaymentService
     /// <param name="reason">Reason for rejection</param>
     /// <returns>Updated payment</returns>
     Task<Result<PaymentDto>> RejectPaymentAsync(int paymentId, string reason);
+
+    /// <summary>
+    /// Upload payment proof (tenant action)
+    /// </summary>
+    /// <param name="paymentId">Payment ID</param>
+    /// <param name="tenantId">Tenant ID</param>
+    /// <param name="file">Payment proof file (image or PDF)</param>
+    /// <returns>Updated payment</returns>
+    Task<Result<PaymentDto>> UploadPaymentProofAsync(int paymentId, int tenantId, IFormFile file);
 }

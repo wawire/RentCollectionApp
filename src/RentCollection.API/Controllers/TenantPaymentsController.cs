@@ -137,12 +137,11 @@ public class TenantPaymentsController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "No file provided" });
 
-        // TODO: Implement file upload logic
-        // 1. Validate file type (image, PDF)
-        // 2. Upload to cloud storage or local file system
-        // 3. Update payment record with proof URL
-        // 4. Return updated payment
+        var result = await _paymentService.UploadPaymentProofAsync(paymentId, tenantId.Value, file);
 
-        return Ok(new { message = "File upload not yet implemented" });
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 }
