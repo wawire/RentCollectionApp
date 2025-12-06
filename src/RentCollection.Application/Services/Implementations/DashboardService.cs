@@ -36,6 +36,12 @@ public class DashboardService : IDashboardService
     {
         try
         {
+            // Tenants do not have access to dashboard statistics
+            if (_currentUserService.IsTenant)
+            {
+                return Result<DashboardStatsDto>.Failure("Tenants do not have permission to access dashboard statistics");
+            }
+
             var properties = await _propertyRepository.GetAllAsync();
             var units = await _unitRepository.GetAllAsync();
             var tenants = await _tenantRepository.GetAllAsync();
@@ -112,6 +118,12 @@ public class DashboardService : IDashboardService
     {
         try
         {
+            // Tenants do not have access to monthly reports
+            if (_currentUserService.IsTenant)
+            {
+                return Result<IEnumerable<MonthlyReportDto>>.Failure("Tenants do not have permission to access monthly reports");
+            }
+
             if (year < 2000 || year > 2100)
             {
                 return Result<IEnumerable<MonthlyReportDto>>.Failure("Invalid year specified");

@@ -37,11 +37,27 @@ public class PropertyService : IPropertyService
             // Filter based on user role
             if (!_currentUserService.IsSystemAdmin)
             {
-                // Landlords, Caretakers, and Accountants only see properties they have access to
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-                if (landlordId.HasValue)
+                // Tenants only see their own property
+                if (_currentUserService.IsTenant)
                 {
-                    properties = properties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                    if (_currentUserService.PropertyId.HasValue)
+                    {
+                        properties = properties.Where(p => p.Id == _currentUserService.PropertyId.Value).ToList();
+                    }
+                    else
+                    {
+                        // Tenant has no property assigned - return empty list
+                        properties = new List<Property>();
+                    }
+                }
+                // Landlords, Caretakers, and Accountants only see properties they have access to
+                else
+                {
+                    var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
+                    if (landlordId.HasValue)
+                    {
+                        properties = properties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                    }
                 }
             }
 
@@ -70,12 +86,24 @@ public class PropertyService : IPropertyService
             // Check access permission
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-                if (landlordId.HasValue)
+                // Tenants can only access their own property
+                if (_currentUserService.IsTenant)
                 {
-                    if (property.LandlordId != landlordId.Value)
+                    if (!_currentUserService.PropertyId.HasValue || property.Id != _currentUserService.PropertyId.Value)
                     {
                         return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                    }
+                }
+                // Landlords, Caretakers, and Accountants check by landlordId
+                else
+                {
+                    var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
+                    if (landlordId.HasValue)
+                    {
+                        if (property.LandlordId != landlordId.Value)
+                        {
+                            return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                        }
                     }
                 }
             }
@@ -135,6 +163,12 @@ public class PropertyService : IPropertyService
             // Check access permission
             if (!_currentUserService.IsSystemAdmin)
             {
+                // Tenants cannot update properties
+                if (_currentUserService.IsTenant)
+                {
+                    return Result<PropertyDto>.Failure("Tenants do not have permission to modify properties");
+                }
+
                 var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
 
                 if (landlordId.HasValue)
@@ -181,6 +215,11 @@ public class PropertyService : IPropertyService
             }
 
             // Check access permission - Only SystemAdmin and Landlords can delete
+            if (_currentUserService.IsTenant || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            {
+                return Result.Failure("You do not have permission to delete properties");
+            }
+
             if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
             {
                 return Result.Failure("You do not have permission to delete properties");
@@ -230,10 +269,27 @@ public class PropertyService : IPropertyService
             // Filter based on user role
             if (!_currentUserService.IsSystemAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-                if (landlordId.HasValue)
+                // Tenants only see their own property
+                if (_currentUserService.IsTenant)
                 {
-                    allProperties = allProperties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                    if (_currentUserService.PropertyId.HasValue)
+                    {
+                        allProperties = allProperties.Where(p => p.Id == _currentUserService.PropertyId.Value).ToList();
+                    }
+                    else
+                    {
+                        // Tenant has no property assigned - return empty list
+                        allProperties = new List<Property>();
+                    }
+                }
+                // Landlords, Caretakers, and Accountants filter by landlordId
+                else
+                {
+                    var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
+                    if (landlordId.HasValue)
+                    {
+                        allProperties = allProperties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                    }
                 }
             }
 
