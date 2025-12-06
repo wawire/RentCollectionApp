@@ -161,4 +161,36 @@ public class AuthController : ControllerBase
         await _authService.DeleteUserAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Request password reset (sends email with reset link)
+    /// </summary>
+    /// <param name="forgotPasswordDto">Email address</param>
+    /// <returns>Success message</returns>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+    {
+        await _authService.RequestPasswordResetAsync(forgotPasswordDto.Email);
+
+        // Always return success message (security best practice - don't reveal if email exists)
+        return Ok(new { message = "If the email exists in our system, a password reset link has been sent." });
+    }
+
+    /// <summary>
+    /// Reset password using a valid token
+    /// </summary>
+    /// <param name="resetPasswordDto">Reset password details</param>
+    /// <returns>Success message</returns>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+    {
+        await _authService.ResetPasswordAsync(resetPasswordDto);
+        return Ok(new { message = "Password reset successful. You can now login with your new password." });
+    }
 }

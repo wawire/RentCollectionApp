@@ -41,4 +41,14 @@ public interface IAuthService
     /// Delete user
     /// </summary>
     Task DeleteUserAsync(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Request password reset (sends email with reset token)
+    /// </summary>
+    Task RequestPasswordResetAsync(string email, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reset password using a valid token
+    /// </summary>
+    Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto, CancellationToken cancellationToken = default);
 }

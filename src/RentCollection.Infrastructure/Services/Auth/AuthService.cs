@@ -1,7 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +15,7 @@ using RentCollection.Application.Services.Auth;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
+using RentCollection.Infrastructure.Data;
 using BCrypt.Net;
 
 namespace RentCollection.Infrastructure.Services.Auth;
@@ -24,6 +28,9 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IPropertyRepository _propertyRepository;
     private readonly IAuditLogService _auditLogService;
+    private readonly IEmailService _emailService;
+    private readonly ApplicationDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IMapper _mapper;
     private readonly ILogger<AuthService> _logger;
     private readonly IConfiguration _configuration;
@@ -33,6 +40,9 @@ public class AuthService : IAuthService
         IUserRepository userRepository,
         IPropertyRepository propertyRepository,
         IAuditLogService auditLogService,
+        IEmailService emailService,
+        ApplicationDbContext context,
+        IHttpContextAccessor httpContextAccessor,
         IMapper mapper,
         ILogger<AuthService> logger,
         IConfiguration configuration,
@@ -41,6 +51,9 @@ public class AuthService : IAuthService
         _userRepository = userRepository;
         _propertyRepository = propertyRepository;
         _auditLogService = auditLogService;
+        _emailService = emailService;
+        _context = context;
+        _httpContextAccessor = httpContextAccessor;
         _mapper = mapper;
         _logger = logger;
         _configuration = configuration;
@@ -435,6 +448,123 @@ public class AuthService : IAuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public async Task RequestPasswordResetAsync(string email, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Find user by email
+            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+
+            // Don't reveal if user exists or not (security best practice)
+            if (user == null)
+            {
+                _logger.LogWarning("Password reset requested for non-existent email: {Email}", email);
+                return; // Silently return without error
+            }
+
+            // Check if user is active
+            if (user.Status != UserStatus.Active)
+            {
+                _logger.LogWarning("Password reset requested for inactive user: {Email}", email);
+                return; // Silently return without error
+            }
+
+            // Generate secure random token
+            var token = GenerateSecureToken();
+
+            // Get IP address
+            var ipAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
+            // Create password reset token
+            var resetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = token,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(1), // Token valid for 1 hour
+                IsUsed = false,
+                IpAddress = ipAddress
+            };
+
+            await _context.PasswordResetTokens.AddAsync(resetToken, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Send password reset email
+            await _emailService.SendPasswordResetEmailAsync(user.Email, token, user.FullName);
+
+            _logger.LogInformation("Password reset email sent to: {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error requesting password reset for email: {Email}", email);
+            // Don't throw - silently fail to avoid revealing user existence
+        }
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Find token
+            var resetToken = await _context.PasswordResetTokens
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.Token == resetPasswordDto.Token, cancellationToken);
+
+            if (resetToken == null)
+            {
+                throw new BadRequestException("Invalid or expired reset token");
+            }
+
+            // Check if token is valid
+            if (!resetToken.IsValid)
+            {
+                if (resetToken.IsUsed)
+                {
+                    throw new BadRequestException("This reset token has already been used");
+                }
+                else
+                {
+                    throw new BadRequestException("This reset token has expired");
+                }
+            }
+
+            // Hash new password
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
+
+            // Update user password
+            resetToken.User.PasswordHash = passwordHash;
+            await _userRepository.UpdateAsync(resetToken.User);
+
+            // Mark token as used
+            resetToken.IsUsed = true;
+            resetToken.UsedAt = DateTime.UtcNow;
+            _context.PasswordResetTokens.Update(resetToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Password reset successful for user: {Email}", resetToken.User.Email);
+        }
+        catch (BadRequestException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting password with token");
+            throw new BadRequestException("An error occurred while resetting the password");
+        }
+    }
+
+    private string GenerateSecureToken()
+    {
+        // Generate a cryptographically secure random token
+        var randomBytes = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+        return Convert.ToBase64String(randomBytes).Replace("+", "-").Replace("/", "_").Replace("=", "");
     }
 
     private UserDto MapToUserDto(User user)

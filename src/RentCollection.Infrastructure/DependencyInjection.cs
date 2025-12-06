@@ -35,6 +35,7 @@ public static class DependencyInjection
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISmsService, AfricasTalkingSmsService>();
         services.AddScoped<IPdfService, PdfGenerationService>();
         services.AddScoped<IPublicListingService, PublicListingService>();
