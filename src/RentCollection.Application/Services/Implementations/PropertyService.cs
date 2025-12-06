@@ -122,6 +122,12 @@ public class PropertyService : IPropertyService
     {
         try
         {
+            // Only SystemAdmin and Landlords can create properties
+            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            {
+                return Result<PropertyDto>.Failure("Only landlords can create properties");
+            }
+
             var property = _mapper.Map<Property>(createDto);
             property.CreatedAt = DateTime.UtcNow;
 
@@ -130,11 +136,7 @@ public class PropertyService : IPropertyService
             {
                 property.LandlordId = _currentUserService.UserIdInt;
             }
-            else if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
-            {
-                property.LandlordId = _currentUserService.LandlordIdInt;
-            }
-            // SystemAdmin can create properties for any landlord (would need additional logic/DTO field)
+            // SystemAdmin must specify LandlordId in the DTO (additional validation needed)
 
             var createdProperty = await _propertyRepository.AddAsync(property);
             var propertyDto = _mapper.Map<PropertyDto>(property);

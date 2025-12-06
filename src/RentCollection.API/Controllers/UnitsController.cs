@@ -28,6 +28,7 @@ public class UnitsController : ControllerBase
     /// </summary>
     /// <returns>List of all units</returns>
     [HttpGet]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -46,6 +47,7 @@ public class UnitsController : ControllerBase
     /// <param name="id">Unit ID</param>
     /// <returns>Unit details</returns>
     [HttpGet("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -64,6 +66,7 @@ public class UnitsController : ControllerBase
     /// <param name="propertyId">Property ID</param>
     /// <returns>List of units for the specified property</returns>
     [HttpGet("property/{propertyId}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByPropertyId(int propertyId)

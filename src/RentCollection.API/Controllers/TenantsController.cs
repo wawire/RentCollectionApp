@@ -28,6 +28,7 @@ public class TenantsController : ControllerBase
     /// </summary>
     /// <returns>List of all tenants</returns>
     [HttpGet]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -46,6 +47,7 @@ public class TenantsController : ControllerBase
     /// <param name="id">Tenant ID</param>
     /// <returns>Tenant details including payment history</returns>
     [HttpGet("{id}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -64,6 +66,7 @@ public class TenantsController : ControllerBase
     /// <param name="unitId">Unit ID</param>
     /// <returns>List of tenants for the specified unit</returns>
     [HttpGet("unit/{unitId}")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByUnitId(int unitId)
@@ -81,6 +84,7 @@ public class TenantsController : ControllerBase
     /// </summary>
     /// <returns>List of active tenants in occupied units</returns>
     [HttpGet("occupied")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetOccupiedTenants()
