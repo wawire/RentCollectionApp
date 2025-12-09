@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ITenantPortalService, TenantPortalService>();
+        services.AddScoped<IReportsService, ReportsService>();
 
         // File storage service - Use Local for development, Azure for production
         // To use Azure Blob Storage in production, update this registration to:
