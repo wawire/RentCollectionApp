@@ -22,6 +22,23 @@ public class Tenant : BaseEntity
     public int RentDueDay { get; set; } = 5;
 
     /// <summary>
+    /// Grace period in days before late payment penalties apply. Default is 3 days.
+    /// </summary>
+    public int LateFeeGracePeriodDays { get; set; } = 3;
+
+    /// <summary>
+    /// Late payment fee as a percentage of monthly rent. Default is 5% (0.05).
+    /// For example, 0.05 = 5% penalty, 0.10 = 10% penalty.
+    /// </summary>
+    public decimal LateFeePercentage { get; set; } = 0.05m;
+
+    /// <summary>
+    /// Fixed late payment fee amount (optional, used instead of percentage if set).
+    /// If both percentage and fixed amount are set, fixed amount takes precedence.
+    /// </summary>
+    public decimal? LateFeeFixedAmount { get; set; }
+
+    /// <summary>
     /// Legacy field - use Status instead. Kept for backward compatibility.
     /// </summary>
     public bool IsActive { get; set; } = true;
