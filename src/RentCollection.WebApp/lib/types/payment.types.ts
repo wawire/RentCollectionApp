@@ -31,6 +31,11 @@ export interface Payment {
   periodStart: string
   periodEnd: string
   createdAt: string
+  dueDate: string
+  lateFeeAmount: number
+  totalAmount: number
+  isOverdue: boolean
+  daysOverdue: number
 }
 
 export interface CreatePaymentDto {
