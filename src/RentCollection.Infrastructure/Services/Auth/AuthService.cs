@@ -138,7 +138,7 @@ public class AuthService : IAuthService
                     // Validate that the user being created is assigned to the landlord's properties
                     if (registerDto.PropertyId.HasValue)
                     {
-                        var property = await _propertyRepository.GetByIdAsync(registerDto.PropertyId.Value, cancellationToken);
+                        var property = await _propertyRepository.GetByIdAsync(registerDto.PropertyId.Value);
 
                         if (property == null)
                         {
@@ -809,14 +809,21 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
 
         // Generate JWT token
-        var token = _jwtTokenGenerator.GenerateToken(user);
+        var token = GenerateJwtToken(user);
 
         _logger.LogInformation("User {UserId} logged in successfully with 2FA", user.Id);
 
         return new AuthResponseDto
         {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role,
             Token = token,
-            User = MapToUserDto(user)
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
+            PropertyId = user.PropertyId,
+            TenantId = user.TenantId
         };
     }
 

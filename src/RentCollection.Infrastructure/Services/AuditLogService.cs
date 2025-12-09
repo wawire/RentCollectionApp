@@ -66,5 +66,20 @@ namespace RentCollection.Infrastructure.Services
                 return ServiceResult<List<AuditLog>>.Failure($"Failed to get entity audit logs: {ex.Message}");
             }
         }
+
+        public async Task LogUserCreatedAsync(int userId, string email, string role)
+        {
+            await LogActionAsync("User.Created", "User", userId, $"User created: {email} ({role})");
+        }
+
+        public async Task LogUserStatusChangedAsync(int userId, string oldStatus, string newStatus)
+        {
+            await LogActionAsync("User.StatusChanged", "User", userId, $"Status changed from {oldStatus} to {newStatus}");
+        }
+
+        public async Task LogUserDeletedAsync(int userId, string email)
+        {
+            await LogActionAsync("User.Deleted", "User", userId, $"User deleted: {email}");
+        }
     }
 }
