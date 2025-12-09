@@ -3,35 +3,29 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
-import { tenantPaymentService } from '@/lib/services/tenantPaymentService'
-import { PaymentInstructions, TenantPaymentHistory } from '@/lib/types/tenantPayment.types'
-import { FaMoneyBillWave, FaClock, FaCheckCircle, FaExclamationTriangle, FaReceipt } from 'react-icons/fa'
+import { tenantPortalService, TenantDashboardDto } from '@/lib/services/tenantPortalService'
+import { FaMoneyBillWave, FaClock, FaCheckCircle, FaExclamationTriangle, FaReceipt, FaFileAlt, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa'
 
 export default function TenantPortalPage() {
-  const [instructions, setInstructions] = useState<PaymentInstructions | null>(null)
-  const [recentPayments, setRecentPayments] = useState<TenantPaymentHistory[]>([])
+  const [dashboard, setDashboard] = useState<TenantDashboardDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDashboard = async () => {
       try {
         setLoading(true)
-        const [instructionsData, historyData] = await Promise.all([
-          tenantPaymentService.getPaymentInstructions(),
-          tenantPaymentService.getPaymentHistory(),
-        ])
-        setInstructions(instructionsData)
-        setRecentPayments(historyData.slice(0, 5)) // Show only 5 most recent
+        const data = await tenantPortalService.getDashboard()
+        setDashboard(data)
         setError(null)
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load tenant data')
+        setError(err.message || 'Failed to load dashboard')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
+    fetchDashboard()
   }, [])
 
   if (loading) {
@@ -50,14 +44,11 @@ export default function TenantPortalPage() {
     )
   }
 
-  if (!instructions) return null
-
-  const pendingPayments = recentPayments.filter((p) => p.status === 'Pending').length
-  const lastPayment = recentPayments.find((p) => p.status === 'Completed')
+  if (!dashboard) return null
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Completed':
+      case 'Confirmed':
         return <FaCheckCircle className="text-green-600" />
       case 'Pending':
         return <FaClock className="text-yellow-600" />
@@ -70,7 +61,7 @@ export default function TenantPortalPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed':
+      case 'Confirmed':
         return 'bg-green-100 text-green-800'
       case 'Pending':
         return 'bg-yellow-100 text-yellow-800'
@@ -86,39 +77,58 @@ export default function TenantPortalPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Tenant Portal</h1>
-        <p className="text-primary/60 mt-2 tracking-wide">Welcome, {instructions.tenantName}</p>
+        <p className="text-primary/60 mt-2 tracking-wide">Welcome, {dashboard.tenantInfo.fullName}</p>
       </div>
+
+      {/* Overdue Alert */}
+      {dashboard.hasOverduePayments && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <FaExclamationTriangle className="text-red-600 text-xl mt-1" />
+            <div className="flex-1">
+              <h3 className="font-medium text-red-900">Overdue Payment</h3>
+              <p className="text-sm text-red-700 mt-1">
+                You have overdue payments totaling <strong>KSh {dashboard.overdueAmount.toLocaleString()}</strong>.
+                {dashboard.daysOverdue > 0 && ` Payment is ${dashboard.daysOverdue} day(s) overdue.`}
+              </p>
+              <p className="text-xs text-red-600 mt-2">{dashboard.lateFeePolicy}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tenant Info Card */}
       <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <p className="text-sm text-primary/60 tracking-wide">Unit</p>
-            <p className="text-lg font-medium text-primary mt-1">{instructions.unitNumber}</p>
+            <p className="text-lg font-medium text-primary mt-1">{dashboard.tenantInfo.unitNumber}</p>
           </div>
           <div>
             <p className="text-sm text-primary/60 tracking-wide">Property</p>
-            <p className="text-lg font-medium text-primary mt-1">{instructions.propertyName}</p>
+            <p className="text-lg font-medium text-primary mt-1">{dashboard.tenantInfo.propertyName}</p>
           </div>
           <div>
             <p className="text-sm text-primary/60 tracking-wide">Monthly Rent</p>
             <p className="text-lg font-medium text-primary mt-1">
-              KSh {instructions.monthlyRent.toLocaleString()}
+              KSh {dashboard.tenantInfo.monthlyRent.toLocaleString()}
             </p>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-primary/60 tracking-wide">Pending Payments</p>
-              <p className="text-2xl font-medium text-primary mt-2">{pendingPayments}</p>
+              <p className="text-sm text-primary/60 tracking-wide">Current Balance</p>
+              <p className="text-2xl font-medium text-primary mt-2">
+                KSh {dashboard.currentBalance.toLocaleString()}
+              </p>
             </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <FaClock className="text-yellow-600 text-2xl" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <FaMoneyBillWave className="text-blue-600 text-2xl" />
             </div>
           </div>
         </div>
@@ -126,15 +136,34 @@ export default function TenantPortalPage() {
         <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-primary/60 tracking-wide">Last Payment</p>
+              <p className="text-sm text-primary/60 tracking-wide">Next Payment</p>
               <p className="text-2xl font-medium text-primary mt-2">
-                {lastPayment ? `KSh ${lastPayment.amount.toLocaleString()}` : 'N/A'}
+                {dashboard.daysUntilDue !== undefined && dashboard.daysUntilDue >= 0
+                  ? `${dashboard.daysUntilDue} days`
+                  : 'Overdue'}
               </p>
-              {lastPayment && (
+              {dashboard.nextPaymentAmount && (
                 <p className="text-xs text-primary/60 mt-1">
-                  {new Date(lastPayment.paymentDate).toLocaleDateString()}
+                  KSh {dashboard.nextPaymentAmount.toLocaleString()}
                 </p>
               )}
+            </div>
+            <div className={`p-3 rounded-lg ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
+              <FaCalendarAlt className={`text-2xl ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-primary/60 tracking-wide">Total Paid</p>
+              <p className="text-2xl font-medium text-primary mt-2">
+                KSh {dashboard.totalAmountPaid.toLocaleString()}
+              </p>
+              <p className="text-xs text-primary/60 mt-1">
+                {dashboard.totalPaymentsMade} payments
+              </p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
               <FaCheckCircle className="text-green-600 text-2xl" />
@@ -145,11 +174,16 @@ export default function TenantPortalPage() {
         <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-primary/60 tracking-wide">Total Payments</p>
-              <p className="text-2xl font-medium text-primary mt-2">{recentPayments.length}</p>
+              <p className="text-sm text-primary/60 tracking-wide">Documents</p>
+              <p className="text-2xl font-medium text-primary mt-2">{dashboard.documentCount}</p>
+              {dashboard.daysUntilLeaseExpiry !== undefined && (
+                <p className="text-xs text-primary/60 mt-1">
+                  Lease: {dashboard.daysUntilLeaseExpiry} days
+                </p>
+              )}
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <FaReceipt className="text-blue-600 text-2xl" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <FaFileAlt className="text-purple-600 text-2xl" />
             </div>
           </div>
         </div>
@@ -160,15 +194,15 @@ export default function TenantPortalPage() {
         <h2 className="text-xl font-serif font-normal text-primary tracking-wide mb-4">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
             href="/tenant-portal/payment-instructions"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
             <FaMoneyBillWave className="text-blue-600 text-xl" />
             <div>
-              <p className="font-medium text-primary">Payment Instructions</p>
-              <p className="text-sm text-primary/60">View how to pay rent</p>
+              <p className="font-medium text-primary">Pay Rent</p>
+              <p className="text-sm text-primary/60">Instructions</p>
             </div>
           </Link>
 
@@ -179,22 +213,84 @@ export default function TenantPortalPage() {
             <FaReceipt className="text-green-600 text-xl" />
             <div>
               <p className="font-medium text-primary">Record Payment</p>
-              <p className="text-sm text-primary/60">Submit payment details</p>
+              <p className="text-sm text-primary/60">Submit details</p>
             </div>
           </Link>
 
           <Link
-            href="/tenant-portal/history"
+            href="/tenant-portal/documents"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <FaClock className="text-purple-600 text-xl" />
+            <FaFileAlt className="text-purple-600 text-xl" />
             <div>
-              <p className="font-medium text-primary">Payment History</p>
-              <p className="text-sm text-primary/60">View all payments</p>
+              <p className="font-medium text-primary">Documents</p>
+              <p className="text-sm text-primary/60">Upload & view</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/tenant-portal/lease-info"
+            className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+          >
+            <FaInfoCircle className="text-orange-600 text-xl" />
+            <div>
+              <p className="font-medium text-primary">Lease Info</p>
+              <p className="text-sm text-primary/60">View details</p>
             </div>
           </Link>
         </div>
       </div>
+
+      {/* Pending Payments */}
+      {dashboard.pendingPayments.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
+          <h2 className="text-xl font-serif font-normal text-primary tracking-wide mb-4">
+            Pending Payments
+          </h2>
+          <div className="space-y-3">
+            {dashboard.pendingPayments.map((payment) => (
+              <div
+                key={payment.id}
+                className="flex items-center justify-between p-4 border border-primary/10 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  {getStatusIcon(payment.status)}
+                  <div>
+                    <p className="font-medium text-primary">
+                      KSh {payment.totalAmount.toLocaleString()}
+                      {payment.lateFeeAmount > 0 && (
+                        <span className="text-sm text-red-600 ml-2">
+                          (includes KSh {payment.lateFeeAmount.toLocaleString()} late fee)
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-sm text-primary/60">
+                      Due: {new Date(payment.dueDate).toLocaleDateString()}
+                      {payment.isLate && payment.daysOverdue > 0 && (
+                        <span className="text-red-600 ml-2">
+                          ({payment.daysOverdue} days overdue)
+                        </span>
+                      )}
+                    </p>
+                    {payment.transactionReference && (
+                      <p className="text-xs text-primary/60 mt-1">
+                        Ref: {payment.transactionReference}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    payment.status
+                  )}`}
+                >
+                  {payment.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recent Payments */}
       <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
@@ -210,11 +306,11 @@ export default function TenantPortalPage() {
           </Link>
         </div>
 
-        {recentPayments.length === 0 ? (
+        {dashboard.recentPayments.length === 0 ? (
           <p className="text-primary/60 text-center py-8">No payments recorded yet</p>
         ) : (
           <div className="space-y-3">
-            {recentPayments.map((payment) => (
+            {dashboard.recentPayments.map((payment) => (
               <div
                 key={payment.id}
                 className="flex items-center justify-between p-4 border border-primary/10 rounded-lg"
@@ -223,7 +319,7 @@ export default function TenantPortalPage() {
                   {getStatusIcon(payment.status)}
                   <div>
                     <p className="font-medium text-primary">
-                      KSh {payment.amount.toLocaleString()}
+                      KSh {payment.totalAmount.toLocaleString()}
                     </p>
                     <p className="text-sm text-primary/60">
                       {new Date(payment.paymentDate).toLocaleDateString()} •{' '}
