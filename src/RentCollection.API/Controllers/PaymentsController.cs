@@ -222,6 +222,46 @@ public class PaymentsController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Calculate late fee for a payment (preview without applying)
+    /// </summary>
+    /// <param name="id">Payment ID</param>
+    /// <returns>Late fee calculation details</returns>
+    [HttpGet("{id}/calculate-late-fee")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Accountant,Tenant")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CalculateLateFee(int id)
+    {
+        var result = await _paymentService.CalculateLateFeeAsync(id);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Apply late fee to an overdue payment
+    /// </summary>
+    /// <param name="id">Payment ID</param>
+    /// <returns>Updated payment with late fee</returns>
+    [HttpPost("{id}/apply-late-fee")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ApplyLateFee(int id)
+    {
+        var result = await _paymentService.ApplyLateFeeAsync(id);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
 
 /// <summary>

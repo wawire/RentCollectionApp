@@ -25,6 +25,11 @@ public class Payment : BaseEntity
     /// </summary>
     public DateTime DueDate { get; set; }
 
+    /// <summary>
+    /// Late payment penalty/fee amount applied to this payment
+    /// </summary>
+    public decimal LateFeeAmount { get; set; } = 0;
+
     public PaymentMethod PaymentMethod { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public string? TransactionReference { get; set; }
@@ -77,6 +82,16 @@ public class Payment : BaseEntity
     /// Days currently overdue for pending payments (0 if not applicable)
     /// </summary>
     public int CurrentDaysOverdue => IsPendingAndOverdue ? (DateTime.UtcNow.Date - DueDate.Date).Days : 0;
+
+    /// <summary>
+    /// Total amount including base amount and late fee
+    /// </summary>
+    public decimal TotalAmount => Amount + LateFeeAmount;
+
+    /// <summary>
+    /// Indicates if a late fee has been applied to this payment
+    /// </summary>
+    public bool HasLateFee => LateFeeAmount > 0;
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;

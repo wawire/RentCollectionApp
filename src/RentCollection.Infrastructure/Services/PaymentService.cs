@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Payments;
+using RentCollection.Application.Helpers;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
@@ -801,6 +802,105 @@ public class PaymentService : IPaymentService
         {
             _logger.LogError(ex, "Error retrieving overdue payments");
             return Result<IEnumerable<PaymentDto>>.Failure("An error occurred while retrieving overdue payments");
+        }
+    }
+
+    public async Task<Result<PaymentDto>> ApplyLateFeeAsync(int paymentId)
+    {
+        try
+        {
+            var payment = await _context.Payments
+                .Include(p => p.Tenant)
+                .FirstOrDefaultAsync(p => p.Id == paymentId);
+
+            if (payment == null)
+            {
+                return Result<PaymentDto>.Failure($"Payment with ID {paymentId} not found");
+            }
+
+            // Check if payment is pending
+            if (payment.Status != PaymentStatus.Pending)
+            {
+                return Result<PaymentDto>.Failure("Late fees can only be applied to pending payments");
+            }
+
+            // Check if already has late fee
+            if (payment.LateFeeAmount > 0)
+            {
+                return Result<PaymentDto>.Failure("Late fee has already been applied to this payment");
+            }
+
+            // Calculate late fee
+            var lateFee = LateFeeCalculator.CalculateCurrentLateFee(payment.Tenant, payment.DueDate);
+
+            if (lateFee == 0)
+            {
+                return Result<PaymentDto>.Failure("No late fee applicable - payment is within grace period or not overdue");
+            }
+
+            // Apply late fee
+            payment.LateFeeAmount = lateFee;
+            payment.UpdatedAt = DateTime.UtcNow;
+
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+
+            var paymentDto = _mapper.Map<PaymentDto>(payment);
+
+            _logger.LogInformation("Late fee of KES {LateFee} applied to payment {PaymentId}", lateFee, paymentId);
+
+            return Result<PaymentDto>.Success(paymentDto, $"Late fee of KES {lateFee:N2} applied successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error applying late fee to payment {PaymentId}", paymentId);
+            return Result<PaymentDto>.Failure("An error occurred while applying the late fee");
+        }
+    }
+
+    public async Task<Result<LateFeeCalculationDto>> CalculateLateFeeAsync(int paymentId)
+    {
+        try
+        {
+            var payment = await _context.Payments
+                .Include(p => p.Tenant)
+                .FirstOrDefaultAsync(p => p.Id == paymentId);
+
+            if (payment == null)
+            {
+                return Result<LateFeeCalculationDto>.Failure($"Payment with ID {paymentId} not found");
+            }
+
+            var currentDate = DateTime.UtcNow;
+            var daysOverdue = (currentDate.Date - payment.DueDate.Date).Days;
+            var gracePeriod = payment.Tenant.LateFeeGracePeriodDays;
+            var penaltyDays = Math.Max(0, daysOverdue - gracePeriod);
+            var isWithinGracePeriod = daysOverdue <= gracePeriod;
+
+            var lateFee = LateFeeCalculator.CalculateCurrentLateFee(payment.Tenant, payment.DueDate);
+
+            var calculationDto = new LateFeeCalculationDto
+            {
+                PaymentId = payment.Id,
+                Amount = payment.Amount,
+                LateFeeAmount = lateFee,
+                TotalAmount = payment.Amount + lateFee,
+                DueDate = payment.DueDate,
+                CurrentDate = currentDate,
+                DaysOverdue = Math.Max(0, daysOverdue),
+                GracePeriodDays = gracePeriod,
+                PenaltyDays = penaltyDays,
+                IsWithinGracePeriod = isWithinGracePeriod,
+                LateFeePolicy = LateFeeCalculator.GetLateFeePolicy(payment.Tenant),
+                LateFeeDetails = LateFeeCalculator.GetLateFeeDetails(payment.Tenant, payment.DueDate, currentDate)
+            };
+
+            return Result<LateFeeCalculationDto>.Success(calculationDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calculating late fee for payment {PaymentId}", paymentId);
+            return Result<LateFeeCalculationDto>.Failure("An error occurred while calculating the late fee");
         }
     }
 }
