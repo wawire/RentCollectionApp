@@ -19,6 +19,12 @@ public class Payment : BaseEntity
 
     public decimal Amount { get; set; }
     public DateTime PaymentDate { get; set; }
+
+    /// <summary>
+    /// Due date for this payment. If payment is made after this date, it's considered late.
+    /// </summary>
+    public DateTime DueDate { get; set; }
+
     public PaymentMethod PaymentMethod { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public string? TransactionReference { get; set; }
@@ -50,6 +56,27 @@ public class Payment : BaseEntity
     /// User ID of landlord/caretaker who confirmed the payment
     /// </summary>
     public int? ConfirmedByUserId { get; set; }
+
+    // Computed properties for late payment tracking
+    /// <summary>
+    /// Indicates if the payment was made after the due date
+    /// </summary>
+    public bool IsLate => PaymentDate > DueDate;
+
+    /// <summary>
+    /// Number of days the payment is overdue (0 if not late)
+    /// </summary>
+    public int DaysOverdue => IsLate ? (PaymentDate.Date - DueDate.Date).Days : 0;
+
+    /// <summary>
+    /// Indicates if payment is currently pending and past due date
+    /// </summary>
+    public bool IsPendingAndOverdue => Status == PaymentStatus.Pending && DateTime.UtcNow.Date > DueDate.Date;
+
+    /// <summary>
+    /// Days currently overdue for pending payments (0 if not applicable)
+    /// </summary>
+    public int CurrentDaysOverdue => IsPendingAndOverdue ? (DateTime.UtcNow.Date - DueDate.Date).Days : 0;
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;
