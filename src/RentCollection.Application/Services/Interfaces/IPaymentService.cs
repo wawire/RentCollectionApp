@@ -68,4 +68,18 @@ public interface IPaymentService
     /// <param name="propertyId">Optional property ID filter</param>
     /// <returns>List of overdue payments</returns>
     Task<Result<IEnumerable<PaymentDto>>> GetOverduePaymentsAsync(int? propertyId = null);
+
+    /// <summary>
+    /// Apply late fee to an overdue payment
+    /// </summary>
+    /// <param name="paymentId">Payment ID</param>
+    /// <returns>Updated payment with late fee applied</returns>
+    Task<Result<PaymentDto>> ApplyLateFeeAsync(int paymentId);
+
+    /// <summary>
+    /// Calculate late fee for a payment without applying it
+    /// </summary>
+    /// <param name="paymentId">Payment ID</param>
+    /// <returns>Calculated late fee amount and details</returns>
+    Task<Result<LateFeeCalculationDto>> CalculateLateFeeAsync(int paymentId);
 }
