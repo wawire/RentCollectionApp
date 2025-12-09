@@ -1,0 +1,105 @@
+using Microsoft.AspNetCore.Authorization;
+using RentCollection.Domain.Enums;
+using System.Security.Claims;
+
+namespace RentCollection.Infrastructure.Security
+{
+    /// <summary>
+    /// Authorization handler that checks if user has required permission based on their role
+    /// </summary>
+    public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+    {
+        protected override Task HandleRequirementAsync(
+            AuthorizationHandlerContext context,
+            PermissionRequirement requirement)
+        {
+            // Get user's role from claims
+            var roleClaim = context.User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrEmpty(roleClaim))
+            {
+                return Task.CompletedTask; // Fail - no role claim
+            }
+
+            if (!Enum.TryParse<UserRole>(roleClaim, out var userRole))
+            {
+                return Task.CompletedTask; // Fail - invalid role
+            }
+
+            // Check if user's role has the required permission
+            if (HasPermission(userRole, requirement.Permission))
+            {
+                context.Succeed(requirement);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Determines if a role has a specific permission
+        /// </summary>
+        private static bool HasPermission(UserRole role, Permission permission)
+        {
+            // SystemAdmin has all permissions
+            if (role == UserRole.SystemAdmin)
+            {
+                return true;
+            }
+
+            // Define role-permission mappings
+            return permission switch
+            {
+                // User Management - Admin only
+                Permission.CreateUser => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.ViewUsers => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.UpdateUser => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.DeleteUser => role == UserRole.SystemAdmin,
+
+                // Property Management - Admin and Landlord
+                Permission.CreateProperty => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.ViewProperties => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker || role == UserRole.Accountant,
+                Permission.UpdateProperty => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.DeleteProperty => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
+                // Unit Management
+                Permission.CreateUnit => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.ViewUnits => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker || role == UserRole.Accountant,
+                Permission.UpdateUnit => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker,
+                Permission.DeleteUnit => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
+                // Tenant Management
+                Permission.CreateTenant => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker,
+                Permission.ViewTenants => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker || role == UserRole.Accountant,
+                Permission.UpdateTenant => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker,
+                Permission.DeleteTenant => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
+                // Payment Management
+                Permission.CreatePayment => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Accountant,
+                Permission.ViewPayments => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Accountant || role == UserRole.Tenant,
+                Permission.UpdatePayment => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Accountant,
+                Permission.DeletePayment => role == UserRole.SystemAdmin,
+                Permission.ProcessRefund => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
+                // Document Management
+                Permission.UploadDocument => true, // All authenticated users can upload
+                Permission.ViewDocuments => true, // All authenticated users can view (filtered by service layer)
+                Permission.VerifyDocument => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Accountant,
+                Permission.DeleteDocument => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
+                // Reports - Landlord, Accountant, Admin
+                Permission.ViewReports => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Accountant,
+                Permission.ExportReports => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Accountant,
+
+                // Notifications
+                Permission.SendNotifications => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.ViewNotifications => true, // All users can view their own notifications
+
+                // System
+                Permission.ManageSettings => role == UserRole.SystemAdmin,
+                Permission.ViewAuditLogs => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
+                _ => false // Deny by default
+            };
+        }
+    }
+}

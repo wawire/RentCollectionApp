@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentCollection.Application.Services.Interfaces;
-// using RentCollection.Infrastructure.Security; // Commented out - Permission system not yet implemented
+using RentCollection.Infrastructure.Security;
+using RentCollection.Domain.Enums;
 using System.Security.Claims;
 
 namespace RentCollection.API.Controllers
@@ -24,7 +25,7 @@ namespace RentCollection.API.Controllers
         /// <param name="startDate">Start date of the reporting period</param>
         /// <param name="endDate">End date of the reporting period</param>
         [HttpGet("profit-loss")]
-        // [PermissionAuthorize(Permission.ViewReports)] // Commented out - Permission system not yet implemented
+        [PermissionAuthorize(Permission.ViewReports)]
         public async Task<IActionResult> GetProfitLossReport([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
@@ -47,7 +48,7 @@ namespace RentCollection.API.Controllers
         /// Generate Arrears Report showing all tenants with overdue payments
         /// </summary>
         [HttpGet("arrears")]
-        // [PermissionAuthorize(Permission.ViewReports)] // Commented out - Permission system not yet implemented
+        [PermissionAuthorize(Permission.ViewReports)]
         public async Task<IActionResult> GetArrearsReport()
         {
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
@@ -70,7 +71,7 @@ namespace RentCollection.API.Controllers
         /// Generate Occupancy Report showing vacancy rates and potential revenue
         /// </summary>
         [HttpGet("occupancy")]
-        // [PermissionAuthorize(Permission.ViewReports)] // Commented out - Permission system not yet implemented
+        [PermissionAuthorize(Permission.ViewReports)]
         public async Task<IActionResult> GetOccupancyReport()
         {
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
