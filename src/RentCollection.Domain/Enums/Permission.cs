@@ -50,6 +50,22 @@ namespace RentCollection.Domain.Enums
         SendNotifications = 70,
         ViewNotifications = 71,
 
+        // Maintenance Requests
+        CreateMaintenanceRequest = 90,
+        ViewMaintenanceRequests = 91,
+        UpdateMaintenanceRequest = 92,
+        DeleteMaintenanceRequest = 93,
+        AssignMaintenanceRequest = 94,
+        CompleteMaintenanceRequest = 95,
+
+        // Lease Renewals
+        CreateLeaseRenewal = 100,
+        ViewLeaseRenewals = 101,
+        UpdateLeaseRenewal = 102,
+        DeleteLeaseRenewal = 103,
+        RespondToLeaseRenewal = 104,
+        ApproveLeaseRenewal = 105,
+
         // System
         ManageSettings = 80,
         ViewAuditLogs = 81

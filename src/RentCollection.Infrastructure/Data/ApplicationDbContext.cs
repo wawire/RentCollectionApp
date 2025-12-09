@@ -24,6 +24,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; } = null!;
     public DbSet<Document> Documents { get; set; } = null!;
+    public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; } = null!;
+    public DbSet<LeaseRenewal> LeaseRenewals { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

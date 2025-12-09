@@ -94,6 +94,22 @@ namespace RentCollection.Infrastructure.Security
                 Permission.SendNotifications => role == UserRole.SystemAdmin || role == UserRole.Landlord,
                 Permission.ViewNotifications => true, // All users can view their own notifications
 
+                // Maintenance Requests
+                Permission.CreateMaintenanceRequest => role == UserRole.Tenant, // Only tenants create requests
+                Permission.ViewMaintenanceRequests => true, // All users can view (filtered by service layer)
+                Permission.UpdateMaintenanceRequest => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker,
+                Permission.DeleteMaintenanceRequest => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.AssignMaintenanceRequest => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.CompleteMaintenanceRequest => role == UserRole.SystemAdmin || role == UserRole.Landlord || role == UserRole.Caretaker,
+
+                // Lease Renewals
+                Permission.CreateLeaseRenewal => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.ViewLeaseRenewals => true, // All users can view (filtered by service layer)
+                Permission.UpdateLeaseRenewal => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.DeleteLeaseRenewal => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+                Permission.RespondToLeaseRenewal => role == UserRole.Tenant, // Only tenants respond
+                Permission.ApproveLeaseRenewal => role == UserRole.SystemAdmin || role == UserRole.Landlord,
+
                 // System
                 Permission.ManageSettings => role == UserRole.SystemAdmin,
                 Permission.ViewAuditLogs => role == UserRole.SystemAdmin || role == UserRole.Landlord,
