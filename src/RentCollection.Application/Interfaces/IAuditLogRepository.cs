@@ -1,10 +1,10 @@
 using RentCollection.Domain.Entities;
 
-namespace RentCollection.Application.Interfaces;
-
-public interface IAuditLogRepository : IRepository<AuditLog>
+namespace RentCollection.Application.Interfaces
 {
-    Task<IEnumerable<AuditLog>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<AuditLog>> GetByEntityAsync(string entityType, int entityId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<AuditLog>> GetByDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
+    public interface IAuditLogRepository : IRepository<AuditLog>
+    {
+        Task<List<AuditLog>> GetByUserIdAsync(int userId, int skip = 0, int take = 50);
+        Task<List<AuditLog>> GetByEntityAsync(string entityType, int entityId);
+    }
 }

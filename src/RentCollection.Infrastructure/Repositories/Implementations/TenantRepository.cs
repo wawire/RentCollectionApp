@@ -62,4 +62,20 @@ public class TenantRepository : Repository<Tenant>, ITenantRepository
                 .ThenInclude(u => u.Property)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
+
+    public async Task<Tenant?> GetByEmailAsync(string email)
+    {
+        return await _context.Tenants
+            .Include(t => t.Unit)
+                .ThenInclude(u => u.Property)
+            .FirstOrDefaultAsync(t => t.Email == email);
+    }
+
+    public async Task<Tenant?> GetByPhoneNumberAsync(string phoneNumber)
+    {
+        return await _context.Tenants
+            .Include(t => t.Unit)
+                .ThenInclude(u => u.Property)
+            .FirstOrDefaultAsync(t => t.PhoneNumber == phoneNumber);
+    }
 }

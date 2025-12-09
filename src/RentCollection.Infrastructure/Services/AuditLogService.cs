@@ -1,126 +1,70 @@
-using System.Text.Json;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using RentCollection.Application.Common;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 
-namespace RentCollection.Infrastructure.Services;
-
-public class AuditLogService : IAuditLogService
+namespace RentCollection.Infrastructure.Services
 {
-    private readonly IAuditLogRepository _auditLogRepository;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<AuditLogService> _logger;
-
-    public AuditLogService(
-        IAuditLogRepository auditLogRepository,
-        ICurrentUserService currentUserService,
-        IHttpContextAccessor httpContextAccessor,
-        ILogger<AuditLogService> logger)
+    public class AuditLogService : IAuditLogService
     {
-        _auditLogRepository = auditLogRepository;
-        _currentUserService = currentUserService;
-        _httpContextAccessor = httpContextAccessor;
-        _logger = logger;
-    }
+        private readonly IAuditLogRepository _auditLogRepository;
+        private readonly ICurrentUserService _currentUserService;
 
-    public async Task LogAsync(string action, string entityType, int? entityId, string? details = null)
-    {
-        try
+        public AuditLogService(IAuditLogRepository auditLogRepository, ICurrentUserService currentUserService)
         {
-            var userId = _currentUserService.UserIdInt ?? 0;
-            if (userId == 0)
+            _auditLogRepository = auditLogRepository;
+            _currentUserService = currentUserService;
+        }
+
+        public async Task<ServiceResult<bool>> LogActionAsync(string action, string entityType, int entityId, string? details = null)
+        {
+            try
             {
-                _logger.LogWarning("Attempted to log audit without authenticated user. Action: {Action}", action);
-                return;
+                var userId = _currentUserService.UserId ?? 0;
+
+                var auditLog = new AuditLog
+                {
+                    UserId = userId,
+                    Action = action,
+                    EntityType = entityType,
+                    EntityId = entityId,
+                    Details = details,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                await _auditLogRepository.AddAsync(auditLog);
+                return ServiceResult<bool>.Success(true);
             }
-
-            var httpContext = _httpContextAccessor.HttpContext;
-            var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString();
-            var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
-
-            var auditLog = new AuditLog
+            catch (Exception ex)
             {
-                UserId = userId,
-                Action = action,
-                EntityType = entityType,
-                EntityId = entityId,
-                Details = details,
-                IpAddress = ipAddress,
-                UserAgent = userAgent,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _auditLogRepository.AddAsync(auditLog);
-
-            _logger.LogInformation("Audit log created: {Action} on {EntityType}#{EntityId} by User#{UserId}",
-                action, entityType, entityId, userId);
+                return ServiceResult<bool>.Failure($"Failed to log action: {ex.Message}");
+            }
         }
-        catch (Exception ex)
+
+        public async Task<ServiceResult<List<AuditLog>>> GetUserAuditLogsAsync(int userId, int skip = 0, int take = 50)
         {
-            _logger.LogError(ex, "Failed to create audit log for action: {Action}", action);
+            try
+            {
+                var logs = await _auditLogRepository.GetByUserIdAsync(userId, skip, take);
+                return ServiceResult<List<AuditLog>>.Success(logs);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<AuditLog>>.Failure($"Failed to get user audit logs: {ex.Message}");
+            }
         }
-    }
 
-    public async Task LogUserCreatedAsync(int createdUserId, string createdUserEmail, string createdUserRole)
-    {
-        var details = JsonSerializer.Serialize(new
+        public async Task<ServiceResult<List<AuditLog>>> GetEntityAuditLogsAsync(string entityType, int entityId)
         {
-            email = createdUserEmail,
-            role = createdUserRole,
-            createdAt = DateTime.UtcNow
-        });
-
-        await LogAsync("UserCreated", "User", createdUserId, details);
-    }
-
-    public async Task LogUserDeletedAsync(int deletedUserId, string deletedUserEmail)
-    {
-        var details = JsonSerializer.Serialize(new
-        {
-            email = deletedUserEmail,
-            deletedAt = DateTime.UtcNow
-        });
-
-        await LogAsync("UserDeleted", "User", deletedUserId, details);
-    }
-
-    public async Task LogUserStatusChangedAsync(int userId, string oldStatus, string newStatus)
-    {
-        var details = JsonSerializer.Serialize(new
-        {
-            oldStatus,
-            newStatus,
-            changedAt = DateTime.UtcNow
-        });
-
-        await LogAsync("UserStatusChanged", "User", userId, details);
-    }
-
-    public async Task LogPaymentConfirmedAsync(int paymentId, int tenantId, decimal amount)
-    {
-        var details = JsonSerializer.Serialize(new
-        {
-            tenantId,
-            amount,
-            confirmedAt = DateTime.UtcNow
-        });
-
-        await LogAsync("PaymentConfirmed", "Payment", paymentId, details);
-    }
-
-    public async Task LogPaymentRejectedAsync(int paymentId, int tenantId, decimal amount, string? reason)
-    {
-        var details = JsonSerializer.Serialize(new
-        {
-            tenantId,
-            amount,
-            reason,
-            rejectedAt = DateTime.UtcNow
-        });
-
-        await LogAsync("PaymentRejected", "Payment", paymentId, details);
+            try
+            {
+                var logs = await _auditLogRepository.GetByEntityAsync(entityType, entityId);
+                return ServiceResult<List<AuditLog>>.Success(logs);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<AuditLog>>.Failure($"Failed to get entity audit logs: {ex.Message}");
+            }
+        }
     }
 }

@@ -1,9 +1,7 @@
-namespace RentCollection.Application.DTOs.Documents;
-
-/// <summary>
-/// DTO for verifying/approving a document
-/// </summary>
-public class VerifyDocumentDto
+namespace RentCollection.Application.DTOs.Documents
 {
-    public bool IsVerified { get; set; }
+    public class VerifyDocumentDto
+    {
+        public bool IsVerified { get; set; }
+    }
 }

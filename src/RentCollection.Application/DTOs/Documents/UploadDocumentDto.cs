@@ -1,20 +1,12 @@
-using System.ComponentModel.DataAnnotations;
-using RentCollection.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
-namespace RentCollection.Application.DTOs.Documents;
-
-/// <summary>
-/// DTO for uploading a new document
-/// </summary>
-public class UploadDocumentDto
+namespace RentCollection.Application.DTOs.Documents
 {
-    [Required]
-    public DocumentType DocumentType { get; set; }
-
-    public int? TenantId { get; set; }
-    public int? PropertyId { get; set; }
-    public int? UnitId { get; set; }
-
-    [MaxLength(500)]
-    public string? Description { get; set; }
+    public class UploadDocumentDto
+    {
+        public IFormFile File { get; set; } = null!;
+        public string DocumentType { get; set; } = string.Empty;
+        public int? TenantId { get; set; }
+        public string? Description { get; set; }
+    }
 }

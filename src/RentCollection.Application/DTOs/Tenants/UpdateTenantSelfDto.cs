@@ -1,18 +1,13 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace RentCollection.Application.DTOs.Tenants;
-
-/// <summary>
-/// DTO for tenant self-update (limited fields tenants can modify)
-/// </summary>
-public class UpdateTenantSelfDto
+namespace RentCollection.Application.DTOs.Tenants
 {
-    [Phone(ErrorMessage = "Invalid phone number format")]
-    public string? PhoneNumber { get; set; }
-
-    [EmailAddress(ErrorMessage = "Invalid email format")]
-    public string? Email { get; set; }
-
-    [MaxLength(500, ErrorMessage = "Notes cannot exceed 500 characters")]
-    public string? Notes { get; set; }
+    public class UpdateTenantSelfDto
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string? Occupation { get; set; }
+        public string? EmergencyContactName { get; set; }
+        public string? EmergencyContactPhone { get; set; }
+    }
 }

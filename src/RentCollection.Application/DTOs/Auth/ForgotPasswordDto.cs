@@ -1,10 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace RentCollection.Application.DTOs.Auth;
-
-public class ForgotPasswordDto
+namespace RentCollection.Application.DTOs.Auth
 {
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress(ErrorMessage = "Invalid email address")]
-    public string Email { get; set; } = string.Empty;
+    public class ForgotPasswordDto
+    {
+        public string Email { get; set; } = string.Empty;
+    }
 }
