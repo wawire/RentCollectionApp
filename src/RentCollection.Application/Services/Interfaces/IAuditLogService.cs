@@ -1,11 +1,12 @@
-namespace RentCollection.Application.Services.Interfaces;
+using RentCollection.Application.Common;
+using RentCollection.Domain.Entities;
 
-public interface IAuditLogService
+namespace RentCollection.Application.Services.Interfaces
 {
-    Task LogAsync(string action, string entityType, int? entityId, string? details = null);
-    Task LogUserCreatedAsync(int createdUserId, string createdUserEmail, string createdUserRole);
-    Task LogUserDeletedAsync(int deletedUserId, string deletedUserEmail);
-    Task LogUserStatusChangedAsync(int userId, string oldStatus, string newStatus);
-    Task LogPaymentConfirmedAsync(int paymentId, int tenantId, decimal amount);
-    Task LogPaymentRejectedAsync(int paymentId, int tenantId, decimal amount, string? reason);
+    public interface IAuditLogService
+    {
+        Task<ServiceResult<bool>> LogActionAsync(string action, string entityType, int entityId, string? details = null);
+        Task<ServiceResult<List<AuditLog>>> GetUserAuditLogsAsync(int userId, int skip = 0, int take = 50);
+        Task<ServiceResult<List<AuditLog>>> GetEntityAuditLogsAsync(string entityType, int entityId);
+    }
 }
