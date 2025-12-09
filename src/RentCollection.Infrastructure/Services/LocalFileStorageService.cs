@@ -37,8 +37,8 @@ public class LocalFileStorageService : IFileStorageService
     {
         try
         {
-            // Validate first
-            var (isValid, errorMessage) = await ValidateFileAsync(file);
+            // Validate first with defaults
+            var (isValid, errorMessage) = await ValidateFileAsync(file, _defaultAllowedExtensions, _defaultMaxFileSize);
             if (!isValid)
             {
                 throw new InvalidOperationException(errorMessage);
@@ -106,10 +106,10 @@ public class LocalFileStorageService : IFileStorageService
         }
     }
 
-    public Task<(bool IsValid, string ErrorMessage)> ValidateFileAsync(
+    public Task<(bool isValid, string errorMessage)> ValidateFileAsync(
         IFormFile file,
-        string[]? allowedExtensions = null,
-        long? maxSizeInBytes = null)
+        string[] allowedExtensions,
+        long maxSizeInBytes)
     {
         try
         {
@@ -119,10 +119,9 @@ public class LocalFileStorageService : IFileStorageService
             }
 
             // Check file size
-            var maxSize = maxSizeInBytes ?? _defaultMaxFileSize;
-            if (file.Length > maxSize)
+            if (file.Length > maxSizeInBytes)
             {
-                var maxSizeMB = maxSize / 1024 / 1024;
+                var maxSizeMB = maxSizeInBytes / 1024 / 1024;
                 return Task.FromResult((false, $"File size exceeds maximum allowed size of {maxSizeMB}MB"));
             }
 
@@ -133,10 +132,9 @@ public class LocalFileStorageService : IFileStorageService
                 return Task.FromResult((false, "File has no extension"));
             }
 
-            var allowed = allowedExtensions ?? _defaultAllowedExtensions;
-            if (!allowed.Contains(extension))
+            if (!allowedExtensions.Contains(extension))
             {
-                return Task.FromResult((false, $"File type not allowed. Allowed types: {string.Join(", ", allowed)}"));
+                return Task.FromResult((false, $"File type not allowed. Allowed types: {string.Join(", ", allowedExtensions)}"));
             }
 
             // Check MIME type (basic validation)
@@ -146,7 +144,9 @@ public class LocalFileStorageService : IFileStorageService
                 { ".jpeg", new[] { "image/jpeg", "image/jpg" } },
                 { ".png", new[] { "image/png" } },
                 { ".webp", new[] { "image/webp" } },
-                { ".pdf", new[] { "application/pdf" } }
+                { ".pdf", new[] { "application/pdf" } },
+                { ".doc", new[] { "application/msword" } },
+                { ".docx", new[] { "application/vnd.openxmlformats-officedocument.wordprocessingml.document" } }
             };
 
             if (allowedMimeTypes.ContainsKey(extension))
@@ -164,6 +164,40 @@ public class LocalFileStorageService : IFileStorageService
         {
             _logger.LogError(ex, "Error validating file: {FileName}", file?.FileName);
             return Task.FromResult((false, $"File validation error: {ex.Message}"));
+        }
+    }
+
+    public string GetFileUrl(string filePath)
+    {
+        // If it's already a URL (starts with /), return as-is
+        if (filePath.StartsWith("/"))
+        {
+            return filePath;
+        }
+
+        // Otherwise, assume it's a relative path and prepend /uploads/
+        return $"/uploads/{filePath.TrimStart('/')}";
+    }
+
+    public async Task<byte[]> DownloadFileAsync(string fileUrl)
+    {
+        try
+        {
+            // Convert URL to file path
+            var relativePath = fileUrl.TrimStart('/');
+            var filePath = Path.Combine(_environment.WebRootPath ?? _environment.ContentRootPath, relativePath);
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File not found: {fileUrl}");
+            }
+
+            return await File.ReadAllBytesAsync(filePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading file: {FileUrl}", fileUrl);
+            throw;
         }
     }
 }
