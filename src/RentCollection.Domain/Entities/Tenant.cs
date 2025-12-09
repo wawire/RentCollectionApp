@@ -17,6 +17,11 @@ public class Tenant : BaseEntity
     public decimal? SecurityDeposit { get; set; }
 
     /// <summary>
+    /// Day of the month when rent is due (1-31). Default is 5th of each month.
+    /// </summary>
+    public int RentDueDay { get; set; } = 5;
+
+    /// <summary>
     /// Legacy field - use Status instead. Kept for backward compatibility.
     /// </summary>
     public bool IsActive { get; set; } = true;
