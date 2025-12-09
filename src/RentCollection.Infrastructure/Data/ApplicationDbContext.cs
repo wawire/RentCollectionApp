@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<AuditLog> AuditLogs { get; set; } = null!;
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; } = null!;
+    public DbSet<Document> Documents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

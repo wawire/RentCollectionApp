@@ -153,6 +153,157 @@ public class EmailService : IEmailService
         await SendEmailAsync(toEmail, subject, body);
     }
 
+    public async Task SendRentReminderEmailAsync(string toEmail, string tenantName, string propertyName, string unitNumber, decimal rentAmount, DateTime dueDate)
+    {
+        var daysUntilDue = (dueDate - DateTime.UtcNow).Days;
+        var urgency = daysUntilDue <= 2 ? "URGENT: " : "";
+
+        var subject = $"{urgency}Rent Payment Reminder - Due {dueDate:dd MMM yyyy}";
+        var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #2196F3; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .info-box {{ background-color: #fff; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0; }}
+        .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
+        .highlight {{ color: #2196F3; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <div class=""header"">
+            <h1>Rent Payment Reminder</h1>
+        </div>
+        <div class=""content"">
+            <p>Dear {tenantName},</p>
+            <p>This is a friendly reminder that your rent payment is due soon.</p>
+            <div class=""info-box"">
+                <p><strong>Property:</strong> {propertyName}</p>
+                <p><strong>Unit:</strong> {unitNumber}</p>
+                <p><strong>Amount Due:</strong> <span class=""highlight"">KES {rentAmount:N2}</span></p>
+                <p><strong>Due Date:</strong> <span class=""highlight"">{dueDate:dd MMMM yyyy}</span></p>
+                <p><strong>Days Until Due:</strong> {daysUntilDue} day(s)</p>
+            </div>
+            <p>Please ensure your payment is made on or before the due date to avoid any late fees.</p>
+            <p>If you have already made the payment, please disregard this reminder.</p>
+            <p>Thank you for your prompt attention to this matter.</p>
+        </div>
+        <div class=""footer"">
+            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>Property Management Services</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        await SendEmailAsync(toEmail, subject, body);
+    }
+
+    public async Task SendOverdueNoticeEmailAsync(string toEmail, string tenantName, string propertyName, string unitNumber, decimal overdueAmount, int daysOverdue)
+    {
+        var subject = $"URGENT: Overdue Rent Payment Notice - {daysOverdue} Day(s) Overdue";
+        var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #f44336; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .urgent-box {{ background-color: #ffebee; padding: 15px; border-left: 4px solid #f44336; margin: 20px 0; }}
+        .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
+        .highlight {{ color: #f44336; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <div class=""header"">
+            <h1>⚠️ OVERDUE PAYMENT NOTICE</h1>
+        </div>
+        <div class=""content"">
+            <p>Dear {tenantName},</p>
+            <p><strong>This is an urgent notice regarding your overdue rent payment.</strong></p>
+            <div class=""urgent-box"">
+                <p><strong>Property:</strong> {propertyName}</p>
+                <p><strong>Unit:</strong> {unitNumber}</p>
+                <p><strong>Overdue Amount:</strong> <span class=""highlight"">KES {overdueAmount:N2}</span></p>
+                <p><strong>Days Overdue:</strong> <span class=""highlight"">{daysOverdue} day(s)</span></p>
+            </div>
+            <p>Your rent payment is now overdue. Please settle your account immediately to avoid:</p>
+            <ul>
+                <li>Additional late payment fees</li>
+                <li>Potential legal action</li>
+                <li>Negative impact on your rental history</li>
+            </ul>
+            <p>If you are experiencing financial difficulties, please contact us immediately to discuss payment arrangements.</p>
+            <p><strong>This matter requires your immediate attention.</strong></p>
+        </div>
+        <div class=""footer"">
+            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>Property Management Services</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        await SendEmailAsync(toEmail, subject, body);
+    }
+
+    public async Task SendPaymentReceiptEmailAsync(string toEmail, string tenantName, string propertyName, string unitNumber, decimal amount, DateTime paymentDate, string referenceNumber)
+    {
+        var subject = $"Payment Receipt - {referenceNumber}";
+        var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .receipt-box {{ background-color: #fff; padding: 20px; border: 2px solid #4CAF50; margin: 20px 0; }}
+        .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
+        .success {{ color: #4CAF50; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <div class=""header"">
+            <h1>✓ Payment Received</h1>
+        </div>
+        <div class=""content"">
+            <p>Dear {tenantName},</p>
+            <p>Thank you! We have successfully received your rent payment.</p>
+            <div class=""receipt-box"">
+                <h2 style=""color: #4CAF50; text-align: center;"">PAYMENT RECEIPT</h2>
+                <hr>
+                <p><strong>Property:</strong> {propertyName}</p>
+                <p><strong>Unit:</strong> {unitNumber}</p>
+                <p><strong>Amount Paid:</strong> <span class=""success"">KES {amount:N2}</span></p>
+                <p><strong>Payment Date:</strong> {paymentDate:dd MMMM yyyy}</p>
+                <p><strong>Receipt Number:</strong> {referenceNumber}</p>
+                <hr>
+                <p style=""text-align: center; font-size: 14px; color: #666;"">Please keep this receipt for your records</p>
+            </div>
+            <p>We appreciate your prompt payment and thank you for being a valued tenant.</p>
+            <p>If you have any questions about this payment, please don't hesitate to contact us.</p>
+        </div>
+        <div class=""footer"">
+            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>Property Management Services</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        await SendEmailAsync(toEmail, subject, body);
+    }
+
     public async Task SendEmailAsync(string toEmail, string subject, string body)
     {
         try

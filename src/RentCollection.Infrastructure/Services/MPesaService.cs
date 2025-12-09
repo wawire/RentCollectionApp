@@ -163,17 +163,133 @@ public class MPesaService : IMPesaService
     {
         try
         {
-            // TODO: Implement C2B callback handler
-            // This would:
-            // 1. Validate the callback data
-            // 2. Extract transaction details (TransCode, Amount, AccountNumber, PhoneNumber)
-            // 3. Match to unit using AccountNumber
-            // 4. Auto-create payment record with Pending status
-            // 5. Notify landlord
-
             _logger.LogInformation("Received M-Pesa C2B callback: {CallbackData}", JsonSerializer.Serialize(callbackData));
 
-            return ServiceResult<bool>.Success(true, "C2B callback processed");
+            // Deserialize callback data
+            var json = JsonSerializer.Serialize(callbackData);
+            var callback = JsonSerializer.Deserialize<MPesaC2BCallbackDto>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (callback == null)
+            {
+                _logger.LogError("Failed to deserialize M-Pesa C2B callback data");
+                return ServiceResult<bool>.Failure("Invalid callback data");
+            }
+
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(callback.TransID) ||
+                string.IsNullOrWhiteSpace(callback.BillRefNumber) ||
+                callback.TransAmount <= 0)
+            {
+                _logger.LogError("M-Pesa callback missing required fields: {Callback}", json);
+                return ServiceResult<bool>.Failure("Missing required fields in callback");
+            }
+
+            // Check for duplicate transaction
+            var existingPayment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.TransactionReference == callback.TransID);
+
+            if (existingPayment != null)
+            {
+                _logger.LogWarning("Duplicate M-Pesa transaction received: {TransID}", callback.TransID);
+                return ServiceResult<bool>.Success(true, "Transaction already processed");
+            }
+
+            // Find unit by payment account number (BillRefNumber)
+            // The BillRefNumber should match the unit's PaymentAccountNumber (e.g., "A101", "B205")
+            var unit = await _context.Units
+                .Include(u => u.Property)
+                    .ThenInclude(p => p.PaymentAccounts)
+                .Include(u => u.Tenants.Where(t => t.IsActive))
+                .FirstOrDefaultAsync(u => u.PaymentAccountNumber == callback.BillRefNumber);
+
+            if (unit == null)
+            {
+                _logger.LogWarning("No unit found for BillRefNumber: {BillRefNumber}", callback.BillRefNumber);
+
+                // Try to find unit by unit number as fallback
+                unit = await _context.Units
+                    .Include(u => u.Property)
+                        .ThenInclude(p => p.PaymentAccounts)
+                    .Include(u => u.Tenants.Where(t => t.IsActive))
+                    .FirstOrDefaultAsync(u => u.UnitNumber == callback.BillRefNumber);
+
+                if (unit == null)
+                {
+                    _logger.LogError("Unit not found for account number: {BillRefNumber}", callback.BillRefNumber);
+                    return ServiceResult<bool>.Failure($"No unit found for account number: {callback.BillRefNumber}");
+                }
+            }
+
+            // Get active tenant for the unit
+            var tenant = unit.Tenants.FirstOrDefault(t => t.IsActive);
+            if (tenant == null)
+            {
+                _logger.LogError("No active tenant found for unit: {UnitId}", unit.Id);
+                return ServiceResult<bool>.Failure($"No active tenant found for unit {unit.UnitNumber}");
+            }
+
+            // Get landlord payment account
+            var paymentAccount = unit.Property.PaymentAccounts
+                .FirstOrDefault(pa => pa.AccountType == PaymentAccountType.MPesaPaybill &&
+                                     pa.MPesaShortCode == callback.BusinessShortCode);
+
+            if (paymentAccount == null)
+            {
+                _logger.LogError("No M-Pesa payment account found for shortcode: {ShortCode}", callback.BusinessShortCode);
+                return ServiceResult<bool>.Failure("Payment account not found");
+            }
+
+            // Parse transaction time
+            DateTime transactionDate;
+            try
+            {
+                // M-Pesa format: "20240315120530" (YYYYMMDDHHmmss)
+                transactionDate = DateTime.ParseExact(
+                    callback.TransTime,
+                    "yyyyMMddHHmmss",
+                    System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                transactionDate = DateTime.UtcNow;
+                _logger.LogWarning("Failed to parse transaction time: {TransTime}, using current time", callback.TransTime);
+            }
+
+            // Calculate due date for the current payment period
+            var dueDate = Application.Helpers.PaymentDueDateHelper.CalculateCurrentMonthDueDate(tenant.RentDueDay);
+            var (periodStart, periodEnd) = Application.Helpers.PaymentDueDateHelper.CalculatePaymentPeriod(dueDate);
+
+            // Create payment record
+            var payment = new Payment
+            {
+                TenantId = tenant.Id,
+                UnitId = unit.Id,
+                LandlordAccountId = paymentAccount.Id,
+                Amount = callback.TransAmount,
+                PaymentDate = transactionDate,
+                DueDate = dueDate,
+                PeriodStart = periodStart,
+                PeriodEnd = periodEnd,
+                PaymentMethod = PaymentMethod.MPesa,
+                Status = PaymentStatus.Pending, // Pending until landlord confirms
+                TransactionReference = callback.TransID,
+                PaybillAccountNumber = callback.BillRefNumber,
+                MPesaPhoneNumber = callback.MSISDN,
+                Notes = $"M-Pesa C2B auto-recorded payment from {callback.FirstName} {callback.LastName}".Trim(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Payments.Add(payment);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Auto-created payment record from M-Pesa C2B: PaymentId={PaymentId}, TransID={TransID}, Tenant={TenantId}, Amount={Amount}",
+                payment.Id, callback.TransID, tenant.Id, callback.TransAmount);
+
+            return ServiceResult<bool>.Success(true, "Payment recorded successfully");
         }
         catch (Exception ex)
         {

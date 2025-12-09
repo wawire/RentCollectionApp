@@ -61,4 +61,25 @@ public interface IAuthService
     /// Resend email verification token
     /// </summary>
     Task ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Setup two-factor authentication for a user
+    /// Generates a new secret and QR code
+    /// </summary>
+    Task<Setup2FAResponseDto> Setup2FAAsync(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Enable two-factor authentication after verifying the setup
+    /// </summary>
+    Task Enable2FAAsync(int userId, Enable2FADto dto, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Disable two-factor authentication
+    /// </summary>
+    Task Disable2FAAsync(int userId, Disable2FADto dto, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Verify 2FA code during login
+    /// </summary>
+    Task<AuthResponseDto> Verify2FACodeAsync(Verify2FACodeDto dto, CancellationToken cancellationToken = default);
 }
