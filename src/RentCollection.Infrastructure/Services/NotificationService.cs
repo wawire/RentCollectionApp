@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RentCollection.Application.Common;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.Helpers;
 using RentCollection.Application.Services.Interfaces;
@@ -26,7 +27,7 @@ public class NotificationService : INotificationService
         _logger = logger;
     }
 
-    public async Task<Result> SendPaymentReminderToTenantAsync(int tenantId, int daysBeforeDue = 3)
+    public async Task<ServiceResult<bool>> SendPaymentReminderToTenantAsync(int tenantId)
     {
         try
         {
@@ -37,7 +38,7 @@ public class NotificationService : INotificationService
 
             if (tenant == null)
             {
-                return Result.Failure($"Tenant with ID {tenantId} not found");
+                return ServiceResult<bool>.Failure($"Tenant with ID {tenantId} not found");
             }
 
             // Calculate the next due date
@@ -83,33 +84,27 @@ public class NotificationService : INotificationService
                 }
             }
 
-            return Result.Success("Payment reminder sent successfully");
+            return ServiceResult<bool>.Success(true, "Payment reminder sent successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending payment reminder to tenant {TenantId}", tenantId);
-            return Result.Failure($"Error sending payment reminder: {ex.Message}");
+            return ServiceResult<bool>.Failure($"Error sending payment reminder: {ex.Message}");
         }
     }
 
-    public async Task<Result<int>> SendUpcomingPaymentRemindersAsync(int daysBeforeDue = 3, int? landlordId = null)
+    public async Task<ServiceResult<int>> SendUpcomingPaymentRemindersAsync(int daysUntilDue = 3)
     {
         try
         {
             var today = DateTime.UtcNow.Date;
-            var targetDate = today.AddDays(daysBeforeDue);
+            var targetDate = today.AddDays(daysUntilDue);
 
             // Get all active tenants
             var tenantsQuery = _context.Tenants
                 .Include(t => t.Unit)
                     .ThenInclude(u => u.Property)
                 .Where(t => t.IsActive);
-
-            // Filter by landlord if specified
-            if (landlordId.HasValue)
-            {
-                tenantsQuery = tenantsQuery.Where(t => t.Unit.Property.LandlordId == landlordId.Value);
-            }
 
             var tenants = await tenantsQuery.ToListAsync();
             int remindersSent = 0;
@@ -124,7 +119,7 @@ public class NotificationService : INotificationService
                     // Check if reminder should be sent (due date is within the target window)
                     if (nextDueDate.Date == targetDate.Date)
                     {
-                        var result = await SendPaymentReminderToTenantAsync(tenant.Id, daysBeforeDue);
+                        var result = await SendPaymentReminderToTenantAsync(tenant.Id);
                         if (result.IsSuccess)
                         {
                             remindersSent++;
@@ -139,14 +134,14 @@ public class NotificationService : INotificationService
             }
 
             _logger.LogInformation("Sent {Count} payment reminders for payments due in {Days} days",
-                remindersSent, daysBeforeDue);
+                remindersSent, daysUntilDue);
 
-            return Result<int>.Success(remindersSent, $"Sent {remindersSent} payment reminder(s)");
+            return ServiceResult<int>.Success(remindersSent, $"Sent {remindersSent} payment reminder(s)");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending upcoming payment reminders");
-            return Result<int>.Failure($"Error sending reminders: {ex.Message}");
+            return ServiceResult<int>.Failure($"Error sending reminders: {ex.Message}");
         }
     }
 
@@ -242,7 +237,7 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task<Result<int>> SendOverdueNoticesAsync(int? landlordId = null)
+    public async Task<ServiceResult<int>> SendOverdueNoticesAsync()
     {
         try
         {
@@ -255,12 +250,6 @@ public class NotificationService : INotificationService
                 .Include(t => t.Payments)
                 .Where(t => t.IsActive && t.Payments.Any(p =>
                     p.Status == Domain.Enums.PaymentStatus.Pending && p.DueDate.Date < today));
-
-            // Filter by landlord if specified
-            if (landlordId.HasValue)
-            {
-                tenantsQuery = tenantsQuery.Where(t => t.Unit.Property.LandlordId == landlordId.Value);
-            }
 
             var tenants = await tenantsQuery.ToListAsync();
             int noticesSent = 0;
@@ -284,16 +273,109 @@ public class NotificationService : INotificationService
 
             _logger.LogInformation("Sent {Count} overdue payment notices", noticesSent);
 
-            return Result<int>.Success(noticesSent, $"Sent {noticesSent} overdue notice(s)");
+            return ServiceResult<int>.Success(noticesSent, $"Sent {noticesSent} overdue notice(s)");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending overdue notices");
-            return Result<int>.Failure($"Error sending overdue notices: {ex.Message}");
+            return ServiceResult<int>.Failure($"Error sending overdue notices: {ex.Message}");
         }
     }
 
-    public async Task<Result> SendPaymentReceiptAsync(int paymentId)
+    // Helper method not in interface - used internally
+    private async Task<Result> SendOverdueNoticeToTenantAsync(int tenantId)
+    {
+        try
+        {
+            var tenant = await _context.Tenants
+                .Include(t => t.Unit)
+                    .ThenInclude(u => u.Property)
+                .Include(t => t.Payments)
+                .FirstOrDefaultAsync(t => t.Id == tenantId);
+
+            if (tenant == null)
+            {
+                return Result.Failure($"Tenant with ID {tenantId} not found");
+            }
+
+            // Get overdue payments for this tenant
+            var today = DateTime.UtcNow.Date;
+            var overduePayments = tenant.Payments
+                .Where(p => p.Status == Domain.Enums.PaymentStatus.Pending && p.DueDate.Date < today)
+                .ToList();
+
+            if (!overduePayments.Any())
+            {
+                return Result.Failure("No overdue payments found for this tenant");
+            }
+
+            var totalOverdue = overduePayments.Sum(p => p.Amount + p.LateFeeAmount);
+            var oldestOverduePayment = overduePayments.OrderBy(p => p.DueDate).First();
+            var daysOverdue = (today - oldestOverduePayment.DueDate.Date).Days;
+
+            var propertyName = tenant.Unit?.Property?.Name ?? "Your Property";
+            var unitNumber = tenant.Unit?.UnitNumber ?? "N/A";
+
+            // Send email notice
+            if (!string.IsNullOrWhiteSpace(tenant.Email))
+            {
+                try
+                {
+                    await _emailService.SendOverdueNoticeEmailAsync(
+                        tenant.Email,
+                        tenant.FullName,
+                        propertyName,
+                        unitNumber,
+                        totalOverdue,
+                        daysOverdue);
+
+                    _logger.LogInformation("Overdue notice email sent to tenant {TenantId} ({TenantName})",
+                        tenantId, tenant.FullName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send overdue notice email to tenant {TenantId}", tenantId);
+                }
+            }
+
+            // Send SMS notice
+            if (!string.IsNullOrWhiteSpace(tenant.PhoneNumber))
+            {
+                try
+                {
+                    var smsMessage = SmsTemplates.GetOverdueNoticeMessage(
+                        tenant.FullName,
+                        totalOverdue,
+                        daysOverdue,
+                        propertyName,
+                        unitNumber);
+
+                    await _smsService.SendSmsAsync(new Application.DTOs.Sms.SendSmsDto
+                    {
+                        PhoneNumber = tenant.PhoneNumber,
+                        Message = smsMessage,
+                        TenantId = tenantId
+                    });
+
+                    _logger.LogInformation("Overdue notice SMS sent to tenant {TenantId} ({TenantName})",
+                        tenantId, tenant.FullName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send overdue notice SMS to tenant {TenantId}", tenantId);
+                }
+            }
+
+            return Result.Success("Overdue notice sent successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending overdue notice to tenant {TenantId}", tenantId);
+            return Result.Failure($"Error sending overdue notice: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> SendPaymentReceiptAsync(int paymentId)
     {
         try
         {
@@ -305,7 +387,7 @@ public class NotificationService : INotificationService
 
             if (payment == null)
             {
-                return Result.Failure($"Payment with ID {paymentId} not found");
+                return ServiceResult<bool>.Failure($"Payment with ID {paymentId} not found");
             }
 
             var tenant = payment.Tenant;
@@ -349,12 +431,12 @@ public class NotificationService : INotificationService
                 }
             }
 
-            return Result.Success("Payment receipt sent successfully");
+            return ServiceResult<bool>.Success(true, "Payment receipt sent successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending payment receipt for payment {PaymentId}", paymentId);
-            return Result.Failure($"Error sending payment receipt: {ex.Message}");
+            return ServiceResult<bool>.Failure($"Error sending payment receipt: {ex.Message}");
         }
     }
 }

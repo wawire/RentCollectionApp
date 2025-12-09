@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RentCollection.Application.Common;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Documents;
 using RentCollection.Application.Interfaces;
@@ -61,26 +62,28 @@ public class DocumentService : IDocumentService
         _context = context;
     }
 
-    public async Task<Result<DocumentDto>> UploadDocumentAsync(IFormFile file, UploadDocumentDto uploadDto)
+    public async Task<ServiceResult<DocumentDto>> UploadDocumentAsync(UploadDocumentDto dto, int uploadedByUserId)
     {
         try
         {
+            var file = dto.File;
+
             // Validate file
             var (isValid, errorMessage) = await _fileStorageService.ValidateFileAsync(
                 file, AllowedExtensions, MaxFileSize);
 
             if (!isValid)
             {
-                return Result<DocumentDto>.Failure(errorMessage);
+                return ServiceResult<DocumentDto>.Failure(errorMessage);
             }
 
             // RBAC: Validate access based on document associations
-            if (uploadDto.TenantId.HasValue)
+            if (dto.TenantId.HasValue)
             {
-                var tenant = await _tenantRepository.GetTenantWithDetailsAsync(uploadDto.TenantId.Value);
+                var tenant = await _tenantRepository.GetTenantWithDetailsAsync(dto.TenantId.Value);
                 if (tenant == null)
                 {
-                    return Result<DocumentDto>.Failure($"Tenant with ID {uploadDto.TenantId} not found");
+                    return ServiceResult<DocumentDto>.Failure($"Tenant with ID {dto.TenantId} not found");
                 }
 
                 // Only tenant themselves, their landlord, or admin can upload tenant documents
@@ -91,9 +94,9 @@ public class DocumentService : IDocumentService
                     if (_currentUserService.IsTenant)
                     {
                         // Tenants can only upload their own documents
-                        if (_currentUserService.TenantId != uploadDto.TenantId)
+                        if (_currentUserService.TenantId != dto.TenantId)
                         {
-                            return Result<DocumentDto>.Failure("You can only upload documents for yourself");
+                            return ServiceResult<DocumentDto>.Failure("You can only upload documents for yourself");
                         }
                     }
                     else if (_currentUserService.IsLandlord || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
@@ -105,18 +108,18 @@ public class DocumentService : IDocumentService
 
                         if (landlordId != userLandlordId)
                         {
-                            return Result<DocumentDto>.Failure("You don't have permission to upload documents for this tenant");
+                            return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this tenant");
                         }
                     }
                 }
             }
 
-            if (uploadDto.PropertyId.HasValue)
+            if (dto.PropertyId.HasValue)
             {
-                var property = await _propertyRepository.GetByIdAsync(uploadDto.PropertyId.Value);
+                var property = await _propertyRepository.GetByIdAsync(dto.PropertyId.Value);
                 if (property == null)
                 {
-                    return Result<DocumentDto>.Failure($"Property with ID {uploadDto.PropertyId} not found");
+                    return ServiceResult<DocumentDto>.Failure($"Property with ID {dto.PropertyId} not found");
                 }
 
                 // Only property owner or admin can upload property documents
@@ -128,17 +131,17 @@ public class DocumentService : IDocumentService
 
                     if (property.LandlordId != userLandlordId)
                     {
-                        return Result<DocumentDto>.Failure("You don't have permission to upload documents for this property");
+                        return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this property");
                     }
                 }
             }
 
-            if (uploadDto.UnitId.HasValue)
+            if (dto.UnitId.HasValue)
             {
-                var unit = await _unitRepository.GetUnitWithDetailsAsync(uploadDto.UnitId.Value);
+                var unit = await _unitRepository.GetUnitWithDetailsAsync(dto.UnitId.Value);
                 if (unit == null)
                 {
-                    return Result<DocumentDto>.Failure($"Unit with ID {uploadDto.UnitId} not found");
+                    return ServiceResult<DocumentDto>.Failure($"Unit with ID {dto.UnitId} not found");
                 }
 
                 // Only unit's landlord or admin can upload unit documents
@@ -150,7 +153,7 @@ public class DocumentService : IDocumentService
 
                     if (unit.Property?.LandlordId != userLandlordId)
                     {
-                        return Result<DocumentDto>.Failure("You don't have permission to upload documents for this unit");
+                        return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this unit");
                     }
                 }
             }
@@ -161,16 +164,16 @@ public class DocumentService : IDocumentService
             // Create document entity
             var document = new Document
             {
-                DocumentType = uploadDto.DocumentType,
-                TenantId = uploadDto.TenantId,
-                PropertyId = uploadDto.PropertyId,
-                UnitId = uploadDto.UnitId,
+                DocumentType = dto.DocumentType,
+                TenantId = dto.TenantId,
+                PropertyId = dto.PropertyId,
+                UnitId = dto.UnitId,
                 FileName = file.FileName,
                 FileUrl = fileUrl,
                 FileSize = file.Length,
                 ContentType = file.ContentType,
-                UploadedByUserId = _currentUserService.UserIdInt!.Value,
-                Description = uploadDto.Description
+                UploadedByUserId = uploadedByUserId,
+                Description = dto.Description
             };
 
             await _documentRepository.AddAsync(document);
@@ -183,18 +186,18 @@ public class DocumentService : IDocumentService
             // Audit log
             await _auditLogService.LogActionAsync(
                 "Document.Upload",
-                $"Uploaded {uploadDto.DocumentType} document: {file.FileName}",
+                $"Uploaded {dto.DocumentType} document: {file.FileName}",
                 document.Id.ToString());
 
             _logger.LogInformation("Document {FileName} uploaded successfully by user {UserId}",
-                file.FileName, _currentUserService.UserId);
+                file.FileName, uploadedByUserId);
 
-            return Result<DocumentDto>.Success(documentDto);
+            return ServiceResult<DocumentDto>.Success(documentDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading document");
-            return Result<DocumentDto>.Failure("An error occurred while uploading the document");
+            return ServiceResult<DocumentDto>.Failure("An error occurred while uploading the document");
         }
     }
 
@@ -246,14 +249,14 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByTenantIdAsync(int tenantId)
+    public async Task<ServiceResult<List<DocumentDto>>> GetTenantDocumentsAsync(int tenantId)
     {
         try
         {
             var tenant = await _tenantRepository.GetTenantWithDetailsAsync(tenantId);
             if (tenant == null)
             {
-                return Result<IEnumerable<DocumentDto>>.Failure($"Tenant with ID {tenantId} not found");
+                return ServiceResult<List<DocumentDto>>.Failure($"Tenant with ID {tenantId} not found");
             }
 
             // RBAC: Verify access to tenant
@@ -265,7 +268,7 @@ public class DocumentService : IDocumentService
                 {
                     if (_currentUserService.TenantId != tenantId)
                     {
-                        return Result<IEnumerable<DocumentDto>>.Failure("You can only view your own documents");
+                        return ServiceResult<List<DocumentDto>>.Failure("You can only view your own documents");
                     }
                 }
                 else
@@ -276,20 +279,20 @@ public class DocumentService : IDocumentService
 
                     if (landlordId != userLandlordId)
                     {
-                        return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
+                        return ServiceResult<List<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
                     }
                 }
             }
 
             var documents = await _documentRepository.GetDocumentsByTenantIdAsync(tenantId);
-            var documentDtos = documents.Select(MapToDto);
+            var documentDtos = documents.Select(MapToDto).ToList();
 
-            return Result<IEnumerable<DocumentDto>>.Success(documentDtos);
+            return ServiceResult<List<DocumentDto>>.Success(documentDtos);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving documents for tenant {TenantId}", tenantId);
-            return Result<IEnumerable<DocumentDto>>.Failure("An error occurred while retrieving documents");
+            return ServiceResult<List<DocumentDto>>.Failure("An error occurred while retrieving documents");
         }
     }
 
@@ -409,88 +412,88 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<Result<IEnumerable<DocumentDto>>> GetMyDocumentsAsync()
+    public async Task<ServiceResult<List<DocumentDto>>> GetMyDocumentsAsync()
     {
         try
         {
             if (!_currentUserService.IsTenant || !_currentUserService.TenantId.HasValue)
             {
-                return Result<IEnumerable<DocumentDto>>.Failure("You must be a tenant to view your documents");
+                return ServiceResult<List<DocumentDto>>.Failure("You must be a tenant to view your documents");
             }
 
             var documents = await _documentRepository.GetDocumentsByTenantIdAsync(_currentUserService.TenantId.Value);
-            var documentDtos = documents.Select(MapToDto);
+            var documentDtos = documents.Select(MapToDto).ToList();
 
-            return Result<IEnumerable<DocumentDto>>.Success(documentDtos);
+            return ServiceResult<List<DocumentDto>>.Success(documentDtos);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving documents for current tenant");
-            return Result<IEnumerable<DocumentDto>>.Failure("An error occurred while retrieving your documents");
+            return ServiceResult<List<DocumentDto>>.Failure("An error occurred while retrieving your documents");
         }
     }
 
-    public async Task<Result<DocumentDto>> VerifyDocumentAsync(int id, VerifyDocumentDto verifyDto)
+    public async Task<ServiceResult<DocumentDto>> VerifyDocumentAsync(int documentId, bool isVerified)
     {
         try
         {
             // Only landlords and admins can verify documents
             if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord && !_currentUserService.IsAccountant)
             {
-                return Result<DocumentDto>.Failure("You don't have permission to verify documents");
+                return ServiceResult<DocumentDto>.Failure("You don't have permission to verify documents");
             }
 
-            var document = await _documentRepository.GetDocumentWithDetailsAsync(id);
+            var document = await _documentRepository.GetDocumentWithDetailsAsync(documentId);
             if (document == null)
             {
-                return Result<DocumentDto>.Failure($"Document with ID {id} not found");
+                return ServiceResult<DocumentDto>.Failure($"Document with ID {documentId} not found");
             }
 
             // RBAC: Verify access
             if (!CanAccessDocument(document))
             {
-                return Result<DocumentDto>.Failure("You don't have permission to verify this document");
+                return ServiceResult<DocumentDto>.Failure("You don't have permission to verify this document");
             }
 
-            document.IsVerified = verifyDto.IsVerified;
+            document.IsVerified = isVerified;
             document.VerifiedByUserId = _currentUserService.UserIdInt!.Value;
             document.VerifiedAt = DateTime.UtcNow;
 
             await _documentRepository.UpdateAsync(document);
 
             // Reload with details
-            var documentWithDetails = await _documentRepository.GetDocumentWithDetailsAsync(id);
+            var documentWithDetails = await _documentRepository.GetDocumentWithDetailsAsync(documentId);
             var documentDto = MapToDto(documentWithDetails!);
 
             // Audit log
             await _auditLogService.LogActionAsync(
                 "Document.Verify",
                 $"Verified document: {document.FileName} ({document.DocumentType})",
-                id.ToString());
+                documentId.ToString());
 
-            return Result<DocumentDto>.Success(documentDto);
+            return ServiceResult<DocumentDto>.Success(documentDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error verifying document {Id}", id);
-            return Result<DocumentDto>.Failure("An error occurred while verifying the document");
+            _logger.LogError(ex, "Error verifying document {Id}", documentId);
+            return ServiceResult<DocumentDto>.Failure("An error occurred while verifying the document");
         }
     }
 
-    public async Task<Result> DeleteDocumentAsync(int id)
+    public async Task<ServiceResult<bool>> DeleteDocumentAsync(int documentId)
     {
         try
         {
-            var document = await _documentRepository.GetDocumentWithDetailsAsync(id);
+            var document = await _documentRepository.GetDocumentWithDetailsAsync(documentId);
             if (document == null)
             {
-                return Result.Failure($"Document with ID {id} not found");
+                return ServiceResult<bool>.Failure($"Document with ID {documentId} not found");
             }
 
             // RBAC: Verify access
             if (!CanAccessDocument(document))
             {
-                return Result.Failure("You don't have permission to delete this document");
+                return ServiceResult<bool>.Failure("You don't have permission to delete this document");
             }
 
             // Delete file from storage
@@ -503,17 +506,17 @@ public class DocumentService : IDocumentService
             await _auditLogService.LogActionAsync(
                 "Document.Delete",
                 $"Deleted document: {document.FileName} ({document.DocumentType})",
-                id.ToString());
+                documentId.ToString());
 
             _logger.LogInformation("Document {Id} deleted successfully by user {UserId}",
-                id, _currentUserService.UserId);
+                documentId, _currentUserService.UserId);
 
-            return Result.Success();
+            return ServiceResult<bool>.Success(true);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting document {Id}", id);
-            return Result.Failure("An error occurred while deleting the document");
+            _logger.LogError(ex, "Error deleting document {Id}", documentId);
+            return ServiceResult<bool>.Failure("An error occurred while deleting the document");
         }
     }
 

@@ -39,8 +39,8 @@ public class AzureBlobStorageService : IFileStorageService
     {
         try
         {
-            // Validate first
-            var (isValid, errorMessage) = await ValidateFileAsync(file);
+            // Validate first with defaults
+            var (isValid, errorMessage) = await ValidateFileAsync(file, _defaultAllowedExtensions, _defaultMaxFileSize);
             if (!isValid)
             {
                 throw new InvalidOperationException(errorMessage);
@@ -119,10 +119,10 @@ public class AzureBlobStorageService : IFileStorageService
         }
     }
 
-    public Task<(bool IsValid, string ErrorMessage)> ValidateFileAsync(
+    public Task<(bool isValid, string errorMessage)> ValidateFileAsync(
         IFormFile file,
-        string[]? allowedExtensions = null,
-        long? maxSizeInBytes = null)
+        string[] allowedExtensions,
+        long maxSizeInBytes)
     {
         try
         {
@@ -132,10 +132,9 @@ public class AzureBlobStorageService : IFileStorageService
             }
 
             // Check file size
-            var maxSize = maxSizeInBytes ?? _defaultMaxFileSize;
-            if (file.Length > maxSize)
+            if (file.Length > maxSizeInBytes)
             {
-                var maxSizeMB = maxSize / 1024 / 1024;
+                var maxSizeMB = maxSizeInBytes / 1024 / 1024;
                 return Task.FromResult((false, $"File size exceeds maximum allowed size of {maxSizeMB}MB"));
             }
 
@@ -146,10 +145,9 @@ public class AzureBlobStorageService : IFileStorageService
                 return Task.FromResult((false, "File has no extension"));
             }
 
-            var allowed = allowedExtensions ?? _defaultAllowedExtensions;
-            if (!allowed.Contains(extension))
+            if (!allowedExtensions.Contains(extension))
             {
-                return Task.FromResult((false, $"File type not allowed. Allowed types: {string.Join(", ", allowed)}"));
+                return Task.FromResult((false, $"File type not allowed. Allowed types: {string.Join(", ", allowedExtensions)}"));
             }
 
             // Check MIME type (basic validation)
@@ -159,7 +157,9 @@ public class AzureBlobStorageService : IFileStorageService
                 { ".jpeg", new[] { "image/jpeg", "image/jpg" } },
                 { ".png", new[] { "image/png" } },
                 { ".webp", new[] { "image/webp" } },
-                { ".pdf", new[] { "application/pdf" } }
+                { ".pdf", new[] { "application/pdf" } },
+                { ".doc", new[] { "application/msword" } },
+                { ".docx", new[] { "application/vnd.openxmlformats-officedocument.wordprocessingml.document" } }
             };
 
             if (allowedMimeTypes.ContainsKey(extension))
@@ -177,6 +177,56 @@ public class AzureBlobStorageService : IFileStorageService
         {
             _logger.LogError(ex, "Error validating file: {FileName}", file?.FileName);
             return Task.FromResult((false, $"File validation error: {ex.Message}"));
+        }
+    }
+
+    public string GetFileUrl(string filePath)
+    {
+        // For Azure Blob Storage, if it's already a full URL, return as-is
+        if (filePath.StartsWith("http://") || filePath.StartsWith("https://"))
+        {
+            return filePath;
+        }
+
+        // Otherwise, construct the full Azure Blob URL
+        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        var blobClient = containerClient.GetBlobClient(filePath.TrimStart('/'));
+        return blobClient.Uri.ToString();
+    }
+
+    public async Task<byte[]> DownloadFileAsync(string fileUrl)
+    {
+        try
+        {
+            // Extract blob name from URL or use as blob name directly
+            string blobName;
+            if (fileUrl.StartsWith("http://") || fileUrl.StartsWith("https://"))
+            {
+                var uri = new Uri(fileUrl);
+                var segments = uri.Segments;
+                // The blob name is everything after the container name
+                blobName = string.Join("", segments.Skip(2)); // Skip "/" and "container/"
+            }
+            else
+            {
+                blobName = fileUrl.TrimStart('/');
+            }
+
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            if (!await blobClient.ExistsAsync())
+            {
+                throw new FileNotFoundException($"File not found: {fileUrl}");
+            }
+
+            var downloadResult = await blobClient.DownloadContentAsync();
+            return downloadResult.Value.Content.ToArray();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading file from Azure Blob Storage: {FileUrl}", fileUrl);
+            throw;
         }
     }
 }
