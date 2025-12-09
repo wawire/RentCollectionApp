@@ -852,11 +852,8 @@ public class TenantService : ITenantService
                 hasChanges = true;
             }
 
-            if (updateDto.Notes != null && updateDto.Notes != tenant.Notes)
-            {
-                tenant.Notes = updateDto.Notes;
-                hasChanges = true;
-            }
+            // Note: Notes field is not editable by tenant for security reasons
+            // (it's used for landlord/admin notes about the tenant)
 
             if (!hasChanges)
             {

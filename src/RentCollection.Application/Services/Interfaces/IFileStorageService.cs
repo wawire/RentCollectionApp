@@ -8,5 +8,6 @@ namespace RentCollection.Application.Services.Interfaces
         Task<bool> DeleteFileAsync(string fileUrl);
         Task<byte[]> DownloadFileAsync(string fileUrl);
         string GetFileUrl(string filePath);
+        Task<(bool isValid, string errorMessage)> ValidateFileAsync(IFormFile file, string[] allowedExtensions, long maxSizeInBytes);
     }
 }
