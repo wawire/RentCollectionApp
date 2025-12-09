@@ -701,6 +701,125 @@ public class AuthService : IAuthService
         }
     }
 
+    public async Task<Setup2FAResponseDto> Setup2FAAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        // Generate new secret
+        var secret = Application.Helpers.TotpHelper.GenerateSecret();
+
+        // Save secret temporarily (not enabled yet until verified)
+        user.TwoFactorSecret = secret;
+        await _userRepository.UpdateAsync(user);
+
+        // Generate QR code URI
+        var qrCodeUri = Application.Helpers.TotpHelper.GenerateQrCodeUri(secret, user.Email, "RentCollection");
+
+        _logger.LogInformation("2FA setup initiated for user {UserId}", userId);
+
+        return new Setup2FAResponseDto
+        {
+            SecretKey = secret,
+            QrCodeUri = qrCodeUri,
+            Issuer = "RentCollection",
+            AccountName = user.Email
+        };
+    }
+
+    public async Task Enable2FAAsync(int userId, Enable2FADto dto, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.TwoFactorSecret))
+        {
+            throw new InvalidOperationException("2FA setup not initiated. Call Setup2FA first.");
+        }
+
+        // Verify the code
+        if (!Application.Helpers.TotpHelper.VerifyCode(user.TwoFactorSecret, dto.VerificationCode))
+        {
+            throw new InvalidOperationException("Invalid verification code. Please try again.");
+        }
+
+        // Enable 2FA
+        user.TwoFactorEnabled = true;
+        await _userRepository.UpdateAsync(user);
+
+        _logger.LogInformation("2FA enabled for user {UserId}", userId);
+    }
+
+    public async Task Disable2FAAsync(int userId, Disable2FADto dto, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        // Verify password before disabling 2FA
+        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        {
+            throw new InvalidOperationException("Invalid password");
+        }
+
+        // Disable 2FA
+        user.TwoFactorEnabled = false;
+        user.TwoFactorSecret = null;
+        await _userRepository.UpdateAsync(user);
+
+        _logger.LogInformation("2FA disabled for user {UserId}", userId);
+    }
+
+    public async Task<AuthResponseDto> Verify2FACodeAsync(Verify2FACodeDto dto, CancellationToken cancellationToken = default)
+    {
+        // Find user by email or phone
+        var user = await _userRepository.GetByEmailAsync(dto.EmailOrPhone, cancellationToken);
+        if (user == null)
+        {
+            user = await _userRepository.GetByPhoneNumberAsync(dto.EmailOrPhone, cancellationToken);
+        }
+
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("Invalid credentials");
+        }
+
+        if (!user.TwoFactorEnabled || string.IsNullOrWhiteSpace(user.TwoFactorSecret))
+        {
+            throw new InvalidOperationException("2FA is not enabled for this user");
+        }
+
+        // Verify the code
+        if (!Application.Helpers.TotpHelper.VerifyCode(user.TwoFactorSecret, dto.Code))
+        {
+            _logger.LogWarning("Invalid 2FA code attempt for user {UserId}", user.Id);
+            throw new UnauthorizedAccessException("Invalid verification code");
+        }
+
+        // Update last login
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userRepository.UpdateAsync(user);
+
+        // Generate JWT token
+        var token = _jwtTokenGenerator.GenerateToken(user);
+
+        _logger.LogInformation("User {UserId} logged in successfully with 2FA", user.Id);
+
+        return new AuthResponseDto
+        {
+            Token = token,
+            User = MapToUserDto(user)
+        };
+    }
+
     private string GenerateSecureToken()
     {
         // Generate a cryptographically secure random token

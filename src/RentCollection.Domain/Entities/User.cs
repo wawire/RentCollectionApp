@@ -44,6 +44,17 @@ public class User
     public DateTime? EmailVerifiedAt { get; set; }
 
     /// <summary>
+    /// Two-factor authentication enabled status
+    /// </summary>
+    public bool TwoFactorEnabled { get; set; } = false;
+
+    /// <summary>
+    /// Two-factor authentication secret key (for TOTP)
+    /// Encrypted/hashed before storage
+    /// </summary>
+    public string? TwoFactorSecret { get; set; }
+
+    /// <summary>
     /// For Landlord role - properties they own
     /// </summary>
     public ICollection<Property> OwnedProperties { get; set; } = new List<Property>();
