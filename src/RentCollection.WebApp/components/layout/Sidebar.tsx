@@ -17,6 +17,8 @@ import {
   FaTimes,
   FaWallet,
   FaClipboardCheck,
+  FaFileContract,
+  FaBell,
 } from 'react-icons/fa'
 
 interface SidebarProps {
@@ -38,7 +40,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const isLandlordOrAdmin = user?.role === UserRole.Landlord || user?.role === UserRole.SystemAdmin || user?.role === UserRole.Accountant || user?.role === UserRole.Caretaker
 
   const tenantNavItems = [
-    { name: 'Tenant Portal', path: '/tenant-portal', icon: FaWallet },
+    { name: 'Dashboard', path: '/tenant-portal', icon: FaWallet },
+    { name: 'Lease Info', path: '/tenant-portal/lease-info', icon: FaFileContract },
+    { name: 'Documents', path: '/tenant-portal/documents', icon: FaFileAlt },
+    { name: 'Payment History', path: '/tenant-portal/history', icon: FaMoneyBillWave },
   ]
 
   const landlordNavItems = [
@@ -49,8 +54,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Tenants', path: '/tenants', icon: FaUsers },
     { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
     { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
-    { name: 'Reports', path: '/reports', icon: FaFileAlt },
-    { name: 'SMS', path: '/notifications', icon: FaSms },
+    { name: 'Documents', path: '/dashboard/documents', icon: FaFileAlt },
+    { name: 'Notifications', path: '/dashboard/notifications', icon: FaBell },
+    { name: 'Reports', path: '/reports', icon: FaFileContract },
   ]
 
   const navItems = isTenant ? tenantNavItems : landlordNavItems
@@ -121,7 +127,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Settings Section */}
           <div className="mt-8 pt-4 border-t border-gray-200">
             <Link
-              href="/settings"
+              href={isTenant ? "/tenant-portal/settings" : "/settings"}
               className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             >
               <FaCog className="text-lg text-gray-500" />
