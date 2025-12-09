@@ -203,6 +203,25 @@ public class PaymentsController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Get overdue payments (pending payments past due date)
+    /// </summary>
+    /// <param name="propertyId">Optional property ID filter (for landlords)</param>
+    /// <returns>List of overdue payments</returns>
+    [HttpGet("overdue")]
+    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetOverduePayments([FromQuery] int? propertyId = null)
+    {
+        var result = await _paymentService.GetOverduePaymentsAsync(propertyId);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
 
 /// <summary>

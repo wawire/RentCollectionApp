@@ -711,4 +711,96 @@ public class PaymentService : IPaymentService
             return Result<PaymentDto>.Failure("An error occurred while uploading the payment proof");
         }
     }
+
+    public async Task<Result<IEnumerable<PaymentDto>>> GetOverduePaymentsAsync(int? propertyId = null)
+    {
+        try
+        {
+            IEnumerable<Payment> overduePayments;
+
+            // RBAC: SystemAdmin can see all overdue payments
+            if (_currentUserService.IsSystemAdmin)
+            {
+                if (propertyId.HasValue)
+                {
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByPropertyIdAsync(propertyId.Value);
+                }
+                else
+                {
+                    overduePayments = await _paymentRepository.GetOverduePaymentsAsync();
+                }
+            }
+            // Landlord can only see overdue payments for their properties
+            else if (_currentUserService.IsLandlord)
+            {
+                var landlordId = _currentUserService.UserIdInt;
+                if (!landlordId.HasValue)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("Landlord ID not found");
+                }
+
+                if (propertyId.HasValue)
+                {
+                    // Verify landlord owns this property
+                    var property = await _context.Properties
+                        .FirstOrDefaultAsync(p => p.Id == propertyId.Value && p.LandlordId == landlordId.Value);
+
+                    if (property == null)
+                    {
+                        return Result<IEnumerable<PaymentDto>>.Failure("Property not found or you don't have permission to view it");
+                    }
+
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByPropertyIdAsync(propertyId.Value);
+                }
+                else
+                {
+                    // Get all overdue payments for landlord's properties
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByLandlordIdAsync(landlordId.Value);
+                }
+            }
+            // Accountant can see overdue payments for their landlord's properties
+            else if (_currentUserService.IsAccountant)
+            {
+                var landlordId = _currentUserService.LandlordIdInt;
+                if (!landlordId.HasValue)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("Landlord ID not found for accountant");
+                }
+
+                if (propertyId.HasValue)
+                {
+                    // Verify property belongs to accountant's landlord
+                    var property = await _context.Properties
+                        .FirstOrDefaultAsync(p => p.Id == propertyId.Value && p.LandlordId == landlordId.Value);
+
+                    if (property == null)
+                    {
+                        return Result<IEnumerable<PaymentDto>>.Failure("Property not found or you don't have permission to view it");
+                    }
+
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByPropertyIdAsync(propertyId.Value);
+                }
+                else
+                {
+                    // Get all overdue payments for accountant's landlord properties
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByLandlordIdAsync(landlordId.Value);
+                }
+            }
+            else
+            {
+                return Result<IEnumerable<PaymentDto>>.Failure("You don't have permission to view overdue payments");
+            }
+
+            var paymentDtos = _mapper.Map<IEnumerable<PaymentDto>>(overduePayments);
+
+            _logger.LogInformation("Retrieved {Count} overdue payments", paymentDtos.Count());
+
+            return Result<IEnumerable<PaymentDto>>.Success(paymentDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving overdue payments");
+            return Result<IEnumerable<PaymentDto>>.Failure("An error occurred while retrieving overdue payments");
+        }
+    }
 }

@@ -61,4 +61,11 @@ public interface IPaymentService
     /// <param name="file">Payment proof file (image or PDF)</param>
     /// <returns>Updated payment</returns>
     Task<Result<PaymentDto>> UploadPaymentProofAsync(int paymentId, int tenantId, IFormFile file);
+
+    /// <summary>
+    /// Get overdue payments (pending payments past due date)
+    /// </summary>
+    /// <param name="propertyId">Optional property ID filter</param>
+    /// <returns>List of overdue payments</returns>
+    Task<Result<IEnumerable<PaymentDto>>> GetOverduePaymentsAsync(int? propertyId = null);
 }
