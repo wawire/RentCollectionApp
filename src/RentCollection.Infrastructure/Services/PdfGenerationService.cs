@@ -478,4 +478,361 @@ public class PdfGenerationService : IPdfService
             throw;
         }
     }
+
+    public async Task<byte[]> GeneratePaymentHistoryAsync(int tenantId, DateTime? startDate = null, DateTime? endDate = null)
+    {
+        try
+        {
+            var tenant = await _context.Tenants
+                .Include(t => t.Unit)
+                .ThenInclude(u => u.Property)
+                .Include(t => t.Payments)
+                .FirstOrDefaultAsync(t => t.Id == tenantId);
+
+            if (tenant == null)
+            {
+                throw new InvalidOperationException($"Tenant with ID {tenantId} not found");
+            }
+
+            // Filter payments by date range
+            var payments = tenant.Payments.AsEnumerable();
+            if (startDate.HasValue)
+            {
+                payments = payments.Where(p => p.PaymentDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                payments = payments.Where(p => p.PaymentDate <= endDate.Value);
+            }
+
+            var paymentsList = payments.OrderByDescending(p => p.PaymentDate).ToList();
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(10));
+
+                    page.Header().Column(header =>
+                    {
+                        header.Item().Background(Colors.Blue.Lighten3).Padding(15).Column(column =>
+                        {
+                            column.Item().Text("PAYMENT HISTORY REPORT").FontSize(20).FontColor(Colors.Blue.Darken2).Bold();
+                            column.Item().Text($"Generated: {DateTime.Now:dd MMM yyyy HH:mm}").FontSize(10).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        header.Item().PaddingTop(15).Column(column =>
+                        {
+                            column.Item().Text("TENANT INFORMATION").FontSize(12).Bold();
+                            column.Item().Text($"Name: {tenant.FirstName} {tenant.LastName}");
+                            column.Item().Text($"Email: {tenant.Email}");
+                            column.Item().Text($"Phone: {tenant.PhoneNumber}");
+                            column.Item().Text($"Property: {tenant.Unit.Property.Name} - Unit {tenant.Unit.UnitNumber}");
+
+                            if (startDate.HasValue || endDate.HasValue)
+                            {
+                                var period = startDate.HasValue && endDate.HasValue
+                                    ? $"{startDate:dd MMM yyyy} - {endDate:dd MMM yyyy}"
+                                    : startDate.HasValue
+                                        ? $"From {startDate:dd MMM yyyy}"
+                                        : $"Until {endDate:dd MMM yyyy}";
+                                column.Item().Text($"Period: {period}").Bold();
+                            }
+                        });
+                    });
+
+                    page.Content().PaddingVertical(10).Column(content =>
+                    {
+                        // Summary Statistics
+                        var totalAmount = paymentsList.Sum(p => p.Amount);
+                        var totalLateFees = paymentsList.Sum(p => p.LateFeeAmount);
+                        var completedPayments = paymentsList.Where(p => p.Status == Domain.Enums.PaymentStatus.Completed);
+                        var totalPaid = completedPayments.Sum(p => p.Amount + p.LateFeeAmount);
+                        var pendingPayments = paymentsList.Where(p => p.Status == Domain.Enums.PaymentStatus.Pending);
+                        var totalPending = pendingPayments.Sum(p => p.Amount + p.LateFeeAmount);
+
+                        content.Item().Background(Colors.Grey.Lighten3).Padding(10).Column(summary =>
+                        {
+                            summary.Item().Text("PAYMENT SUMMARY").FontSize(12).Bold();
+                            summary.Item().Row(row =>
+                            {
+                                row.RelativeItem().Text($"Total Payments: {paymentsList.Count}");
+                                row.RelativeItem().Text($"Completed: {completedPayments.Count()}");
+                                row.RelativeItem().Text($"Pending: {pendingPayments.Count()}");
+                            });
+                            summary.Item().Row(row =>
+                            {
+                                row.RelativeItem().Text($"Total Amount: KES {totalAmount:N2}");
+                                row.RelativeItem().Text($"Total Paid: KES {totalPaid:N2}");
+                                row.RelativeItem().Text($"Total Pending: KES {totalPending:N2}");
+                            });
+                            if (totalLateFees > 0)
+                            {
+                                summary.Item().Text($"Total Late Fees: KES {totalLateFees:N2}").FontColor(Colors.Red.Darken1);
+                            }
+                        });
+
+                        // Payment History Table
+                        content.Item().PaddingTop(15).Text("PAYMENT DETAILS").FontSize(12).Bold();
+                        content.Item().PaddingTop(5).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(70);  // Date
+                                columns.ConstantColumn(70);  // Due Date
+                                columns.RelativeColumn();     // Period
+                                columns.ConstantColumn(70);  // Amount
+                                columns.ConstantColumn(60);  // Late Fee
+                                columns.ConstantColumn(70);  // Total
+                                columns.ConstantColumn(70);  // Status
+                                columns.ConstantColumn(70);  // Method
+                            });
+
+                            // Header
+                            table.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Date").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Due Date").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Period").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Amount").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Late Fee").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Total").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Status").FontColor(Colors.White).FontSize(9).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Method").FontColor(Colors.White).FontSize(9).Bold();
+                            });
+
+                            // Rows
+                            foreach (var payment in paymentsList)
+                            {
+                                var isAlternate = paymentsList.IndexOf(payment) % 2 == 0;
+                                var bgColor = isAlternate ? Colors.Grey.Lighten4 : Colors.White;
+
+                                table.Cell().Background(bgColor).Padding(5).Text($"{payment.PaymentDate:dd/MM/yy}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(5).Text($"{payment.DueDate:dd/MM/yy}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(5).Text($"{payment.PeriodStart:MMM yy}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(5).AlignRight().Text($"{payment.Amount:N2}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(5).AlignRight().Text($"{payment.LateFeeAmount:N2}").FontSize(8).FontColor(payment.LateFeeAmount > 0 ? Colors.Red.Darken1 : Colors.Black);
+                                table.Cell().Background(bgColor).Padding(5).AlignRight().Text($"{(payment.Amount + payment.LateFeeAmount):N2}").FontSize(8).Bold();
+                                table.Cell().Background(bgColor).Padding(5).Text(payment.Status.ToString()).FontSize(8).FontColor(payment.Status == Domain.Enums.PaymentStatus.Completed ? Colors.Green.Darken1 : payment.Status == Domain.Enums.PaymentStatus.Failed ? Colors.Red.Darken1 : Colors.Orange.Darken1);
+                                table.Cell().Background(bgColor).Padding(5).Text(payment.PaymentMethod.ToString()).FontSize(8);
+                            }
+                        });
+
+                        // Notes if any payments have notes
+                        var paymentsWithNotes = paymentsList.Where(p => !string.IsNullOrEmpty(p.Notes)).ToList();
+                        if (paymentsWithNotes.Any())
+                        {
+                            content.Item().PaddingTop(15).Text("PAYMENT NOTES").FontSize(11).Bold();
+                            foreach (var payment in paymentsWithNotes)
+                            {
+                                content.Item().PaddingTop(5).Text($"{payment.PaymentDate:dd MMM yyyy}: {payment.Notes}").FontSize(9).Italic();
+                            }
+                        }
+                    });
+
+                    page.Footer().AlignCenter().Text(text =>
+                    {
+                        text.Span("Page ");
+                        text.CurrentPageNumber();
+                        text.Span(" of ");
+                        text.TotalPages();
+                    });
+                });
+            });
+
+            _logger.LogInformation("Generated payment history PDF for tenant {TenantId} with {Count} payments", tenantId, paymentsList.Count);
+            return document.GeneratePdf();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating payment history PDF for tenant {TenantId}", tenantId);
+            throw;
+        }
+    }
+
+    public async Task<byte[]> GeneratePropertyPaymentHistoryAsync(int propertyId, DateTime? startDate = null, DateTime? endDate = null)
+    {
+        try
+        {
+            var property = await _context.Properties
+                .Include(p => p.Units)
+                .ThenInclude(u => u.Tenant)
+                .ThenInclude(t => t!.Payments)
+                .FirstOrDefaultAsync(p => p.Id == propertyId);
+
+            if (property == null)
+            {
+                throw new InvalidOperationException($"Property with ID {propertyId} not found");
+            }
+
+            // Collect all payments from all tenants
+            var allPayments = property.Units
+                .Where(u => u.Tenant != null)
+                .SelectMany(u => u.Tenant!.Payments.Select(p => new
+                {
+                    Payment = p,
+                    TenantName = $"{u.Tenant.FirstName} {u.Tenant.LastName}",
+                    UnitNumber = u.UnitNumber
+                }))
+                .AsEnumerable();
+
+            // Filter by date range
+            if (startDate.HasValue)
+            {
+                allPayments = allPayments.Where(p => p.Payment.PaymentDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                allPayments = allPayments.Where(p => p.Payment.PaymentDate <= endDate.Value);
+            }
+
+            var paymentsList = allPayments.OrderByDescending(p => p.Payment.PaymentDate).ToList();
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4.Landscape());
+                    page.Margin(1.5f, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(9));
+
+                    page.Header().Column(header =>
+                    {
+                        header.Item().Background(Colors.Blue.Lighten3).Padding(15).Column(column =>
+                        {
+                            column.Item().Text("PROPERTY PAYMENT HISTORY").FontSize(18).FontColor(Colors.Blue.Darken2).Bold();
+                            column.Item().Text($"Generated: {DateTime.Now:dd MMM yyyy HH:mm}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        header.Item().PaddingTop(10).Column(column =>
+                        {
+                            column.Item().Text($"Property: {property.Name}").FontSize(11).Bold();
+                            column.Item().Text($"Address: {property.Address}");
+                            column.Item().Text($"Total Units: {property.Units.Count} | Occupied: {property.Units.Count(u => u.Tenant != null && u.Tenant.IsActive)}");
+
+                            if (startDate.HasValue || endDate.HasValue)
+                            {
+                                var period = startDate.HasValue && endDate.HasValue
+                                    ? $"{startDate:dd MMM yyyy} - {endDate:dd MMM yyyy}"
+                                    : startDate.HasValue
+                                        ? $"From {startDate:dd MMM yyyy}"
+                                        : $"Until {endDate:dd MMM yyyy}";
+                                column.Item().Text($"Period: {period}").Bold();
+                            }
+                        });
+                    });
+
+                    page.Content().PaddingVertical(10).Column(content =>
+                    {
+                        // Summary Statistics
+                        var totalAmount = paymentsList.Sum(p => p.Payment.Amount);
+                        var totalLateFees = paymentsList.Sum(p => p.Payment.LateFeeAmount);
+                        var completedPayments = paymentsList.Where(p => p.Payment.Status == Domain.Enums.PaymentStatus.Completed);
+                        var totalPaid = completedPayments.Sum(p => p.Payment.Amount + p.Payment.LateFeeAmount);
+                        var pendingPayments = paymentsList.Where(p => p.Payment.Status == Domain.Enums.PaymentStatus.Pending);
+                        var totalPending = pendingPayments.Sum(p => p.Payment.Amount + p.Payment.LateFeeAmount);
+
+                        content.Item().Background(Colors.Grey.Lighten3).Padding(10).Row(row =>
+                        {
+                            row.RelativeItem().Column(col =>
+                            {
+                                col.Item().Text($"Total Payments: {paymentsList.Count}");
+                                col.Item().Text($"Total Amount: KES {totalAmount:N2}").Bold();
+                            });
+                            row.RelativeItem().Column(col =>
+                            {
+                                col.Item().Text($"Completed: {completedPayments.Count()}");
+                                col.Item().Text($"Total Paid: KES {totalPaid:N2}").FontColor(Colors.Green.Darken1).Bold();
+                            });
+                            row.RelativeItem().Column(col =>
+                            {
+                                col.Item().Text($"Pending: {pendingPayments.Count()}");
+                                col.Item().Text($"Total Pending: KES {totalPending:N2}").FontColor(Colors.Orange.Darken1).Bold();
+                            });
+                            if (totalLateFees > 0)
+                            {
+                                row.RelativeItem().Column(col =>
+                                {
+                                    col.Item().Text("Late Fees:");
+                                    col.Item().Text($"KES {totalLateFees:N2}").FontColor(Colors.Red.Darken1).Bold();
+                                });
+                            }
+                        });
+
+                        // Payment History Table
+                        content.Item().PaddingTop(15).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(60);   // Date
+                                columns.ConstantColumn(80);   // Tenant
+                                columns.ConstantColumn(40);   // Unit
+                                columns.ConstantColumn(80);   // Period
+                                columns.ConstantColumn(60);   // Amount
+                                columns.ConstantColumn(50);   // Late Fee
+                                columns.ConstantColumn(60);   // Total
+                                columns.ConstantColumn(70);   // Status
+                                columns.ConstantColumn(60);   // Method
+                                columns.RelativeColumn();     // Reference
+                            });
+
+                            // Header
+                            table.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Date").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Tenant").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Unit").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Period").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Amount").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Late Fee").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Total").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Status").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Method").FontColor(Colors.White).FontSize(8).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(4).Text("Reference").FontColor(Colors.White).FontSize(8).Bold();
+                            });
+
+                            // Rows
+                            foreach (var item in paymentsList)
+                            {
+                                var isAlternate = paymentsList.IndexOf(item) % 2 == 0;
+                                var bgColor = isAlternate ? Colors.Grey.Lighten4 : Colors.White;
+                                var payment = item.Payment;
+
+                                table.Cell().Background(bgColor).Padding(4).Text($"{payment.PaymentDate:dd/MM/yy}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(4).Text(item.TenantName).FontSize(7);
+                                table.Cell().Background(bgColor).Padding(4).Text(item.UnitNumber).FontSize(8);
+                                table.Cell().Background(bgColor).Padding(4).Text($"{payment.PeriodStart:MMM yy}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(4).AlignRight().Text($"{payment.Amount:N2}").FontSize(8);
+                                table.Cell().Background(bgColor).Padding(4).AlignRight().Text($"{payment.LateFeeAmount:N2}").FontSize(8).FontColor(payment.LateFeeAmount > 0 ? Colors.Red.Darken1 : Colors.Black);
+                                table.Cell().Background(bgColor).Padding(4).AlignRight().Text($"{(payment.Amount + payment.LateFeeAmount):N2}").FontSize(8).Bold();
+                                table.Cell().Background(bgColor).Padding(4).Text(payment.Status.ToString()).FontSize(7).FontColor(payment.Status == Domain.Enums.PaymentStatus.Completed ? Colors.Green.Darken1 : payment.Status == Domain.Enums.PaymentStatus.Failed ? Colors.Red.Darken1 : Colors.Orange.Darken1);
+                                table.Cell().Background(bgColor).Padding(4).Text(payment.PaymentMethod.ToString()).FontSize(7);
+                                table.Cell().Background(bgColor).Padding(4).Text(payment.TransactionReference ?? "-").FontSize(7);
+                            }
+                        });
+                    });
+
+                    page.Footer().AlignCenter().Text(text =>
+                    {
+                        text.Span("Page ");
+                        text.CurrentPageNumber();
+                        text.Span(" of ");
+                        text.TotalPages();
+                    });
+                });
+            });
+
+            _logger.LogInformation("Generated property payment history PDF for property {PropertyId} with {Count} payments", propertyId, paymentsList.Count);
+            return document.GeneratePdf();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating property payment history PDF for property {PropertyId}", propertyId);
+            throw;
+        }
+    }
 }

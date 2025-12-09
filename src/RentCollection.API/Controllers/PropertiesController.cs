@@ -15,11 +15,13 @@ namespace RentCollection.API.Controllers;
 public class PropertiesController : ControllerBase
 {
     private readonly IPropertyService _propertyService;
+    private readonly IPdfService _pdfService;
     private readonly ILogger<PropertiesController> _logger;
 
-    public PropertiesController(IPropertyService propertyService, ILogger<PropertiesController> logger)
+    public PropertiesController(IPropertyService propertyService, IPdfService pdfService, ILogger<PropertiesController> logger)
     {
         _propertyService = propertyService;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -189,5 +191,39 @@ public class PropertiesController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Export property payment history as PDF
+    /// </summary>
+    /// <param name="id">Property ID</param>
+    /// <param name="startDate">Optional start date for filtering payments</param>
+    /// <param name="endDate">Optional end date for filtering payments</param>
+    [HttpGet("{id}/payment-history/export")]
+    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExportPropertyPaymentHistory(int id, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            // Generate PDF
+            var pdfBytes = await _pdfService.GeneratePropertyPaymentHistoryAsync(id, startDate, endDate);
+
+            // Return PDF file
+            var fileName = $"Property_{id}_Payment_History_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Property {PropertyId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting property payment history for property {PropertyId}", id);
+            return BadRequest(new { message = "Failed to export property payment history" });
+        }
     }
 }

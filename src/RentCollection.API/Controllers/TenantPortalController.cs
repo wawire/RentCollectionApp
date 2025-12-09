@@ -16,15 +16,18 @@ public class TenantPortalController : ControllerBase
 {
     private readonly ITenantService _tenantService;
     private readonly ITenantPortalService _tenantPortalService;
+    private readonly IPdfService _pdfService;
     private readonly ILogger<TenantPortalController> _logger;
 
     public TenantPortalController(
         ITenantService tenantService,
         ITenantPortalService tenantPortalService,
+        IPdfService pdfService,
         ILogger<TenantPortalController> logger)
     {
         _tenantService = tenantService;
         _tenantPortalService = tenantPortalService;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -98,5 +101,41 @@ public class TenantPortalController : ControllerBase
             return BadRequest(result);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Export tenant's payment history as PDF
+    /// </summary>
+    /// <param name="startDate">Optional start date for filtering payments</param>
+    /// <param name="endDate">Optional end date for filtering payments</param>
+    [HttpGet("payment-history/export")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ExportPaymentHistory([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            // Get current tenant ID from claims
+            var tenantInfo = await _tenantService.GetMyTenantInfoAsync();
+            if (!tenantInfo.IsSuccess || tenantInfo.Data == null)
+            {
+                return BadRequest(new { message = "Tenant information not found" });
+            }
+
+            var tenantId = tenantInfo.Data.Id;
+
+            // Generate PDF
+            var pdfBytes = await _pdfService.GeneratePaymentHistoryAsync(tenantId, startDate, endDate);
+
+            // Return PDF file
+            var fileName = $"Payment_History_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting payment history");
+            return BadRequest(new { message = "Failed to export payment history" });
+        }
     }
 }
