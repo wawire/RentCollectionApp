@@ -66,6 +66,12 @@ namespace RentCollection.Domain.Enums
         RespondToLeaseRenewal = 104,
         ApproveLeaseRenewal = 105,
 
+        // Security Deposits
+        RecordSecurityDeposit = 110,
+        ViewSecurityDeposits = 111,
+        DeductSecurityDeposit = 112,
+        RefundSecurityDeposit = 113,
+
         // System
         ManageSettings = 80,
         ViewAuditLogs = 81

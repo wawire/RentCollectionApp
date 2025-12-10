@@ -37,6 +37,16 @@ export type {
 } from './leaseRenewal.types'
 export { LeaseRenewalStatus } from './leaseRenewal.types'
 
+// Security Deposits
+export type {
+  SecurityDepositTransaction,
+  SecurityDepositBalance,
+  RecordSecurityDepositDto,
+  DeductSecurityDepositDto,
+  RefundSecurityDepositDto,
+} from './securityDeposit.types'
+export { SecurityDepositTransactionType } from './securityDeposit.types'
+
 // Common
 export type {
   ApiResponse,

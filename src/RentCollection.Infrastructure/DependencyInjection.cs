@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IMaintenanceRequestRepository, MaintenanceRequestRepository>();
         services.AddScoped<ILeaseRenewalRepository, LeaseRenewalRepository>();
+        services.AddScoped<ISecurityDepositRepository, SecurityDepositRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
@@ -53,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IMaintenanceRequestService, MaintenanceRequestService>();
         services.AddScoped<ILeaseRenewalService, LeaseRenewalService>();
         services.AddScoped<IBulkImportService, BulkImportService>();
+        services.AddScoped<ISecurityDepositService, SecurityDepositService>();
 
         // File storage service - Use Local for development, Azure for production
         // To use Azure Blob Storage in production, update this registration to:
