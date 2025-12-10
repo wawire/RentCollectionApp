@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RentCollection.Application.DTOs.MaintenanceRequests;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Enums;
-using RentCollection.Infrastructure.Security;
+using RentCollection.Application.Authorization;
 
 namespace RentCollection.API.Controllers;
 

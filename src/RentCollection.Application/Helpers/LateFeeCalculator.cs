@@ -1,3 +1,4 @@
+using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
 
 namespace RentCollection.Application.Helpers
@@ -31,6 +32,47 @@ namespace RentCollection.Application.Helpers
             }
 
             return 0;
+        }
+
+        public static decimal CalculateCurrentLateFee(Tenant tenant, DateTime dueDate)
+        {
+            var currentDate = DateTime.UtcNow;
+            var lateFeeType = tenant.LateFeeFixedAmount.HasValue
+                ? LateFeeType.FixedAmount
+                : LateFeeType.Percentage;
+
+            return CalculateLateFee(
+                tenant.MonthlyRent,
+                dueDate,
+                currentDate,
+                tenant.LateFeeGracePeriodDays,
+                lateFeeType,
+                tenant.LateFeePercentage,
+                tenant.LateFeeFixedAmount);
+        }
+
+        public static string GetLateFeePolicy(Tenant tenant)
+        {
+            if (tenant.LateFeeFixedAmount.HasValue)
+            {
+                return $"Fixed amount of KES {tenant.LateFeeFixedAmount.Value:N2}";
+            }
+            return $"{tenant.LateFeePercentage * 100}% of monthly rent";
+        }
+
+        public static string GetLateFeeDetails(Tenant tenant, DateTime dueDate, DateTime currentDate)
+        {
+            var daysOverdue = (currentDate.Date - dueDate.Date).Days;
+            var gracePeriod = tenant.LateFeeGracePeriodDays;
+
+            if (daysOverdue <= gracePeriod)
+            {
+                return $"Payment is within grace period ({gracePeriod} days). No late fee applicable.";
+            }
+
+            var penaltyDays = daysOverdue - gracePeriod;
+            var lateFee = CalculateCurrentLateFee(tenant, dueDate);
+            return $"Payment is {daysOverdue} days overdue ({penaltyDays} days past grace period). Late fee: KES {lateFee:N2}";
         }
 
         public static bool IsOverdue(DateTime dueDate, DateTime currentDate, int gracePeriodDays)

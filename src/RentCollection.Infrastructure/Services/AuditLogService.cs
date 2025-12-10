@@ -20,7 +20,7 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
-                var userId = _currentUserService.UserId ?? 0;
+                var userId = _currentUserService.UserIdInt ?? 0;
 
                 var auditLog = new AuditLog
                 {
@@ -29,7 +29,7 @@ namespace RentCollection.Infrastructure.Services
                     EntityType = entityType,
                     EntityId = entityId,
                     Details = details,
-                    Timestamp = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 await _auditLogRepository.AddAsync(auditLog);

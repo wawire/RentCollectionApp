@@ -15,7 +15,7 @@ namespace RentCollection.Infrastructure.Repositories.Implementations
         {
             return await _context.AuditLogs
                 .Where(a => a.UserId == userId)
-                .OrderByDescending(a => a.Timestamp)
+                .OrderByDescending(a => a.CreatedAt)
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync();
@@ -25,7 +25,7 @@ namespace RentCollection.Infrastructure.Repositories.Implementations
         {
             return await _context.AuditLogs
                 .Where(a => a.EntityType == entityType && a.EntityId == entityId)
-                .OrderByDescending(a => a.Timestamp)
+                .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
     }

@@ -185,9 +185,10 @@ public class DocumentService : IDocumentService
 
             // Audit log
             await _auditLogService.LogActionAsync(
-                "Document.Upload",
-                $"Uploaded {dto.DocumentType} document: {file.FileName}",
-                document.Id.ToString());
+                "Upload",
+                "Document",
+                document.Id,
+                $"Uploaded {dto.DocumentType} document: {file.FileName}");
 
             _logger.LogInformation("Document {FileName} uploaded successfully by user {UserId}",
                 file.FileName, uploadedByUserId);
@@ -208,7 +209,7 @@ public class DocumentService : IDocumentService
             var documents = await _documentRepository.GetAllAsync();
 
             // Apply RBAC filtering
-            documents = ApplyRbacFilter(documents);
+            documents = ApplyRbacFilter(documents).ToList();
 
             var documentDtos = documents.Select(MapToDto);
 
@@ -373,7 +374,7 @@ public class DocumentService : IDocumentService
             var documents = await _documentRepository.GetDocumentsByTypeAsync(documentType);
 
             // Apply RBAC filtering
-            documents = ApplyRbacFilter(documents);
+            documents = ApplyRbacFilter(documents).ToList();
 
             var documentDtos = documents.Select(MapToDto);
 
@@ -467,9 +468,10 @@ public class DocumentService : IDocumentService
 
             // Audit log
             await _auditLogService.LogActionAsync(
-                "Document.Verify",
-                $"Verified document: {document.FileName} ({document.DocumentType})",
-                documentId.ToString());
+                "Verify",
+                "Document",
+                documentId,
+                $"Verified document: {document.FileName} ({document.DocumentType})");
 
             return ServiceResult<DocumentDto>.Success(documentDto);
         }
@@ -504,9 +506,10 @@ public class DocumentService : IDocumentService
 
             // Audit log
             await _auditLogService.LogActionAsync(
-                "Document.Delete",
-                $"Deleted document: {document.FileName} ({document.DocumentType})",
-                documentId.ToString());
+                "Delete",
+                "Document",
+                documentId,
+                $"Deleted document: {document.FileName} ({document.DocumentType})");
 
             _logger.LogInformation("Document {Id} deleted successfully by user {UserId}",
                 documentId, _currentUserService.UserId);
@@ -587,9 +590,8 @@ public class DocumentService : IDocumentService
         return new DocumentDto
         {
             Id = document.Id,
-            DocumentType = document.DocumentType,
-            DocumentTypeName = document.DocumentType.ToString(),
-            TenantId = document.TenantId,
+            DocumentType = document.DocumentType.ToString(),
+            TenantId = document.TenantId ?? 0,
             TenantName = document.Tenant?.FullName,
             PropertyId = document.PropertyId,
             PropertyName = document.Property?.Name,
@@ -599,7 +601,6 @@ public class DocumentService : IDocumentService
             FileUrl = document.FileUrl,
             FileSize = document.FileSize,
             FileSizeFormatted = FormatFileSize(document.FileSize),
-            ContentType = document.ContentType,
             UploadedByUserId = document.UploadedByUserId,
             UploadedByName = document.UploadedBy?.FullName ?? "Unknown",
             UploadedAt = document.UploadedAt,

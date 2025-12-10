@@ -32,17 +32,3 @@ public class InitiateStkPushDto
     /// </summary>
     public string? Notes { get; set; }
 }
-
-/// <summary>
-/// DTO for STK Push callback response
-/// </summary>
-public class StkPushCallbackDto
-{
-    public string MerchantRequestID { get; set; } = string.Empty;
-    public string CheckoutRequestID { get; set; } = string.Empty;
-    public int ResultCode { get; set; }
-    public string ResultDesc { get; set; } = string.Empty;
-    public string? MPesaReceiptNumber { get; set; }
-    public decimal? Amount { get; set; }
-    public string? PhoneNumber { get; set; }
-}

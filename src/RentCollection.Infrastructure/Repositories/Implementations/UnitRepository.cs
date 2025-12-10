@@ -21,6 +21,11 @@ public class UnitRepository : Repository<Unit>, IUnitRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Unit>> GetByPropertyIdAsync(int propertyId)
+    {
+        return await GetUnitsByPropertyIdAsync(propertyId);
+    }
+
     public async Task<Unit?> GetUnitWithDetailsAsync(int id)
     {
         return await _context.Units

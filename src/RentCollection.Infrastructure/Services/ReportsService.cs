@@ -24,8 +24,8 @@ namespace RentCollection.Infrastructure.Services
                 // Get all properties for the landlord (or all if landlordId is null)
                 var propertiesQuery = _context.Properties
                     .Include(p => p.Units)
-                        .ThenInclude(u => u.Tenant)
-                            .ThenInclude(t => t!.Payments)
+                        .ThenInclude(u => u.Tenants)
+                            .ThenInclude(t => t.Payments)
                     .AsQueryable();
 
                 if (landlordId.HasValue)
@@ -49,7 +49,7 @@ namespace RentCollection.Infrastructure.Services
                         PropertyId = property.Id,
                         PropertyName = property.Name,
                         TotalUnits = property.Units.Count,
-                        OccupiedUnits = property.Units.Count(u => u.Tenant != null && u.Tenant.IsActive)
+                        OccupiedUnits = property.Units.Count(u => u.Tenants.Any(t => t.IsActive))
                     };
 
                     propertyReport.OccupancyRate = propertyReport.TotalUnits > 0
@@ -59,14 +59,15 @@ namespace RentCollection.Infrastructure.Services
                     // Calculate rent collected and expected for the period
                     foreach (var unit in property.Units)
                     {
-                        if (unit.Tenant != null && unit.Tenant.IsActive)
+                        var activeTenant = unit.Tenants.FirstOrDefault(t => t.IsActive);
+                        if (activeTenant != null)
                         {
                             // Rent expected for the period
                             var monthsInPeriod = ((endDate.Year - startDate.Year) * 12) + endDate.Month - startDate.Month + 1;
-                            propertyReport.RentExpected += unit.Tenant.RentAmount * monthsInPeriod;
+                            propertyReport.RentExpected += activeTenant.MonthlyRent * monthsInPeriod;
 
                             // Rent collected (completed payments in the period)
-                            var completedPayments = unit.Tenant.Payments
+                            var completedPayments = activeTenant.Payments
                                 .Where(p => p.Status == PaymentStatus.Completed &&
                                            p.PaymentDate >= startDate &&
                                            p.PaymentDate <= endDate)
@@ -193,8 +194,8 @@ namespace RentCollection.Infrastructure.Services
                 // Group by property
                 var propertiesQuery = _context.Properties
                     .Include(p => p.Units)
-                        .ThenInclude(u => u.Tenant)
-                            .ThenInclude(t => t!.Payments)
+                        .ThenInclude(u => u.Tenants)
+                            .ThenInclude(t => t.Payments)
                     .AsQueryable();
 
                 if (landlordId.HasValue)
@@ -218,7 +219,7 @@ namespace RentCollection.Infrastructure.Services
                             TotalLateFees = propertyTenants.Sum(t => t.TotalLateFees),
                             TotalOutstanding = propertyTenants.Sum(t => t.TotalOutstanding),
                             TenantsInArrears = propertyTenants.Count,
-                            TotalTenants = property.Units.Count(u => u.Tenant != null && u.Tenant.IsActive)
+                            TotalTenants = property.Units.Count(u => u.Tenants.Any(t => t.IsActive))
                         };
 
                         propertyArrears.ArrearsRate = propertyArrears.TotalTenants > 0
@@ -245,7 +246,7 @@ namespace RentCollection.Infrastructure.Services
 
                 var propertiesQuery = _context.Properties
                     .Include(p => p.Units)
-                        .ThenInclude(u => u.Tenant)
+                        .ThenInclude(u => u.Tenants)
                     .AsQueryable();
 
                 if (landlordId.HasValue)
@@ -267,16 +268,17 @@ namespace RentCollection.Infrastructure.Services
                     {
                         PropertyId = property.Id,
                         PropertyName = property.Name,
-                        PropertyType = property.PropertyType.ToString(),
+                        PropertyType = "Residential", // Property entity doesn't have PropertyType
                         TotalUnits = property.Units.Count
                     };
 
                     foreach (var unit in property.Units)
                     {
-                        if (unit.Tenant != null && unit.Tenant.IsActive)
+                        var activeTenant = unit.Tenants.FirstOrDefault(t => t.IsActive);
+                        if (activeTenant != null)
                         {
                             propertyReport.OccupiedUnits++;
-                            propertyReport.ActualMonthlyRevenue += unit.Tenant.RentAmount;
+                            propertyReport.ActualMonthlyRevenue += activeTenant.MonthlyRent;
                         }
                         else
                         {
@@ -285,15 +287,15 @@ namespace RentCollection.Infrastructure.Services
                             {
                                 UnitId = unit.Id,
                                 UnitNumber = unit.UnitNumber,
-                                UnitType = unit.UnitType.ToString(),
-                                RentAmount = unit.RentAmount,
+                                UnitType = "Standard", // Unit entity doesn't have UnitType property
+                                RentAmount = unit.MonthlyRent,
                                 DaysVacant = 0, // Would need to track this in the database
                                 LastOccupiedDate = null // Would need to track this
                             };
                             propertyReport.VacantUnitsList.Add(vacantUnit);
                         }
 
-                        propertyReport.PotentialMonthlyRevenue += unit.RentAmount;
+                        propertyReport.PotentialMonthlyRevenue += unit.MonthlyRent;
                     }
 
                     propertyReport.OccupancyRate = propertyReport.TotalUnits > 0

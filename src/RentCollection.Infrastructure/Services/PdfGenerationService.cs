@@ -659,8 +659,8 @@ public class PdfGenerationService : IPdfService
         {
             var property = await _context.Properties
                 .Include(p => p.Units)
-                .ThenInclude(u => u.Tenant)
-                .ThenInclude(t => t!.Payments)
+                .ThenInclude(u => u.Tenants)
+                .ThenInclude(t => t.Payments)
                 .FirstOrDefaultAsync(p => p.Id == propertyId);
 
             if (property == null)
@@ -670,13 +670,12 @@ public class PdfGenerationService : IPdfService
 
             // Collect all payments from all tenants
             var allPayments = property.Units
-                .Where(u => u.Tenant != null)
-                .SelectMany(u => u.Tenant!.Payments.Select(p => new
+                .SelectMany(u => u.Tenants.Where(t => t.IsActive).SelectMany(t => t.Payments.Select(p => new
                 {
                     Payment = p,
-                    TenantName = $"{u.Tenant.FirstName} {u.Tenant.LastName}",
+                    TenantName = t.FullName,
                     UnitNumber = u.UnitNumber
-                }))
+                })))
                 .AsEnumerable();
 
             // Filter by date range
@@ -711,8 +710,8 @@ public class PdfGenerationService : IPdfService
                         header.Item().PaddingTop(10).Column(column =>
                         {
                             column.Item().Text($"Property: {property.Name}").FontSize(11).Bold();
-                            column.Item().Text($"Address: {property.Address}");
-                            column.Item().Text($"Total Units: {property.Units.Count} | Occupied: {property.Units.Count(u => u.Tenant != null && u.Tenant.IsActive)}");
+                            column.Item().Text($"Address: {property.Location}");
+                            column.Item().Text($"Total Units: {property.Units.Count} | Occupied: {property.Units.Count(u => u.Tenants.Any(t => t.IsActive))}");
 
                             if (startDate.HasValue || endDate.HasValue)
                             {

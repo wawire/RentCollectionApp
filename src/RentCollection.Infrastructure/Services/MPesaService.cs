@@ -288,8 +288,8 @@ public class MPesaService : IMPesaService
             }
 
             // Calculate due date for the current payment period
-            var dueDate = Application.Helpers.PaymentDueDateHelper.CalculateCurrentMonthDueDate(tenant.RentDueDay);
-            var (periodStart, periodEnd) = Application.Helpers.PaymentDueDateHelper.CalculatePaymentPeriod(dueDate);
+            var dueDate = Application.Helpers.PaymentDueDateHelper.CalculateNextMonthDueDate(tenant.RentDueDay);
+            var (periodStart, periodEnd) = Application.Helpers.PaymentDueDateHelper.GetPaymentPeriod(dueDate);
 
             // Create payment record
             var payment = new Payment

@@ -58,7 +58,7 @@ public class TenantPortalService : ITenantPortalService
             var tenant = await _context.Tenants
                 .Include(t => t.Unit)
                     .ThenInclude(u => u.Property)
-                        .ThenInclude(p => p.Amenities)
+                        .ThenInclude(p => p.PropertyAmenities)
                             .ThenInclude(pa => pa.Amenity)
                 .Include(t => t.Unit)
                     .ThenInclude(u => u.Property)
@@ -220,7 +220,7 @@ public class TenantPortalService : ITenantPortalService
         var paymentAccount = property?.PaymentAccounts.FirstOrDefault(pa => pa.IsActive);
 
         // Property amenities
-        var amenities = property?.Amenities
+        var amenities = property?.PropertyAmenities
             .Select(pa => pa.Amenity.Name)
             .ToList() ?? new List<string>();
 
@@ -243,8 +243,8 @@ public class TenantPortalService : ITenantPortalService
             Property = new PropertyDetailsDto
             {
                 Name = property?.Name ?? "",
-                Address = property?.Address,
-                City = property?.City,
+                Address = property?.Location,
+                City = property?.Location,
                 Description = property?.Description,
                 Amenities = amenities
             },

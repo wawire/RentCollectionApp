@@ -8,7 +8,7 @@ using RentCollection.Domain.Enums;
 using RentCollection.Infrastructure.Data;
 using System.Text.Json;
 
-namespace RentCollection.Application.Services;
+namespace RentCollection.Infrastructure.Services;
 
 public class MPesaTransactionService : IMPesaTransactionService
 {
@@ -189,8 +189,8 @@ public class MPesaTransactionService : IMPesaTransactionService
             }
 
             // Calculate due date for the current payment period
-            var dueDate = Application.Helpers.PaymentDueDateHelper.CalculateCurrentMonthDueDate(tenant.RentDueDay);
-            var (periodStart, periodEnd) = Application.Helpers.PaymentDueDateHelper.CalculatePaymentPeriod(dueDate);
+            var dueDate = Application.Helpers.PaymentDueDateHelper.CalculateNextMonthDueDate(tenant.RentDueDay);
+            var (periodStart, periodEnd) = Application.Helpers.PaymentDueDateHelper.GetPaymentPeriod(dueDate);
 
             // Create payment record
             var payment = new Payment

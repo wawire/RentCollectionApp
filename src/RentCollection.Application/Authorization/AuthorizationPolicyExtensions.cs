@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using RentCollection.Application.Authorization.Handlers;
 using RentCollection.Application.Authorization.Requirements;
 using RentCollection.Domain.Enums;
-using RentCollection.Infrastructure.Security;
 
 namespace RentCollection.Application.Authorization;
 

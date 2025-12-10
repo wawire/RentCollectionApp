@@ -71,12 +71,11 @@ public class SecurityDepositService : ISecurityDepositService
             await _depositRepository.AddAsync(transaction);
 
             // Audit log
-            await _auditLogService.LogAsync(
-                userId,
+            await _auditLogService.LogActionAsync(
+                "Create",
                 "SecurityDeposit",
                 transaction.Id,
-                AuditAction.Create,
-                $"Recorded security deposit of {dto.Amount:C} for tenant {tenant.Name}"
+                $"Recorded security deposit of {dto.Amount:C} for tenant {tenant.FullName}"
             );
 
             _logger.LogInformation("Security deposit of {Amount} recorded for tenant {TenantId} by user {UserId}",
@@ -136,12 +135,11 @@ public class SecurityDepositService : ISecurityDepositService
             await _depositRepository.AddAsync(transaction);
 
             // Audit log
-            await _auditLogService.LogAsync(
-                userId,
+            await _auditLogService.LogActionAsync(
+                "Update",
                 "SecurityDeposit",
                 transaction.Id,
-                AuditAction.Update,
-                $"Deducted {dto.Amount:C} from security deposit for tenant {tenant.Name}. Reason: {dto.Reason}"
+                $"Deducted {dto.Amount:C} from security deposit for tenant {tenant.FullName}. Reason: {dto.Reason}"
             );
 
             _logger.LogInformation("Deducted {Amount} from security deposit for tenant {TenantId}. Reason: {Reason}",
@@ -189,12 +187,11 @@ public class SecurityDepositService : ISecurityDepositService
             await _depositRepository.AddAsync(transaction);
 
             // Audit log
-            await _auditLogService.LogAsync(
-                userId,
+            await _auditLogService.LogActionAsync(
+                "Update",
                 "SecurityDeposit",
                 transaction.Id,
-                AuditAction.Update,
-                $"Refunded {dto.Amount:C} security deposit to tenant {tenant.Name} via {dto.RefundMethod}"
+                $"Refunded {dto.Amount:C} security deposit to tenant {tenant.FullName} via {dto.RefundMethod}"
             );
 
             _logger.LogInformation("Refunded {Amount} security deposit to tenant {TenantId} via {Method}",
@@ -236,8 +233,8 @@ public class SecurityDepositService : ISecurityDepositService
             var balanceDto = new SecurityDepositBalanceDto
             {
                 TenantId = tenantId,
-                TenantName = tenant.Name,
-                UnitNumber = tenant.UnitNumber,
+                TenantName = tenant.FullName,
+                UnitNumber = tenant.Unit?.UnitNumber ?? "N/A",
                 InitialDeposit = initialDeposit,
                 TotalDeductions = totalDeductions,
                 TotalRefunds = totalRefunds,
@@ -313,8 +310,8 @@ public class SecurityDepositService : ISecurityDepositService
         {
             Id = transaction.Id,
             TenantId = transaction.TenantId,
-            TenantName = transaction.Tenant?.Name ?? "Unknown",
-            UnitNumber = transaction.Tenant?.UnitNumber ?? "N/A",
+            TenantName = transaction.Tenant?.FullName ?? "Unknown",
+            UnitNumber = transaction.Tenant?.Unit?.UnitNumber ?? "N/A",
             Amount = transaction.Amount,
             TransactionType = transaction.TransactionType,
             TransactionTypeDisplay = transaction.TransactionType.ToString(),
@@ -325,7 +322,7 @@ public class SecurityDepositService : ISecurityDepositService
             ReceiptUrl = transaction.ReceiptUrl,
             Notes = transaction.Notes,
             CreatedByUserId = transaction.CreatedByUserId,
-            CreatedByUserName = transaction.CreatedByUser?.Name ?? "Unknown",
+            CreatedByUserName = transaction.CreatedByUser?.FullName ?? "Unknown",
             CreatedAt = transaction.CreatedAt
         };
     }
