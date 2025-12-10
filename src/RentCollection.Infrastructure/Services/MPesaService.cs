@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RentCollection.Application.Common;
 using RentCollection.Application.DTOs.Payments;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
+using RentCollection.Infrastructure.Configuration;
 using RentCollection.Infrastructure.Data;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,6 +24,7 @@ public class MPesaService : IMPesaService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<MPesaService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly MPesaConfiguration _mpesaConfig;
 
     // M-Pesa API URLs
     private const string SandboxBaseUrl = "https://sandbox.safaricom.co.ke";
@@ -30,11 +33,13 @@ public class MPesaService : IMPesaService
     public MPesaService(
         ApplicationDbContext context,
         ILogger<MPesaService> logger,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IOptions<MPesaConfiguration> mpesaConfig)
     {
         _context = context;
         _logger = logger;
         _httpClientFactory = httpClientFactory;
+        _mpesaConfig = mpesaConfig.Value;
     }
 
     public async Task<ServiceResult<StkPushCallbackDto>> InitiateStkPushAsync(int tenantId, InitiateStkPushDto dto)
@@ -98,7 +103,7 @@ public class MPesaService : IMPesaService
                 PartyA = phoneNumber,
                 PartyB = paymentAccount.MPesaShortCode,
                 PhoneNumber = phoneNumber,
-                CallBackURL = "https://yourdomain.com/api/mpesa/callback", // TODO: Update with actual callback URL
+                CallBackURL = $"{_mpesaConfig.CallbackBaseUrl}/api/mpesa/stkpush/callback",
                 AccountReference = tenant.Unit.PaymentAccountNumber ?? tenant.Unit.UnitNumber,
                 TransactionDesc = $"Rent payment for {tenant.Unit.Property.Name} - {tenant.Unit.UnitNumber}"
             };
@@ -128,6 +133,30 @@ public class MPesaService : IMPesaService
             {
                 PropertyNameCaseInsensitive = true
             });
+
+            // Track the STK Push transaction
+            if (stkPushResponse != null)
+            {
+                var mpesaTransaction = new MPesaTransaction
+                {
+                    MerchantRequestID = stkPushResponse.MerchantRequestID ?? string.Empty,
+                    CheckoutRequestID = stkPushResponse.CheckoutRequestID ?? string.Empty,
+                    PhoneNumber = phoneNumber,
+                    Amount = dto.Amount,
+                    AccountReference = tenant.Unit.PaymentAccountNumber ?? tenant.Unit.UnitNumber,
+                    TransactionDesc = $"Rent payment for {tenant.Unit.Property.Name} - {tenant.Unit.UnitNumber}",
+                    TenantId = tenantId,
+                    Status = MPesaTransactionStatus.Pending,
+                    ResultCode = 0,
+                    ResultDesc = "STK Push initiated",
+                    RequestJson = _mpesaConfig.EnableDetailedLogging ? JsonSerializer.Serialize(stkPushRequest) : null,
+                    ResponseJson = _mpesaConfig.EnableDetailedLogging ? responseContent : null,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.MPesaTransactions.Add(mpesaTransaction);
+                await _context.SaveChangesAsync();
+            }
 
             _logger.LogInformation("STK Push initiated for tenant {TenantId}, phone {Phone}", tenantId, phoneNumber);
 
@@ -351,8 +380,7 @@ public class MPesaService : IMPesaService
     // Helper methods
     private string GetBaseUrl()
     {
-        // TODO: Get from configuration (sandbox vs production)
-        return SandboxBaseUrl;
+        return _mpesaConfig.UseSandbox ? SandboxBaseUrl : ProductionBaseUrl;
     }
 
     private string FormatPhoneNumber(string phoneNumber)

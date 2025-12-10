@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Infrastructure.Security;
+using RentCollection.Domain.Enums;
 using System.Security.Claims;
 
 namespace RentCollection.API.Controllers

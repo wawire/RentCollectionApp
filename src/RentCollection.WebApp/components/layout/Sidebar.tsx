@@ -19,6 +19,10 @@ import {
   FaClipboardCheck,
   FaFileContract,
   FaBell,
+  FaTools,
+  FaFileSignature,
+  FaUpload,
+  FaShieldAlt,
 } from 'react-icons/fa'
 
 interface SidebarProps {
@@ -42,6 +46,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const tenantNavItems = [
     { name: 'Dashboard', path: '/tenant-portal', icon: FaWallet },
     { name: 'Lease Info', path: '/tenant-portal/lease-info', icon: FaFileContract },
+    { name: 'Maintenance', path: '/tenant-portal/maintenance', icon: FaTools },
+    { name: 'Lease Renewals', path: '/tenant-portal/lease-renewals', icon: FaFileSignature },
+    { name: 'Security Deposit', path: '/tenant-portal/security-deposit', icon: FaShieldAlt },
     { name: 'Documents', path: '/tenant-portal/documents', icon: FaFileAlt },
     { name: 'Payment History', path: '/tenant-portal/history', icon: FaMoneyBillWave },
   ]
@@ -54,6 +61,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Tenants', path: '/tenants', icon: FaUsers },
     { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
     { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
+    { name: 'Maintenance', path: '/dashboard/maintenance', icon: FaTools },
+    { name: 'Lease Renewals', path: '/dashboard/lease-renewals', icon: FaFileSignature },
+    { name: 'Security Deposits', path: '/dashboard/security-deposits', icon: FaShieldAlt },
+    { name: 'Bulk Import', path: '/dashboard/bulk-import', icon: FaUpload },
     { name: 'Documents', path: '/dashboard/documents', icon: FaFileAlt },
     { name: 'Notifications', path: '/dashboard/notifications', icon: FaBell },
     { name: 'Reports', path: '/reports', icon: FaFileContract },

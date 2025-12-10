@@ -14,13 +14,16 @@ namespace RentCollection.API.Controllers;
 public class MPesaWebhookController : ControllerBase
 {
     private readonly IMPesaService _mpesaService;
+    private readonly IMPesaTransactionService _mpesaTransactionService;
     private readonly ILogger<MPesaWebhookController> _logger;
 
     public MPesaWebhookController(
         IMPesaService mpesaService,
+        IMPesaTransactionService mpesaTransactionService,
         ILogger<MPesaWebhookController> logger)
     {
         _mpesaService = mpesaService;
+        _mpesaTransactionService = mpesaTransactionService;
         _logger = logger;
     }
 
@@ -95,17 +98,20 @@ public class MPesaWebhookController : ControllerBase
     /// <returns>Callback response</returns>
     [HttpPost("stkpush/callback")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult StkPushCallback([FromBody] object callbackData)
+    public async Task<IActionResult> StkPushCallback([FromBody] StkPushCallbackRequestDto callbackData)
     {
-        _logger.LogInformation("M-Pesa STK Push callback received: {CallbackData}",
-            System.Text.Json.JsonSerializer.Serialize(callbackData));
+        _logger.LogInformation("M-Pesa STK Push callback received: CheckoutRequestID={CheckoutRequestID}, ResultCode={ResultCode}",
+            callbackData.Body?.StkCallback?.CheckoutRequestID,
+            callbackData.Body?.StkCallback?.ResultCode);
 
-        // TODO: Implement STK Push callback handler
-        // This would:
-        // 1. Parse the callback data
-        // 2. Update payment status based on result (Success/Failed/Cancelled)
-        // 3. Notify tenant/landlord
+        var result = await _mpesaTransactionService.HandleStkPushCallbackAsync(callbackData);
 
+        if (!result.IsSuccess)
+        {
+            _logger.LogError("Failed to process STK Push callback: {Error}", result.ErrorMessage);
+        }
+
+        // Always return success to M-Pesa to acknowledge receipt
         return Ok(new
         {
             ResultCode = 0,

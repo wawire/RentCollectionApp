@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RentCollection.Application.Authorization.Handlers;
 using RentCollection.Application.Authorization.Requirements;
 using RentCollection.Domain.Enums;
+using RentCollection.Infrastructure.Security;
 
 namespace RentCollection.Application.Authorization;
 
@@ -18,10 +19,19 @@ public static class AuthorizationPolicyExtensions
     {
         // Register authorization handlers
         services.AddScoped<IAuthorizationHandler, PropertyOwnerHandler>();
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddHttpContextAccessor();
 
         services.AddAuthorization(options =>
         {
+            // ===== PERMISSION-BASED DYNAMIC POLICIES =====
+            // Register dynamic policies for each permission
+            foreach (Permission permission in Enum.GetValues(typeof(Permission)))
+            {
+                options.AddPolicy($"Permission.{permission}", policy =>
+                    policy.Requirements.Add(new PermissionRequirement(permission)));
+            }
+
             // ===== ROLE-BASED POLICIES =====
 
             // Single role policies
