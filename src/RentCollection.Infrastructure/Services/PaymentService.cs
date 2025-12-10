@@ -595,7 +595,11 @@ public class PaymentService : IPaymentService
             _logger.LogInformation("Payment {PaymentId} confirmed by user {UserId}", paymentId, confirmedByUserId);
 
             // Audit log: Payment confirmed
-            await _auditLogService.LogPaymentConfirmedAsync(paymentId, payment.TenantId, payment.Amount);
+            await _auditLogService.LogActionAsync(
+                "Confirm",
+                "Payment",
+                paymentId,
+                $"Payment of KES {payment.Amount:N2} for Tenant#{payment.TenantId} confirmed");
 
             return Result<PaymentDto>.Success(paymentDto, "Payment confirmed successfully");
         }
@@ -641,7 +645,11 @@ public class PaymentService : IPaymentService
             _logger.LogInformation("Payment {PaymentId} rejected. Reason: {Reason}", paymentId, reason);
 
             // Audit log: Payment rejected
-            await _auditLogService.LogPaymentRejectedAsync(paymentId, payment.TenantId, payment.Amount, reason);
+            await _auditLogService.LogActionAsync(
+                "Reject",
+                "Payment",
+                paymentId,
+                $"Payment of KES {payment.Amount:N2} for Tenant#{payment.TenantId} rejected. Reason: {reason}");
 
             return Result<PaymentDto>.Success(paymentDto, "Payment rejected");
         }

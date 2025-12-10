@@ -6,6 +6,7 @@ using RentCollection.Application.DTOs.Tenants;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
+using RentCollection.Domain.Enums;
 using System.Globalization;
 using System.Text;
 
@@ -151,10 +152,9 @@ namespace RentCollection.Infrastructure.Services
                             TenantId = tenant.Id,
                             Amount = row.Amount,
                             PaymentDate = row.PaymentDate,
-                            PaymentMethod = row.PaymentMethod,
-                            ReferenceNumber = row.ReferenceNumber,
-                            Notes = row.Notes,
-                            RecordedByUserId = _currentUserService.UserIdInt!.Value
+                            PaymentMethod = Enum.Parse<PaymentMethod>(row.PaymentMethod, ignoreCase: true),
+                            TransactionReference = row.ReferenceNumber,
+                            Notes = row.Notes
                         };
 
                         await _paymentRepository.AddAsync(payment);

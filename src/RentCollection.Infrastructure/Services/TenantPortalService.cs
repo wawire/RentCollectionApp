@@ -109,7 +109,7 @@ public class TenantPortalService : ITenantPortalService
 
         // Get all payments
         var allPayments = tenant.Payments.ToList();
-        var confirmedPayments = allPayments.Where(p => p.Status == PaymentStatus.Confirmed).ToList();
+        var confirmedPayments = allPayments.Where(p => p.Status == PaymentStatus.Completed).ToList();
         var pendingPayments = allPayments.Where(p => p.Status == PaymentStatus.Pending).ToList();
 
         // Calculate overdue payments
@@ -251,7 +251,7 @@ public class TenantPortalService : ITenantPortalService
             Unit = new UnitDetailsDto
             {
                 UnitNumber = unit?.UnitNumber ?? "",
-                Type = unit?.Type.ToString() ?? "",
+                Type = unit?.RentalType.ToString() ?? "",
                 Bedrooms = unit?.Bedrooms ?? 0,
                 Bathrooms = unit?.Bathrooms ?? 0,
                 SquareFeet = unit?.SquareFeet ?? 0,
@@ -275,7 +275,14 @@ public class TenantPortalService : ITenantPortalService
             {
                 AccountType = paymentAccount?.AccountType.ToString() ?? "",
                 AccountName = paymentAccount?.AccountName ?? "",
-                AccountNumber = paymentAccount?.AccountNumber,
+                AccountNumber = paymentAccount?.AccountType switch
+                {
+                    PaymentAccountType.BankAccount => paymentAccount.BankAccountNumber,
+                    PaymentAccountType.MPesaPaybill => paymentAccount.PaybillNumber,
+                    PaymentAccountType.MPesaTillNumber => paymentAccount.TillNumber,
+                    PaymentAccountType.MPesaPhone => paymentAccount.MPesaPhoneNumber,
+                    _ => null
+                },
                 BankName = paymentAccount?.BankName,
                 MPesaPaybill = paymentAccount?.MPesaShortCode,
                 PaymentAccountNumber = unit?.PaymentAccountNumber,
@@ -298,7 +305,7 @@ public class TenantPortalService : ITenantPortalService
             PaymentAccountType.BankAccount =>
                 $"Bank: {paymentAccount.BankName}\n" +
                 $"Account Name: {paymentAccount.AccountName}\n" +
-                $"Account Number: {paymentAccount.AccountNumber}\n" +
+                $"Account Number: {paymentAccount.BankAccountNumber}\n" +
                 $"Reference: {accountNumber}",
 
             PaymentAccountType.MPesaPaybill =>
@@ -306,7 +313,7 @@ public class TenantPortalService : ITenantPortalService
                 $"Account Number: {accountNumber}\n" +
                 $"Amount: Your monthly rent",
 
-            PaymentAccountType.MPesaTill =>
+            PaymentAccountType.MPesaTillNumber =>
                 $"M-Pesa Till Number: {paymentAccount.MPesaShortCode}\n" +
                 $"Amount: Your monthly rent",
 

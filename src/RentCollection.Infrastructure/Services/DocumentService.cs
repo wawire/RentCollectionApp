@@ -400,7 +400,7 @@ public class DocumentService : IDocumentService
             var documents = await _documentRepository.GetUnverifiedDocumentsAsync();
 
             // Apply RBAC filtering for landlords/accountants
-            documents = ApplyRbacFilter(documents);
+            documents = ApplyRbacFilter(documents).ToList();
 
             var documentDtos = documents.Select(MapToDto);
 
