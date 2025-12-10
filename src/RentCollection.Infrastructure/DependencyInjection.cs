@@ -2,9 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RentCollection.Application.Interfaces;
+using RentCollection.Application.Services;
 using RentCollection.Application.Services.Auth;
 using RentCollection.Application.Services.Implementations;
 using RentCollection.Application.Services.Interfaces;
+using RentCollection.Infrastructure.Configuration;
 using RentCollection.Infrastructure.Data;
 using RentCollection.Infrastructure.Repositories.Implementations;
 using RentCollection.Infrastructure.Services;
@@ -23,6 +25,9 @@ public static class DependencyInjection
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+        // Configure M-Pesa settings
+        services.Configure<MPesaConfiguration>(configuration.GetSection(MPesaConfiguration.SectionName));
 
         // Register repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -46,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ILandlordPaymentAccountService, LandlordPaymentAccountService>();
         services.AddScoped<IMPesaService, MPesaService>();
+        services.AddScoped<IMPesaTransactionService, MPesaTransactionService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<INotificationService, NotificationService>();

@@ -27,6 +27,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; } = null!;
     public DbSet<LeaseRenewal> LeaseRenewals { get; set; } = null!;
     public DbSet<SecurityDepositTransaction> SecurityDepositTransactions { get; set; } = null!;
+    public DbSet<MPesaTransaction> MPesaTransactions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
