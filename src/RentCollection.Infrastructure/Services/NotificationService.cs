@@ -27,7 +27,7 @@ public class NotificationService : INotificationService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<bool>> SendPaymentReminderToTenantAsync(int tenantId)
+    public async Task<ServiceResult<bool>> SendPaymentReminderToTenantAsync(int tenantId, int daysBeforeDue = 3)
     {
         try
         {
@@ -93,7 +93,7 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task<ServiceResult<int>> SendUpcomingPaymentRemindersAsync(int daysUntilDue = 3)
+    public async Task<ServiceResult<int>> SendUpcomingPaymentRemindersAsync(int daysUntilDue = 3, int? landlordId = null)
     {
         try
         {
@@ -145,7 +145,7 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task<ServiceResult<int>> SendOverdueNoticesAsync()
+    public async Task<ServiceResult<int>> SendOverdueNoticesAsync(int? landlordId = null)
     {
         try
         {
@@ -191,7 +191,7 @@ public class NotificationService : INotificationService
     }
 
     // Helper method not in interface - used internally
-    private async Task<Result> SendOverdueNoticeToTenantAsync(int tenantId)
+    public async Task<ServiceResult<bool>> SendOverdueNoticeToTenantAsync(int tenantId)
     {
         try
         {
@@ -203,7 +203,7 @@ public class NotificationService : INotificationService
 
             if (tenant == null)
             {
-                return Result.Failure($"Tenant with ID {tenantId} not found");
+                return ServiceResult<bool>.Failure($"Tenant with ID {tenantId} not found");
             }
 
             // Get overdue payments for this tenant
@@ -214,7 +214,7 @@ public class NotificationService : INotificationService
 
             if (!overduePayments.Any())
             {
-                return Result.Failure("No overdue payments found for this tenant");
+                return ServiceResult<bool>.Failure("No overdue payments found for this tenant");
             }
 
             var totalOverdue = overduePayments.Sum(p => p.Amount + p.LateFeeAmount);
@@ -274,12 +274,12 @@ public class NotificationService : INotificationService
                 }
             }
 
-            return Result.Success("Overdue notice sent successfully");
+            return ServiceResult<bool>.Success(true, "Overdue notice sent successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending overdue notice to tenant {TenantId}", tenantId);
-            return Result.Failure($"Error sending overdue notice: {ex.Message}");
+            return ServiceResult<bool>.Failure($"Error sending overdue notice: {ex.Message}");
         }
     }
 

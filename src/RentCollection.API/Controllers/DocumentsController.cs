@@ -54,6 +54,7 @@ public class DocumentsController : ControllerBase
 
         var uploadDto = new UploadDocumentDto
         {
+            File = file,
             DocumentType = documentType,
             TenantId = tenantId,
             PropertyId = propertyId,
@@ -61,7 +62,13 @@ public class DocumentsController : ControllerBase
             Description = description
         };
 
-        var result = await _documentService.UploadDocumentAsync(file, uploadDto);
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out int uploadedByUserId))
+        {
+            return Unauthorized("Invalid user ID");
+        }
+
+        var result = await _documentService.UploadDocumentAsync(uploadDto, uploadedByUserId);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -231,7 +238,7 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Verify(int id, [FromBody] VerifyDocumentDto verifyDto)
     {
-        var result = await _documentService.VerifyDocumentAsync(id, verifyDto);
+        var result = await _documentService.VerifyDocumentAsync(id, verifyDto.IsVerified);
 
         if (!result.IsSuccess)
             return BadRequest(result);

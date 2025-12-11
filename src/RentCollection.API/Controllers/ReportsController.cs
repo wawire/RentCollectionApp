@@ -36,9 +36,9 @@ namespace RentCollection.API.Controllers
 
             var result = await _reportsService.GenerateProfitLossReportAsync(startDate, endDate, landlordId);
 
-            if (!result.Succeeded)
+            if (!result.IsSuccess)
             {
-                return BadRequest(new { message = result.Error });
+                return BadRequest(new { message = result.ErrorMessage });
             }
 
             return Ok(new { data = result.Data });
@@ -59,9 +59,9 @@ namespace RentCollection.API.Controllers
 
             var result = await _reportsService.GenerateArrearsReportAsync(landlordId);
 
-            if (!result.Succeeded)
+            if (!result.IsSuccess)
             {
-                return BadRequest(new { message = result.Error });
+                return BadRequest(new { message = result.ErrorMessage });
             }
 
             return Ok(new { data = result.Data });
@@ -82,9 +82,9 @@ namespace RentCollection.API.Controllers
 
             var result = await _reportsService.GenerateOccupancyReportAsync(landlordId);
 
-            if (!result.Succeeded)
+            if (!result.IsSuccess)
             {
-                return BadRequest(new { message = result.Error });
+                return BadRequest(new { message = result.ErrorMessage });
             }
 
             return Ok(new { data = result.Data });

@@ -297,6 +297,22 @@ public class DocumentService : IDocumentService
         }
     }
 
+    public async Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByTenantIdAsync(int tenantId)
+    {
+        try
+        {
+            var documents = await _documentRepository.GetDocumentsByTenantIdAsync(tenantId);
+            var documentDtos = documents.Select(MapToDto);
+
+            return Result<IEnumerable<DocumentDto>>.Success(documentDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving documents for tenant {TenantId}", tenantId);
+            return Result<IEnumerable<DocumentDto>>.Failure("An error occurred while retrieving documents");
+        }
+    }
+
     public async Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByPropertyIdAsync(int propertyId)
     {
         try
