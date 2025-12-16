@@ -14,6 +14,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Amount)
             .HasPrecision(18, 2);
 
+        builder.Property(p => p.LateFeeAmount)
+            .HasPrecision(18, 2);
+
         builder.Property(p => p.PaymentMethod)
             .HasConversion<string>()
             .HasMaxLength(50);

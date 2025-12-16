@@ -35,6 +35,12 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.SecurityDeposit)
             .HasPrecision(18, 2);
 
+        builder.Property(t => t.LateFeePercentage)
+            .HasPrecision(18, 2);
+
+        builder.Property(t => t.LateFeeFixedAmount)
+            .HasPrecision(18, 2);
+
         builder.Property(t => t.Notes)
             .HasMaxLength(1000);
 

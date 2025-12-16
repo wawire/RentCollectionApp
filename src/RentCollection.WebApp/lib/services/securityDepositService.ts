@@ -1,19 +1,21 @@
-import apiClient from './apiClient'
+import apiClient from './apiClient';
 import type {
   SecurityDepositBalance,
   SecurityDepositTransaction,
   RecordSecurityDepositDto,
   DeductSecurityDepositDto,
-  RefundSecurityDepositDto
-} from '../types/securityDeposit.types'
+  RefundSecurityDepositDto,
+} from '../types/securityDeposit.types';
 
 export const securityDepositService = {
   /**
    * Get all security deposits (Landlord/Admin only)
    */
   async getAllDeposits(): Promise<SecurityDepositBalance[]> {
-    const response = await apiClient.get<SecurityDepositBalance[]>('/securitydeposits')
-    return response.data
+    const response = await apiClient.get<SecurityDepositBalance[]>(
+      '/securitydeposits'
+    );
+    return response.data;
   },
 
   /**
@@ -22,8 +24,8 @@ export const securityDepositService = {
   async getDepositBalance(tenantId: number): Promise<SecurityDepositBalance> {
     const response = await apiClient.get<SecurityDepositBalance>(
       `/securitydeposits/tenant/${tenantId}/balance`
-    )
-    return response.data
+    );
+    return response.data;
   },
 
   /**
@@ -34,13 +36,15 @@ export const securityDepositService = {
     startDate?: string,
     endDate?: string
   ): Promise<SecurityDepositTransaction[]> {
-    const params = new URLSearchParams()
-    if (startDate) params.append('startDate', startDate)
-    if (endDate) params.append('endDate', endDate)
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
 
-    const url = `/securitydeposits/tenant/${tenantId}/transactions${params.toString() ? `?${params.toString()}` : ''}`
-    const response = await apiClient.get<SecurityDepositTransaction[]>(url)
-    return response.data
+    const url = `/securitydeposits/tenant/${tenantId}/transactions${
+      params.toString() ? `?${params.toString()}` : ''
+    }`;
+    const response = await apiClient.get<SecurityDepositTransaction[]>(url);
+    return response.data;
   },
 
   /**
@@ -53,8 +57,8 @@ export const securityDepositService = {
     const response = await apiClient.post<SecurityDepositTransaction>(
       `/securitydeposits/tenant/${tenantId}/record`,
       data
-    )
-    return response.data
+    );
+    return response.data;
   },
 
   /**
@@ -67,8 +71,8 @@ export const securityDepositService = {
     const response = await apiClient.post<SecurityDepositTransaction>(
       `/securitydeposits/tenant/${tenantId}/deduct`,
       data
-    )
-    return response.data
+    );
+    return response.data;
   },
 
   /**
@@ -81,7 +85,7 @@ export const securityDepositService = {
     const response = await apiClient.post<SecurityDepositTransaction>(
       `/securitydeposits/tenant/${tenantId}/refund`,
       data
-    )
-    return response.data
-  }
-}
+    );
+    return response.data;
+  },
+};
