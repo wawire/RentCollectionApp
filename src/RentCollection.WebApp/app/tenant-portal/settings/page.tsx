@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FaArrowLeft, FaShieldAlt, FaQrcode, FaKey, FaCheckCircle, FaTimesCircle, FaSpinner, FaLock } from 'react-icons/fa'
-import { twoFactorAuthService } from '@/lib/services/twoFactorAuthService'
+import { twoFactorAuthService, Setup2FAResponse } from '@/lib/services/twoFactorAuthService'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function SettingsPage() {
@@ -15,7 +15,7 @@ export default function SettingsPage() {
   // 2FA Setup State
   const [is2FAEnabled, setIs2FAEnabled] = useState(false)
   const [showSetupModal, setShowSetupModal] = useState(false)
-  const [setupData, setSetupData] = useState<{ secret: string; qrCodeUri: string } | null>(null)
+  const [setupData, setSetupData] = useState<Setup2FAResponse | null>(null)
   const [verificationCode, setVerificationCode] = useState('')
   const [disablePassword, setDisablePassword] = useState('')
 
@@ -252,7 +252,7 @@ export default function SettingsPage() {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <p className="text-xs text-gray-600 mb-1">Or enter this code manually:</p>
                 <code className="text-sm font-mono text-gray-900 break-all">
-                  {setupData.secret}
+                  {setupData.secretKey}
                 </code>
               </div>
 

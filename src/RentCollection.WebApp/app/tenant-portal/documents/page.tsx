@@ -277,7 +277,7 @@ export default function DocumentsPage() {
 
                           <div className="ml-8 space-y-1">
                             <div className="flex items-center gap-2">
-                              {getVerificationBadge(doc.isVerified, doc.verifiedByName)}
+                              {getVerificationBadge(doc.isVerified, doc.verifiedByName || null)}
                               {doc.isVerified && doc.verifiedByName && (
                                 <span className="text-xs text-gray-500">
                                   by {doc.verifiedByName}

@@ -27,6 +27,7 @@ export interface Payment {
   status: PaymentStatus
   statusName: string
   transactionReference?: string
+  mPesaPhoneNumber?: string
   notes?: string
   periodStart: string
   periodEnd: string

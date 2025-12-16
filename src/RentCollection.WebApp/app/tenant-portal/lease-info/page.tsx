@@ -97,22 +97,12 @@ export default function LeaseInfoPage() {
                 <p className="text-sm text-gray-600">Phone Number</p>
                 <p className="text-lg font-medium text-gray-900">{tenant.phoneNumber}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">ID Number</p>
-                <p className="text-lg font-medium text-gray-900">{tenant.idNumber}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Occupation</p>
-                <p className="text-lg font-medium text-gray-900">{tenant.occupation || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Emergency Contact</p>
-                <p className="text-lg font-medium text-gray-900">
-                  {tenant.emergencyContactName && tenant.emergencyContactPhone
-                    ? `${tenant.emergencyContactName} (${tenant.emergencyContactPhone})`
-                    : 'N/A'}
-                </p>
-              </div>
+              {tenant.idNumber && (
+                <div>
+                  <p className="text-sm text-gray-600">ID Number</p>
+                  <p className="text-lg font-medium text-gray-900">{tenant.idNumber}</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -127,18 +117,37 @@ export default function LeaseInfoPage() {
                 <p className="text-sm text-gray-600">Property Name</p>
                 <p className="text-lg font-medium text-gray-900">{property.name}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Property Type</p>
-                <p className="text-lg font-medium text-gray-900">{property.propertyType}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm text-gray-600">Address</p>
-                <p className="text-lg font-medium text-gray-900">{property.address}</p>
-              </div>
+              {property.city && (
+                <div>
+                  <p className="text-sm text-gray-600">City</p>
+                  <p className="text-lg font-medium text-gray-900">{property.city}</p>
+                </div>
+              )}
+              {property.address && (
+                <div className="md:col-span-2">
+                  <p className="text-sm text-gray-600">Address</p>
+                  <p className="text-lg font-medium text-gray-900">{property.address}</p>
+                </div>
+              )}
               {property.description && (
                 <div className="md:col-span-2">
                   <p className="text-sm text-gray-600">Description</p>
                   <p className="text-gray-900">{property.description}</p>
+                </div>
+              )}
+              {property.amenities && property.amenities.length > 0 && (
+                <div className="md:col-span-2">
+                  <p className="text-sm text-gray-600 mb-2">Property Amenities</p>
+                  <div className="flex flex-wrap gap-2">
+                    {property.amenities.map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -157,39 +166,26 @@ export default function LeaseInfoPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Unit Type</p>
-                <p className="text-lg font-medium text-gray-900">{unit.unitType}</p>
+                <p className="text-lg font-medium text-gray-900">{unit.type}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Bedrooms</p>
-                <p className="text-lg font-medium text-gray-900">{unit.numberOfBedrooms}</p>
+                <p className="text-lg font-medium text-gray-900">{unit.bedrooms}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Bathrooms</p>
-                <p className="text-lg font-medium text-gray-900">{unit.numberOfBathrooms}</p>
+                <p className="text-lg font-medium text-gray-900">{unit.bathrooms}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Square Footage</p>
                 <p className="text-lg font-medium text-gray-900">
-                  {unit.squareFootage ? `${unit.squareFootage} sq ft` : 'N/A'}
+                  {unit.squareFeet ? `${unit.squareFeet} sq ft` : 'N/A'}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Floor</p>
-                <p className="text-lg font-medium text-gray-900">{unit.floor || 'N/A'}</p>
-              </div>
-              {unit.features && (
+              {unit.description && (
                 <div className="md:col-span-2">
-                  <p className="text-sm text-gray-600 mb-2">Features & Amenities</p>
-                  <div className="flex flex-wrap gap-2">
-                    {unit.features.split(',').map((feature, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
-                      >
-                        {feature.trim()}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-600">Description</p>
+                  <p className="text-gray-900">{unit.description}</p>
                 </div>
               )}
             </div>
@@ -205,27 +201,34 @@ export default function LeaseInfoPage() {
               <div>
                 <p className="text-sm text-gray-600">Monthly Rent</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  KES {lease.rentAmount.toLocaleString()}
+                  KES {(lease.monthlyRent || 0).toLocaleString()}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Security Deposit</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  KES {lease.securityDeposit.toLocaleString()}
+                  KES {(lease.securityDeposit || 0).toLocaleString()}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Lease Start Date</p>
                 <p className="text-lg font-medium text-gray-900">
-                  {new Date(lease.leaseStartDate).toLocaleDateString()}
+                  {new Date(lease.startDate).toLocaleDateString()}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Lease End Date</p>
-                <p className="text-lg font-medium text-gray-900">
-                  {new Date(lease.leaseEndDate).toLocaleDateString()}
-                </p>
-              </div>
+              {lease.endDate && (
+                <div>
+                  <p className="text-sm text-gray-600">Lease End Date</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {new Date(lease.endDate).toLocaleDateString()}
+                    {lease.daysUntilExpiry !== undefined && lease.daysUntilExpiry > 0 && (
+                      <span className="text-sm text-gray-500 ml-2">
+                        ({lease.daysUntilExpiry} days remaining)
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-gray-600">Rent Due Day</p>
                 <p className="text-lg font-medium text-gray-900">
@@ -244,14 +247,15 @@ export default function LeaseInfoPage() {
                   {lease.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              {lease.specialTerms && (
-                <div className="md:col-span-2">
-                  <p className="text-sm text-gray-600 mb-2">Special Terms & Conditions</p>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-gray-900 whitespace-pre-line">{lease.specialTerms}</p>
-                  </div>
+              <div className="md:col-span-2">
+                <p className="text-sm text-gray-600 mb-2">Late Fee Policy</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-gray-900">{lease.lateFeePolicy}</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Grace Period: {lease.lateFeeGracePeriodDays} days
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
@@ -263,51 +267,41 @@ export default function LeaseInfoPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600">Payment Account Number</p>
-                <p className="text-2xl font-bold text-blue-600 font-mono">
-                  {paymentAccount.paymentAccountNumber}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Use this account number when making M-Pesa payments
-                </p>
+                <p className="text-sm text-gray-600">Account Type</p>
+                <p className="text-lg font-medium text-gray-900">{paymentAccount.accountType}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Late Fee Policy</p>
-                <p className="text-lg font-medium text-gray-900">
-                  {paymentAccount.lateFeeType === 'Percentage'
-                    ? `${paymentAccount.lateFeePercentage}% after grace period`
-                    : `KES ${paymentAccount.lateFeeAmount?.toLocaleString()} after grace period`}
-                </p>
+                <p className="text-sm text-gray-600">Account Name</p>
+                <p className="text-lg font-medium text-gray-900">{paymentAccount.accountName}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Grace Period</p>
-                <p className="text-lg font-medium text-gray-900">
-                  {paymentAccount.gracePeriodDays} days
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Auto-Generate Payments</p>
-                <p className="text-lg font-medium text-gray-900">
-                  {paymentAccount.autoGeneratePayments ? 'Enabled' : 'Disabled'}
-                </p>
-              </div>
+              {paymentAccount.accountNumber && (
+                <div>
+                  <p className="text-sm text-gray-600">Account Number</p>
+                  <p className="text-2xl font-bold text-blue-600 font-mono">
+                    {paymentAccount.accountNumber}
+                  </p>
+                </div>
+              )}
+              {paymentAccount.mpesaPaybill && (
+                <div>
+                  <p className="text-sm text-gray-600">M-Pesa Paybill</p>
+                  <p className="text-2xl font-bold text-blue-600 font-mono">
+                    {paymentAccount.mpesaPaybill}
+                  </p>
+                </div>
+              )}
+              {paymentAccount.bankName && (
+                <div>
+                  <p className="text-sm text-gray-600">Bank Name</p>
+                  <p className="text-lg font-medium text-gray-900">{paymentAccount.bankName}</p>
+                </div>
+              )}
             </div>
 
             {/* Payment Instructions Box */}
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">How to Pay via M-Pesa</h3>
-              <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
-                <li>Go to M-Pesa menu</li>
-                <li>Select Lipa na M-Pesa</li>
-                <li>Select Pay Bill</li>
-                <li>Enter Business Number: <span className="font-bold">[Your Paybill]</span></li>
-                <li>Enter Account Number: <span className="font-bold font-mono">{paymentAccount.paymentAccountNumber}</span></li>
-                <li>Enter Amount: <span className="font-bold">KES {lease.rentAmount.toLocaleString()}</span></li>
-                <li>Enter your M-Pesa PIN and confirm</li>
-              </ol>
-              <p className="mt-3 text-xs text-blue-700">
-                Your payment will be automatically recorded in the system when you use the correct account number.
-              </p>
+              <h3 className="font-semibold text-blue-900 mb-2">Payment Instructions</h3>
+              <p className="text-sm text-blue-800 whitespace-pre-line">{paymentAccount.instructions}</p>
             </div>
           </div>
         </div>

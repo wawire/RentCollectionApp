@@ -82,7 +82,7 @@ export default function NotificationsPage() {
       setSuccessMessage(null)
 
       const result = await notificationService.sendBulkPaymentReminders(daysUntilDue)
-      setSuccessMessage(`Successfully sent ${result.successfulSends} reminders to tenants!`)
+      setSuccessMessage(result.message || 'Successfully sent reminders to tenants!')
     } catch (err: any) {
       setError(err.message || 'Failed to send bulk reminders')
     } finally {
@@ -106,7 +106,7 @@ export default function NotificationsPage() {
       setSuccessMessage(null)
 
       const result = await notificationService.sendBulkOverdueNotices()
-      setSuccessMessage(`Successfully sent ${result.successfulSends} overdue notices!`)
+      setSuccessMessage(result.message || 'Successfully sent overdue notices!')
     } catch (err: any) {
       setError(err.message || 'Failed to send overdue notices')
     } finally {
