@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/lib/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { securityDepositService } from '@/lib/services/securityDepositService'
 import type {
   SecurityDepositBalance,
