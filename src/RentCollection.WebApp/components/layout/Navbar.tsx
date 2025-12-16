@@ -1,11 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { FaBars, FaTimes } from 'react-icons/fa'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const pathname = usePathname()
+
+  // Don't show public navbar on login/register pages or if user is authenticated
+  if (pathname === '/login' || pathname === '/register' || isAuthenticated) {
+    return null
+  }
 
   return (
     <nav className="bg-white border-b border-secondary/30 sticky top-0 z-50">
