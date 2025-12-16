@@ -1,5 +1,9 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { UserRole } from '@/lib/types/auth.types'
 import { useGetDashboardStats } from '@/lib/hooks'
 import StatsCard from '@/components/dashboard/StatsCard'
 import RecentPayments from '@/components/dashboard/RecentPayments'
@@ -10,7 +14,30 @@ import { LoadingSpinner } from '@/components/common'
 import { FaBuilding, FaDoorOpen, FaUsers, FaMoneyBillWave } from 'react-icons/fa'
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
   const { data: stats, loading, error } = useGetDashboardStats()
+
+  // Redirect tenants to their own portal
+  useEffect(() => {
+    if (!authLoading && user?.role === UserRole.Tenant) {
+      router.replace('/tenant-portal')
+    }
+  }, [user, authLoading, router])
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    )
+  }
+
+  // Don't render dashboard for tenants (they'll be redirected)
+  if (user?.role === UserRole.Tenant) {
+    return null
+  }
 
   if (loading) {
     return (
