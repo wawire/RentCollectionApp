@@ -95,16 +95,16 @@ export default function DashboardPage() {
       )}
 
       {/* Key Metrics - Clean & Modern */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Properties */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Properties</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalProperties}</p>
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Properties</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalProperties}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FaBuilding className="text-blue-600 text-xl" />
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FaBuilding className="text-blue-600 text-lg" />
             </div>
           </div>
           <Link
@@ -117,15 +117,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Units Occupancy */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-medium text-gray-600">Occupancy Rate</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{occupancyRate.toFixed(0)}%</p>
-              <p className="text-sm text-gray-500 mt-1">{stats.occupiedUnits} of {stats.totalUnits} units</p>
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Occupancy</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{occupancyRate.toFixed(0)}%</p>
+              <p className="text-xs text-gray-500 mt-0.5">{stats.occupiedUnits}/{stats.totalUnits} units</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <FaDoorOpen className="text-purple-600 text-xl" />
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <FaDoorOpen className="text-purple-600 text-lg" />
             </div>
           </div>
           <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
@@ -137,14 +137,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Active Tenants */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Tenants</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.activeTenants}</p>
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Tenants</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.activeTenants}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <FaUsers className="text-green-600 text-xl" />
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <FaUsers className="text-green-600 text-lg" />
             </div>
           </div>
           <Link
@@ -157,19 +157,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Revenue */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Revenue</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
                 KSh {(stats.totalRentCollected / 1000).toFixed(0)}K
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 {stats.collectionRate.toFixed(0)}% collected
               </p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <FaMoneyBillWave className="text-yellow-600 text-xl" />
+            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <FaMoneyBillWave className="text-yellow-600 text-lg" />
             </div>
           </div>
           <Link

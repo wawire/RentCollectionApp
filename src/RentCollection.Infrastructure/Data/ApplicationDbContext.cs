@@ -19,6 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Amenity> Amenities { get; set; } = null!;
     public DbSet<PropertyAmenity> PropertyAmenities { get; set; } = null!;
+    public DbSet<UnitAmenity> UnitAmenities { get; set; } = null!;
+    public DbSet<PropertyImage> PropertyImages { get; set; } = null!;
+    public DbSet<UnitImage> UnitImages { get; set; } = null!;
     public DbSet<LandlordPaymentAccount> LandlordPaymentAccounts { get; set; } = null!;
     public DbSet<AuditLog> AuditLogs { get; set; } = null!;
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;

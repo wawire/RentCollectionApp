@@ -1,3 +1,5 @@
+using RentCollection.Application.DTOs.Amenities;
+using RentCollection.Application.DTOs.Images;
 using RentCollection.Domain.Enums;
 
 namespace RentCollection.Application.DTOs.Units;
@@ -13,7 +15,9 @@ public class UnitDto
     public int Bathrooms { get; set; }
     public decimal? SquareFeet { get; set; }
     public string? Description { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageUrl { get; set; } // Deprecated - use Images list instead
+    public List<ImageDto> Images { get; set; } = new();
+    public List<AmenityDto> Amenities { get; set; } = new();
     public bool IsOccupied { get; set; }
     public bool IsActive { get; set; }
     public RentalType RentalType { get; set; }

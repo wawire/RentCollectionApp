@@ -8,6 +8,7 @@ public class Amenity : BaseEntity
     public string IconName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
 
-    // Navigation property for many-to-many relationship
+    // Navigation properties for many-to-many relationships
     public ICollection<PropertyAmenity> PropertyAmenities { get; set; } = new List<PropertyAmenity>();
+    public ICollection<UnitAmenity> UnitAmenities { get; set; } = new List<UnitAmenity>();
 }

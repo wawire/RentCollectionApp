@@ -28,4 +28,6 @@ public class Unit : BaseEntity
     public Property Property { get; set; } = null!;
     public ICollection<Tenant> Tenants { get; set; } = new List<Tenant>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public ICollection<UnitImage> Images { get; set; } = new List<UnitImage>();
+    public ICollection<UnitAmenity> UnitAmenities { get; set; } = new List<UnitAmenity>();
 }

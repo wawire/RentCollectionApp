@@ -144,76 +144,76 @@ export default function TenantPortalPage() {
       </div>
 
       {/* Key Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Current Balance */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Current Balance</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Balance</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
                 KSh {dashboard.currentBalance.toLocaleString()}
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FaMoneyBillWave className="text-blue-600 text-xl" />
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FaMoneyBillWave className="text-blue-600 text-lg" />
             </div>
           </div>
         </div>
 
         {/* Next Payment Due */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Next Payment Due</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Next Due</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
                 {dashboard.daysUntilDue !== undefined && dashboard.daysUntilDue >= 0
                   ? `${dashboard.daysUntilDue} days`
                   : 'Overdue'}
               </p>
               {dashboard.nextPaymentAmount && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-0.5">
                   KSh {dashboard.nextPaymentAmount.toLocaleString()}
                 </p>
               )}
             </div>
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
-              <FaCalendarAlt className={`text-xl ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
+              <FaCalendarAlt className={`text-lg ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
             </div>
           </div>
         </div>
 
         {/* Total Paid */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Paid</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Paid</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
                 KSh {dashboard.totalAmountPaid.toLocaleString()}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 {dashboard.totalPaymentsMade} payment{dashboard.totalPaymentsMade !== 1 ? 's' : ''}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <FaCheckCircle className="text-green-600 text-xl" />
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <FaCheckCircle className="text-green-600 text-lg" />
             </div>
           </div>
         </div>
 
         {/* Documents */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Documents</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{dashboard.documentCount}</p>
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Documents</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{dashboard.documentCount}</p>
               {dashboard.daysUntilLeaseExpiry !== undefined && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Lease: {dashboard.daysUntilLeaseExpiry} days left
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Lease: {dashboard.daysUntilLeaseExpiry} days
                 </p>
               )}
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <FaFileAlt className="text-purple-600 text-xl" />
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <FaFileAlt className="text-purple-600 text-lg" />
             </div>
           </div>
         </div>

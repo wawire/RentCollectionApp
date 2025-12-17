@@ -290,21 +290,6 @@ export default function PublicLandingPage() {
                             </span>
                           </div>
 
-                          {/* NEW Badge for recently added properties */}
-                          {unit.id && unit.id > units.length - 10 && (
-                            <div className="absolute top-3 left-3 z-10">
-                              <span className="bg-accent text-primary text-[10px] font-bold px-2 py-1 rounded shadow-sm tracking-wider">
-                                NEW
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Available Now Badge */}
-                          <div className="absolute top-3 left-3 z-10" style={{ marginTop: unit.id && unit.id > units.length - 10 ? '26px' : '0' }}>
-                            <span className="bg-white/95 text-primary/70 text-[10px] font-medium px-2 py-0.5 rounded tracking-wide">
-                              Available Now
-                            </span>
-                          </div>
 
                           <button className="absolute top-3 right-3 p-2 bg-white/95 rounded-full hover:bg-white transition-colors z-10">
                             <Heart className="text-primary/40 hover:text-accent transition-colors" size={15} />
