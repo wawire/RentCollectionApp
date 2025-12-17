@@ -1,10 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FaSpinner, FaChartPie, FaDollarSign, FaArrowUp, FaArrowDown, FaBuilding, FaCalendar } from 'react-icons/fa'
+import { FaSpinner, FaChartPie, FaDollarSign, FaArrowUp, FaArrowDown, FaBuilding, FaCalendar, FaFileAlt, FaHome, FaUsers } from 'react-icons/fa'
 import { reportService, ProfitLossReport } from '@/lib/services/reportService'
+import MonthlyReport from '@/components/reports/MonthlyReport'
+import PropertyReport from '@/components/reports/PropertyReport'
+import TenantReport from '@/components/reports/TenantReport'
 
-export default function ProfitLossReportPage() {
+type TabType = 'profit-loss' | 'monthly' | 'property' | 'tenant'
+
+export default function ReportsPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('profit-loss')
   const [loading, setLoading] = useState(true)
   const [report, setReport] = useState<ProfitLossReport | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -55,13 +61,113 @@ export default function ProfitLossReportPage() {
     )
   }
 
+  const tabs = [
+    { id: 'profit-loss' as TabType, label: 'P&L Report', icon: FaChartPie },
+    { id: 'monthly' as TabType, label: 'Monthly Report', icon: FaCalendar },
+    { id: 'property' as TabType, label: 'Property Report', icon: FaHome },
+    { id: 'tenant' as TabType, label: 'Tenant Directory', icon: FaUsers },
+  ]
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Profit & Loss Report</h1>
-        <p className="text-gray-600 mt-1">Financial performance overview</p>
+        <h1 className="text-3xl font-bold text-gray-800">Reports & Analytics</h1>
+        <p className="text-gray-600 mt-1">View and export detailed financial and operational reports</p>
       </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="flex -mb-px">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors
+                    ${
+                      isActive
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }
+                  `}
+                >
+                  <Icon className="mr-2" />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'monthly' && <MonthlyReport />}
+      {activeTab === 'property' && <PropertyReport />}
+      {activeTab === 'tenant' && <TenantReport />}
+      {activeTab === 'profit-loss' && <ProfitLossContent />}
+    </div>
+  )
+}
+
+function ProfitLossContent() {
+  const [loading, setLoading] = useState(true)
+  const [report, setReport] = useState<ProfitLossReport | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
+  useEffect(() => {
+    // Default to current month
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+    setStartDate(firstDay.toISOString().split('T')[0])
+    setEndDate(lastDay.toISOString().split('T')[0])
+  }, [])
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      loadReport()
+    }
+  }, [startDate, endDate])
+
+  const loadReport = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await reportService.getProfitLossReport(startDate, endDate)
+      setReport(data)
+    } catch (err: any) {
+      setError(err.message || 'Failed to load P&L report')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KES'
+    }).format(amount)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <FaSpinner className="animate-spin text-4xl text-blue-600" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header removed since it's now in parent */}
 
       {/* Date Range Selector */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">

@@ -23,6 +23,7 @@ import {
   FaFileSignature,
   FaUpload,
   FaShieldAlt,
+  FaReceipt,
 } from 'react-icons/fa'
 
 interface SidebarProps {
@@ -53,25 +54,58 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Payment History', path: '/tenant-portal/history', icon: FaMoneyBillWave },
   ]
 
-  const landlordNavItems = [
-    { name: 'Home', path: '/', icon: FaHome },
-    { name: 'Dashboard', path: '/dashboard', icon: FaChartLine },
-    { name: 'Properties', path: '/properties', icon: FaBuilding },
-    { name: 'Units', path: '/units', icon: FaDoorOpen },
-    { name: 'Tenants', path: '/tenants', icon: FaUsers },
-    { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
-    { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
-    { name: 'Payment Accounts', path: '/dashboard/payment-accounts', icon: FaWallet },
-    { name: 'Maintenance', path: '/dashboard/maintenance', icon: FaTools },
-    { name: 'Lease Renewals', path: '/dashboard/lease-renewals', icon: FaFileSignature },
-    { name: 'Security Deposits', path: '/dashboard/security-deposits', icon: FaShieldAlt },
-    { name: 'Bulk Import', path: '/dashboard/bulk-import', icon: FaUpload },
-    { name: 'Documents', path: '/dashboard/documents', icon: FaFileAlt },
-    { name: 'Notifications', path: '/dashboard/notifications', icon: FaBell },
-    { name: 'Reports', path: '/reports', icon: FaFileContract },
+  const landlordNavSections = [
+    {
+      title: 'Overview',
+      items: [
+        { name: 'Home', path: '/', icon: FaHome },
+        { name: 'Dashboard', path: '/dashboard', icon: FaChartLine },
+      ]
+    },
+    {
+      title: 'Property Management',
+      items: [
+        { name: 'Properties', path: '/properties', icon: FaBuilding },
+        { name: 'Units', path: '/units', icon: FaDoorOpen },
+        { name: 'Tenants', path: '/tenants', icon: FaUsers },
+      ]
+    },
+    {
+      title: 'Financial',
+      items: [
+        { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
+        { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
+        { name: 'Payment Accounts', path: '/dashboard/payment-accounts', icon: FaWallet },
+        { name: 'Expenses', path: '/dashboard/expenses', icon: FaReceipt },
+      ]
+    },
+    {
+      title: 'Reports & Analytics',
+      items: [
+        { name: 'Reports', path: '/dashboard/reports', icon: FaFileContract },
+        { name: 'Rent Reminders', path: '/dashboard/reminders', icon: FaSms },
+      ]
+    },
+    {
+      title: 'Operations',
+      items: [
+        { name: 'Maintenance', path: '/dashboard/maintenance', icon: FaTools },
+        { name: 'Lease Renewals', path: '/dashboard/lease-renewals', icon: FaFileSignature },
+        { name: 'Security Deposits', path: '/dashboard/security-deposits', icon: FaShieldAlt },
+        { name: 'Documents', path: '/dashboard/documents', icon: FaFileAlt },
+      ]
+    },
+    {
+      title: 'System',
+      items: [
+        { name: 'Bulk Import', path: '/dashboard/bulk-import', icon: FaUpload },
+        { name: 'Notifications', path: '/dashboard/notifications', icon: FaBell },
+      ]
+    }
   ]
 
-  const navItems = isTenant ? tenantNavItems : landlordNavItems
+  const navItems = isTenant ? tenantNavItems : null
+  const navSections = !isTenant ? landlordNavSections : null
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -112,29 +146,68 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Navigation Links */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const active = isActive(item.path)
+          {/* Tenant Navigation (flat) */}
+          {navItems && (
+            <ul className="space-y-1">
+              {navItems.map((item) => {
+                const Icon = item.icon
+                const active = isActive(item.path)
 
-              return (
-                <li key={item.path}>
-                  <Link
-                    href={item.path}
-                    onClick={() => onClose()}
-                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                      active
-                        ? 'bg-primary-50 text-primary-700 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <Icon className={`text-lg ${active ? 'text-primary-700' : 'text-gray-500'}`} />
-                    <span>{item.name}</span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
+                return (
+                  <li key={item.path}>
+                    <Link
+                      href={item.path}
+                      onClick={() => onClose()}
+                      className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                        active
+                          ? 'bg-primary-50 text-primary-700 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      <Icon className={`text-lg ${active ? 'text-primary-700' : 'text-gray-500'}`} />
+                      <span>{item.name}</span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+
+          {/* Landlord Navigation (grouped) */}
+          {navSections && (
+            <div className="space-y-6">
+              {navSections.map((section) => (
+                <div key={section.title}>
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {section.title}
+                  </h3>
+                  <ul className="space-y-1">
+                    {section.items.map((item) => {
+                      const Icon = item.icon
+                      const active = isActive(item.path)
+
+                      return (
+                        <li key={item.path}>
+                          <Link
+                            href={item.path}
+                            onClick={() => onClose()}
+                            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                              active
+                                ? 'bg-primary-50 text-primary-700 font-semibold'
+                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                            }`}
+                          >
+                            <Icon className={`text-lg ${active ? 'text-primary-700' : 'text-gray-500'}`} />
+                            <span>{item.name}</span>
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Settings Section */}
           <div className="mt-8 pt-4 border-t border-gray-200">
