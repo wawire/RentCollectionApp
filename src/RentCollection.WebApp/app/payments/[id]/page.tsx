@@ -87,7 +87,7 @@ export default function PaymentDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div>
         <Link

@@ -16,7 +16,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Don't show layout on auth pages or public landing page
   const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register')
-  const isPublicPage = pathname === '/' || pathname?.startsWith('/units/')
+  const isPublicPage = pathname === '/'
 
   if (isAuthPage || isPublicPage) {
     return <>{children}</>
