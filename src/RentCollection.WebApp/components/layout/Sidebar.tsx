@@ -61,6 +61,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Tenants', path: '/tenants', icon: FaUsers },
     { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
     { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
+    { name: 'Payment Accounts', path: '/dashboard/payment-accounts', icon: FaWallet },
     { name: 'Maintenance', path: '/dashboard/maintenance', icon: FaTools },
     { name: 'Lease Renewals', path: '/dashboard/lease-renewals', icon: FaFileSignature },
     { name: 'Security Deposits', path: '/dashboard/security-deposits', icon: FaShieldAlt },
