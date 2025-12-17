@@ -4,8 +4,8 @@ import MainLayout from '@/components/layout/MainLayout'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 export const metadata: Metadata = {
-  title: 'RentCollection - Property Management System',
-  description: 'Manage rental properties, tenants, and payments efficiently',
+  title: 'RentPro - Modern Property Management',
+  description: 'Streamline your rental business with smart property management',
 }
 
 export default function RootLayout({

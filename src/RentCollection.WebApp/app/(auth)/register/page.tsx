@@ -65,7 +65,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Join RentCollection</h1>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Join RentPro</h1>
             <p className="text-white/70 text-lg tracking-wide">Discover your next home with Kenya's trusted rental platform</p>
           </div>
 
@@ -114,7 +114,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-sm text-secondary/60">
-            © 2024 RentCollection. Designed for Kenyan property managers.
+            © 2024 RentPro. Designed for Kenyan property managers.
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md space-y-8 py-12">
           {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentCollection</h1>
+            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentPro</h1>
             <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
           </div>
 

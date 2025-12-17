@@ -179,7 +179,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <div className="text-primary font-serif font-normal text-xl tracking-wide">
-              RentCollection
+              RentPro
             </div>
           </Link>
 

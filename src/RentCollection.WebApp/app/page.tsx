@@ -394,7 +394,7 @@ export default function PublicLandingPage() {
                               Property Owner?
                             </h3>
                             <p className="text-primary/70 mb-6 tracking-wide">
-                              List your property with RentCollection and reach thousands of verified tenants. Zero listing fees.
+                              List your property with RentPro and reach thousands of verified tenants. Zero listing fees.
                             </p>
                             <Link
                               href="/#for-landlords"

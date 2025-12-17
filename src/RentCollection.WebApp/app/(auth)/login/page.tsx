@@ -35,7 +35,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-black/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">RentCollection</h1>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">RentPro</h1>
             <p className="text-white/70 text-lg tracking-wide">Simplifying property management for modern landlords</p>
           </div>
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-sm text-secondary/60">
-            © 2024 RentCollection. Designed for Kenyan property managers.
+            © 2024 RentPro. Designed for Kenyan property managers.
           </div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentCollection</h1>
+            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentPro</h1>
             <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
@@ -131,7 +131,7 @@ export default function LoginPage() {
                     type="text"
                     required
                     className="w-full pl-7 pr-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
-                    placeholder="admin@rentcollection.com or 0712345678"
+                    placeholder="admin@rentpro.com or 0712345678"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
                   />
