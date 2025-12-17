@@ -149,11 +149,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Footer Info */}
         <div className="px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>All systems operational</span>
-          </div>
-          <p className="text-xs text-gray-400 mt-1">Version 1.0.0</p>
+          <p className="text-xs text-gray-400">Version 1.0.0</p>
         </div>
       </aside>
     </>

@@ -54,17 +54,17 @@ export const paymentService = {
 
   // Landlord Payment Management
   async getPendingPayments(): Promise<Payment[]> {
-    const response = await apiClient.get('/LandlordPayments/pending')
+    const response = await apiClient.get('/payments/pending')
     return response.data.data
   },
 
   async confirmPayment(id: number, notes?: string): Promise<Payment> {
-    const response = await apiClient.post(`/LandlordPayments/${id}/confirm`, { notes })
+    const response = await apiClient.put(`/payments/${id}/confirm`, { notes })
     return response.data.data
   },
 
   async rejectPayment(id: number, reason: string): Promise<Payment> {
-    const response = await apiClient.post(`/LandlordPayments/${id}/reject`, { reason })
+    const response = await apiClient.put(`/payments/${id}/reject`, { reason })
     return response.data.data
   },
 }
