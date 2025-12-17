@@ -11,5 +11,6 @@ public class CreateUnitDto
     public int Bathrooms { get; set; }
     public decimal? SquareFeet { get; set; }
     public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
     public RentalType RentalType { get; set; } = RentalType.Rent;
 }

@@ -82,6 +82,25 @@ public class DashboardService : IDashboardService
                 }
             }
 
+            // Calculate payment status counts for occupied units
+            var occupiedUnits = units.Where(u => u.IsOccupied).ToList();
+            var unitsPaid = occupiedUnits.Count(u =>
+                u.Tenants.Any(t => t.IsActive) &&
+                u.Tenants.First(t => t.IsActive).Payments.Any(p =>
+                    p.Status == PaymentStatus.Completed &&
+                    p.PaymentDate >= DateTime.UtcNow.AddDays(-30)));
+
+            var unitsPending = occupiedUnits.Count(u =>
+                u.Tenants.Any(t => t.IsActive) &&
+                u.Tenants.First(t => t.IsActive).Payments.Any(p => p.Status == PaymentStatus.Pending));
+
+            var unitsOverdue = occupiedUnits.Count(u =>
+                u.Tenants.Any(t => t.IsActive) &&
+                !u.Tenants.First(t => t.IsActive).Payments.Any(p =>
+                    p.Status == PaymentStatus.Completed &&
+                    p.PaymentDate >= DateTime.UtcNow.AddDays(-30)) &&
+                !u.Tenants.First(t => t.IsActive).Payments.Any(p => p.Status == PaymentStatus.Pending));
+
             var stats = new DashboardStatsDto
             {
                 TotalProperties = properties.Count(),
@@ -96,7 +115,10 @@ public class DashboardService : IDashboardService
                 TotalRentExpected = activeTenants.Sum(t => t.MonthlyRent),
                 PendingPayments = currentMonthPayments
                     .Where(p => p.Status == PaymentStatus.Pending)
-                    .Sum(p => p.Amount)
+                    .Sum(p => p.Amount),
+                UnitsPaid = unitsPaid,
+                UnitsOverdue = unitsOverdue,
+                UnitsPending = unitsPending
             };
 
             // Calculate collection rate

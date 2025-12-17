@@ -41,9 +41,26 @@ export default function TenantCard({ tenant, onUpdate }: TenantCardProps) {
                 <p className="text-xs text-gray-500">{tenant.idNumber || 'No ID'}</p>
               </div>
             </div>
-            <Badge variant={tenant.isActive ? 'success' : 'default'}>
-              {tenant.isActive ? 'Active' : 'Inactive'}
-            </Badge>
+            <div className="flex flex-col gap-1 items-end">
+              <Badge variant={tenant.isActive ? 'success' : 'default'}>
+                {tenant.isActive ? 'Active' : 'Inactive'}
+              </Badge>
+              {tenant.isActive && tenant.paymentStatus && (
+                <Badge
+                  variant={
+                    tenant.paymentStatus === 'Paid' ? 'success' :
+                    tenant.paymentStatus === 'Pending' ? 'warning' :
+                    tenant.paymentStatus === 'Overdue' ? 'danger' :
+                    'default'
+                  }
+                >
+                  {tenant.paymentStatus === 'Paid' && '✓ Paid'}
+                  {tenant.paymentStatus === 'Pending' && '⏳ Pending'}
+                  {tenant.paymentStatus === 'Overdue' && `⚠ ${tenant.daysOverdue}d Overdue`}
+                  {tenant.paymentStatus === 'NoPayment' && 'No Payment'}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Contact Info */}
@@ -79,6 +96,14 @@ export default function TenantCard({ tenant, onUpdate }: TenantCardProps) {
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500">Security Deposit</span>
                 <span className="text-xs text-gray-700">KSh {tenant.securityDeposit.toLocaleString()}</span>
+              </div>
+            )}
+            {tenant.lastPaymentDate && tenant.lastPaymentAmount && (
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                <span className="text-xs text-gray-500">Last Payment</span>
+                <span className="text-xs text-gray-700">
+                  KSh {tenant.lastPaymentAmount.toLocaleString()} • {new Date(tenant.lastPaymentDate).toLocaleDateString()}
+                </span>
               </div>
             )}
           </div>

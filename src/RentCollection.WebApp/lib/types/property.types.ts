@@ -9,6 +9,14 @@ export interface Property {
   vacantUnits: number
   isActive: boolean
   createdAt: string
+
+  // Payment Status Information
+  unitsPaid: number
+  unitsOverdue: number
+  unitsPending: number
+  totalExpectedRent: number
+  totalCollectedRent: number
+  collectionRate: number
 }
 
 export interface CreatePropertyDto {

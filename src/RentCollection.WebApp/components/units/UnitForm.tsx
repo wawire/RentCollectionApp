@@ -23,6 +23,7 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
     bathrooms: initialData?.bathrooms || 1,
     squareFeet: initialData?.squareFeet || undefined,
     description: initialData?.description || '',
+    imageUrl: initialData?.imageUrl || '',
     rentalType: initialData?.rentalType || 1,
     isOccupied: initialData?.isOccupied || false,
     isActive: initialData?.isActive !== undefined ? initialData.isActive : true,
@@ -156,6 +157,14 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
           placeholder="Enter unit description..."
         />
       </div>
+
+      <Input
+        label="Image URL (Optional)"
+        value={formData.imageUrl}
+        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+        placeholder="https://example.com/unit-image.jpg"
+        fullWidth
+      />
 
       {initialData && (
         <div className="flex items-center space-x-4">

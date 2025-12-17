@@ -77,6 +77,7 @@ export default function EditUnitPage() {
             bathrooms: unit.bathrooms,
             squareFeet: unit.squareFeet || undefined,
             description: unit.description || '',
+            imageUrl: unit.imageUrl || '',
             rentalType: unit.rentalType,
             isOccupied: unit.isOccupied,
             isActive: unit.isActive,

@@ -15,6 +15,7 @@ export default function PropertyForm({ initialData, onSubmit, loading }: Propert
     name: initialData?.name || '',
     location: initialData?.location || '',
     description: initialData?.description || '',
+    imageUrl: initialData?.imageUrl || '',
     totalUnits: initialData?.totalUnits || 0,
   })
 
@@ -89,6 +90,14 @@ export default function PropertyForm({ initialData, onSubmit, loading }: Propert
           placeholder="Enter property description..."
         />
       </div>
+
+      <Input
+        label="Image URL (Optional)"
+        value={formData.imageUrl}
+        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+        placeholder="https://example.com/property-image.jpg"
+        fullWidth
+      />
 
       <div className="flex gap-3">
         <Button type="submit" variant="primary" loading={loading} fullWidth>

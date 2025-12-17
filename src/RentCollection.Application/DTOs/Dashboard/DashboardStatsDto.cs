@@ -12,4 +12,9 @@ public class DashboardStatsDto
     public decimal TotalRentExpected { get; set; }
     public decimal CollectionRate { get; set; }
     public decimal PendingPayments { get; set; }
+
+    // Payment Status Counts
+    public int UnitsPaid { get; set; }
+    public int UnitsOverdue { get; set; }
+    public int UnitsPending { get; set; }
 }

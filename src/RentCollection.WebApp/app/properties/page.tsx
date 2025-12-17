@@ -91,10 +91,10 @@ export default function PropertiesPage() {
       {/* Stats */}
       {properties.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-gray-900">{properties.length}</p>
-              <p className="text-sm text-gray-600">Total Properties</p>
+              <p className="text-sm text-gray-600">Properties</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
@@ -103,16 +103,43 @@ export default function PropertiesPage() {
               <p className="text-sm text-gray-600">Total Units</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-green-600">
                 {properties.reduce((sum, p) => sum + p.occupiedUnits, 0)}
               </p>
-              <p className="text-sm text-gray-600">Occupied Units</p>
+              <p className="text-sm text-gray-600">Occupied</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-400">
                 {properties.reduce((sum, p) => sum + p.vacantUnits, 0)}
               </p>
-              <p className="text-sm text-gray-600">Vacant Units</p>
+              <p className="text-sm text-gray-600">Vacant</p>
+            </div>
+            <div className="border-l border-gray-200 pl-4">
+              <p className="text-2xl font-bold text-green-600">
+                {properties.reduce((sum, p) => sum + p.unitsPaid, 0)}
+              </p>
+              <p className="text-sm text-gray-600">Paid</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-600">
+                {properties.reduce((sum, p) => sum + p.unitsOverdue, 0)}
+              </p>
+              <p className="text-sm text-gray-600">Overdue</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-600">
+                {properties.reduce((sum, p) => sum + p.unitsPending, 0)}
+              </p>
+              <p className="text-sm text-gray-600">Pending</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-primary-600">
+                {properties.reduce((sum, p) => sum + p.totalExpectedRent, 0) > 0
+                  ? ((properties.reduce((sum, p) => sum + p.totalCollectedRent, 0) /
+                     properties.reduce((sum, p) => sum + p.totalExpectedRent, 0)) * 100).toFixed(0)
+                  : 0}%
+              </p>
+              <p className="text-sm text-gray-600">Collection Rate</p>
             </div>
           </div>
         </div>

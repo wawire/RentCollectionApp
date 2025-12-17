@@ -8,6 +8,7 @@ export interface Unit {
   bathrooms: number
   squareFeet?: number
   description?: string
+  imageUrl?: string
   isOccupied: boolean
   isActive: boolean
   rentalType: number
@@ -30,6 +31,7 @@ export interface CreateUnitDto {
   bathrooms: number
   squareFeet?: number
   description?: string
+  imageUrl?: string
   rentalType: number
 }
 
@@ -40,6 +42,7 @@ export interface UpdateUnitDto {
   bathrooms: number
   squareFeet?: number
   description?: string
+  imageUrl?: string
   isOccupied: boolean
   isActive: boolean
   rentalType: number

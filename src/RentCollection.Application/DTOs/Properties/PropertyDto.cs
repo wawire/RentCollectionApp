@@ -12,4 +12,12 @@ public class PropertyDto
     public int VacantUnits { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Payment Status Information
+    public int UnitsPaid { get; set; }
+    public int UnitsOverdue { get; set; }
+    public int UnitsPending { get; set; }
+    public decimal TotalExpectedRent { get; set; }
+    public decimal TotalCollectedRent { get; set; }
+    public decimal CollectionRate { get; set; } // Percentage of rent collected
 }

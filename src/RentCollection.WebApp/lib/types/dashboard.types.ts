@@ -9,6 +9,11 @@ export interface DashboardStats {
   totalRentExpected: number
   collectionRate: number
   pendingPayments: number
+
+  // Payment Status Counts
+  unitsPaid: number
+  unitsOverdue: number
+  unitsPending: number
 }
 
 export interface MonthlyReport {

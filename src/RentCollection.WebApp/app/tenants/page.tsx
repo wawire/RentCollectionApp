@@ -29,6 +29,9 @@ export default function TenantsPage() {
 
   const activeTenants = tenants.filter(t => t.isActive).length
   const inactiveTenants = tenants.filter(t => !t.isActive).length
+  const paidTenants = tenants.filter(t => t.isActive && t.paymentStatus === 'Paid').length
+  const overdueTenants = tenants.filter(t => t.isActive && t.paymentStatus === 'Overdue').length
+  const pendingTenants = tenants.filter(t => t.isActive && t.paymentStatus === 'Pending').length
 
   if (loading) {
     return (
@@ -93,7 +96,7 @@ export default function TenantsPage() {
       {/* Stats */}
       {tenants.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-gray-900">{tenants.length}</p>
               <p className="text-sm text-gray-600">Total Tenants</p>
@@ -105,6 +108,18 @@ export default function TenantsPage() {
             <div>
               <p className="text-2xl font-bold text-gray-400">{inactiveTenants}</p>
               <p className="text-sm text-gray-600">Inactive</p>
+            </div>
+            <div className="border-l border-gray-200 pl-4">
+              <p className="text-2xl font-bold text-green-600">{paidTenants}</p>
+              <p className="text-sm text-gray-600">Paid</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-600">{overdueTenants}</p>
+              <p className="text-sm text-gray-600">Overdue</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-600">{pendingTenants}</p>
+              <p className="text-sm text-gray-600">Pending</p>
             </div>
           </div>
         </div>

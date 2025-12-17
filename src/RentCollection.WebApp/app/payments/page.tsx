@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useGetPayments, useDeletePayment, useGetProperties, useSendPaymentReceipt, useDownloadPaymentReceipt } from '@/lib/hooks'
 import { Card, Button, LoadingSpinner, SearchBar, Select, Modal, Alert } from '@/components/common'
 import PaymentList from '@/components/payments/PaymentList'
-import { FaPlus, FaFileDownload, FaFilter } from 'react-icons/fa'
+import PaymentCalendar from '@/components/payments/PaymentCalendar'
+import { FaPlus, FaFileDownload, FaFilter, FaList, FaCalendarAlt } from 'react-icons/fa'
 import { PaymentStatus } from '@/lib/types'
 
 export default function PaymentsPage() {
@@ -24,6 +25,7 @@ export default function PaymentsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null)
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
 
   // Filter payments
   const filteredPayments = payments.filter(payment => {
@@ -117,15 +119,42 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Payments</h1>
           <p className="text-primary/60 mt-2 tracking-wide">Track and manage rent payments</p>
         </div>
-        <Button variant="primary" onClick={() => router.push('/payments/new')}>
-          <FaPlus className="mr-2" />
-          Record Payment
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
+                viewMode === 'list'
+                  ? 'bg-accent text-primary shadow-sm'
+                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
+              }`}
+            >
+              <FaList className="inline mr-2" />
+              List
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
+                viewMode === 'calendar'
+                  ? 'bg-accent text-primary shadow-sm'
+                  : 'bg-white text-primary/70 border border-secondary/50 hover:border-accent/50'
+              }`}
+            >
+              <FaCalendarAlt className="inline mr-2" />
+              Calendar
+            </button>
+          </div>
+          <Button variant="primary" onClick={() => router.push('/payments/new')}>
+            <FaPlus className="mr-2" />
+            Record Payment
+          </Button>
+        </div>
       </div>
 
       {/* Alert */}
@@ -229,15 +258,19 @@ export default function PaymentsPage() {
         </div>
       </Card>
 
-      {/* Payments Table */}
-      <Card padding="none">
-        <PaymentList
-          payments={filteredPayments}
-          loading={loading}
-          onDownloadReceipt={handleDownloadReceipt}
-          onDelete={handleDeleteClick}
-        />
-      </Card>
+      {/* Payments View */}
+      {viewMode === 'list' ? (
+        <Card padding="none">
+          <PaymentList
+            payments={filteredPayments}
+            loading={loading}
+            onDownloadReceipt={handleDownloadReceipt}
+            onDelete={handleDeleteClick}
+          />
+        </Card>
+      ) : (
+        <PaymentCalendar payments={filteredPayments} />
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal

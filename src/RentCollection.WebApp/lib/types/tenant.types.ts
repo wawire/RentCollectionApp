@@ -16,6 +16,13 @@ export interface Tenant {
   isActive: boolean
   notes?: string
   createdAt: string
+
+  // Payment Status Information
+  lastPaymentDate?: string
+  lastPaymentAmount?: number
+  paymentStatus?: 'Paid' | 'Overdue' | 'Pending' | 'NoPayment'
+  daysOverdue?: number
+  rentDueDay: number
 }
 
 export interface CreateTenantDto {

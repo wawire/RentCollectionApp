@@ -65,6 +65,19 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
                 <p className="text-2xl font-bold text-primary-600">{occupancyRate}%</p>
                 <p className="text-xs text-gray-500">Occupancy</p>
               </div>
+              <div className="w-px h-12 bg-gray-200"></div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{property.unitsPaid}</p>
+                <p className="text-xs text-gray-500">Paid</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-red-600">{property.unitsOverdue}</p>
+                <p className="text-xs text-gray-500">Overdue</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-yellow-600">{property.unitsPending}</p>
+                <p className="text-xs text-gray-500">Pending</p>
+              </div>
 
               <div className="flex gap-2">
                 <Link href={`/properties/${property.id}`}>
@@ -147,6 +160,35 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
               <p className="text-xs text-gray-500">Vacant</p>
             </div>
           </div>
+
+          {/* Payment Status */}
+          {property.occupiedUnits > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Payment Status</span>
+                <span className="font-semibold text-gray-900">
+                  {property.collectionRate ? property.collectionRate.toFixed(0) : 0}% collected
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center p-2 bg-green-50 rounded">
+                  <p className="text-sm font-bold text-green-600">{property.unitsPaid}</p>
+                  <p className="text-[10px] text-gray-600">Paid</p>
+                </div>
+                <div className="text-center p-2 bg-yellow-50 rounded">
+                  <p className="text-sm font-bold text-yellow-600">{property.unitsPending}</p>
+                  <p className="text-[10px] text-gray-600">Pending</p>
+                </div>
+                <div className="text-center p-2 bg-red-50 rounded">
+                  <p className="text-sm font-bold text-red-600">{property.unitsOverdue}</p>
+                  <p className="text-[10px] text-gray-600">Overdue</p>
+                </div>
+              </div>
+              <div className="text-xs text-center text-gray-600 pt-1">
+                KES {property.totalCollectedRent.toLocaleString()} / {property.totalExpectedRent.toLocaleString()}
+              </div>
+            </div>
+          )}
 
           {/* Occupancy Bar */}
           <div>

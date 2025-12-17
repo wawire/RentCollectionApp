@@ -10,6 +10,7 @@ import RecentPayments from '@/components/dashboard/RecentPayments'
 import OccupancyChart from '@/components/dashboard/OccupancyChart'
 import RevenueChart from '@/components/dashboard/RevenueChart'
 import QuickActions from '@/components/dashboard/QuickActions'
+import PaymentStatusWidget from '@/components/dashboard/PaymentStatusWidget'
 import { LoadingSpinner } from '@/components/common'
 import { FaBuilding, FaDoorOpen, FaUsers, FaMoneyBillWave } from 'react-icons/fa'
 
@@ -106,9 +107,17 @@ export default function DashboardPage() {
           occupancyRate={occupancyRate}
         />
 
-        {/* Quick Actions */}
-        <QuickActions />
+        {/* Payment Status Widget */}
+        <PaymentStatusWidget
+          unitsPaid={stats.unitsPaid}
+          unitsOverdue={stats.unitsOverdue}
+          unitsPending={stats.unitsPending}
+          totalOccupied={stats.occupiedUnits}
+        />
       </div>
+
+      {/* Quick Actions */}
+      <QuickActions />
 
       {/* Revenue Chart */}
       <RevenueChart />

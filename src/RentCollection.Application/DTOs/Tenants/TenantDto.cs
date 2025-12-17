@@ -19,4 +19,11 @@ public class TenantDto
     public bool IsActive { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Payment Status Information
+    public DateTime? LastPaymentDate { get; set; }
+    public decimal? LastPaymentAmount { get; set; }
+    public string? PaymentStatus { get; set; } // "Paid", "Overdue", "Pending", "NoPayment"
+    public int? DaysOverdue { get; set; }
+    public int RentDueDay { get; set; }
 }
