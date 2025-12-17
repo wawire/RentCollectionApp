@@ -1,6 +1,8 @@
 using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using RentCollection.Application.Interfaces;
+using RentCollection.Application.Services;
 using RentCollection.Application.Services.Implementations;
 using RentCollection.Application.Services.Interfaces;
 
@@ -21,6 +23,11 @@ public static class DependencyInjection
         services.AddScoped<IUnitService, UnitService>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IDashboardService, DashboardService>();
+
+        // Register Rent Reminder Services
+        services.AddScoped<IRentReminderService, RentReminderService>();
+        services.AddSingleton<MessageTemplateService>();
+        services.AddHostedService<RentReminderBackgroundService>();
 
         // Register HttpClient for M-Pesa API
         services.AddHttpClient();

@@ -10,4 +10,5 @@ public interface IPaymentRepository : IRepository<Payment>
     Task<IEnumerable<Payment>> GetOverduePaymentsAsync();
     Task<IEnumerable<Payment>> GetOverduePaymentsByLandlordIdAsync(int landlordId);
     Task<IEnumerable<Payment>> GetOverduePaymentsByPropertyIdAsync(int propertyId);
+    Task<bool> HasConfirmedPaymentAsync(int tenantId, int month, int year);
 }

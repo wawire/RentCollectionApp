@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.DTOs.RentReminders;
 using RentCollection.Application.DTOs.Sms;
@@ -6,24 +5,35 @@ using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
-using RentCollection.Infrastructure.Data;
 
 namespace RentCollection.Application.Services
 {
     public class RentReminderService : IRentReminderService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IRentReminderRepository _reminderRepository;
+        private readonly IReminderSettingsRepository _settingsRepository;
+        private readonly ITenantReminderPreferenceRepository _preferenceRepository;
+        private readonly ITenantRepository _tenantRepository;
+        private readonly IPaymentRepository _paymentRepository;
         private readonly ISmsService _smsService;
         private readonly MessageTemplateService _templateService;
         private readonly ILogger<RentReminderService> _logger;
 
         public RentReminderService(
-            ApplicationDbContext context,
+            IRentReminderRepository reminderRepository,
+            IReminderSettingsRepository settingsRepository,
+            ITenantReminderPreferenceRepository preferenceRepository,
+            ITenantRepository tenantRepository,
+            IPaymentRepository paymentRepository,
             ISmsService smsService,
             MessageTemplateService templateService,
             ILogger<RentReminderService> logger)
         {
-            _context = context;
+            _reminderRepository = reminderRepository;
+            _settingsRepository = settingsRepository;
+            _preferenceRepository = preferenceRepository;
+            _tenantRepository = tenantRepository;
+            _paymentRepository = paymentRepository;
             _smsService = smsService;
             _templateService = templateService;
             _logger = logger;
@@ -33,8 +43,7 @@ namespace RentCollection.Application.Services
 
         public async Task<ReminderSettingsDto> GetReminderSettingsAsync(int landlordId)
         {
-            var settings = await _context.ReminderSettings
-                .FirstOrDefaultAsync(s => s.LandlordId == landlordId);
+            var settings = await _settingsRepository.GetByLandlordIdAsync(landlordId);
 
             if (settings == null)
             {
@@ -46,8 +55,7 @@ namespace RentCollection.Application.Services
 
         public async Task<ReminderSettingsDto> GetOrCreateDefaultSettingsAsync(int landlordId)
         {
-            var existingSettings = await _context.ReminderSettings
-                .FirstOrDefaultAsync(s => s.LandlordId == landlordId);
+            var existingSettings = await _settingsRepository.GetByLandlordIdAsync(landlordId);
 
             if (existingSettings != null)
             {
@@ -78,8 +86,7 @@ namespace RentCollection.Application.Services
                 QuietHoursEnd = new TimeSpan(8, 0, 0)
             };
 
-            _context.ReminderSettings.Add(newSettings);
-            await _context.SaveChangesAsync();
+            await _settingsRepository.AddAsync(newSettings);
 
             _logger.LogInformation("Created default reminder settings for landlord {LandlordId}", landlordId);
 
@@ -88,13 +95,12 @@ namespace RentCollection.Application.Services
 
         public async Task<ReminderSettingsDto> UpdateReminderSettingsAsync(int landlordId, UpdateReminderSettingsDto dto)
         {
-            var settings = await _context.ReminderSettings
-                .FirstOrDefaultAsync(s => s.LandlordId == landlordId);
+            var settings = await _settingsRepository.GetByLandlordIdAsync(landlordId);
 
             if (settings == null)
             {
                 settings = new ReminderSettings { LandlordId = landlordId };
-                _context.ReminderSettings.Add(settings);
+                await _settingsRepository.AddAsync(settings);
             }
 
             // Update settings
@@ -128,7 +134,7 @@ namespace RentCollection.Application.Services
             settings.QuietHoursEnd = dto.QuietHoursEnd;
             settings.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _settingsRepository.UpdateAsync(settings);
 
             _logger.LogInformation("Updated reminder settings for landlord {LandlordId}", landlordId);
 
@@ -143,19 +149,10 @@ namespace RentCollection.Application.Services
         {
             _logger.LogInformation("Starting reminder scheduling for all tenants");
 
-            // Get all active tenants with upcoming rent due dates
-            var today = DateTime.Today;
-            var endDate = today.AddDays(7); // Look ahead 7 days
+            // Get all active tenants with full details
+            var tenants = await _tenantRepository.GetActiveTenantsWithFullDetailsAsync();
 
-            var tenants = await _context.Tenants
-                .Where(t => t.Status == TenantStatus.Active)
-                .Include(t => t.Lease)
-                .Include(t => t.Unit)
-                .ThenInclude(u => u.Property)
-                .ThenInclude(p => p.Landlord)
-                .ToListAsync();
-
-            _logger.LogInformation("Found {Count} active tenants to process", tenants.Count);
+            _logger.LogInformation("Found {Count} active tenants to process", tenants.Count());
 
             int scheduledCount = 0;
             foreach (var tenant in tenants)
@@ -171,17 +168,12 @@ namespace RentCollection.Application.Services
                 }
             }
 
-            _logger.LogInformation("Scheduled reminders for {Count}/{Total} tenants", scheduledCount, tenants.Count);
+            _logger.LogInformation("Scheduled reminders for {Count}/{Total} tenants", scheduledCount, tenants.Count());
         }
 
         public async Task ScheduleRemindersForTenantAsync(int tenantId)
         {
-            var tenant = await _context.Tenants
-                .Include(t => t.Lease)
-                .Include(t => t.Unit)
-                .ThenInclude(u => u.Property)
-                .ThenInclude(p => p.Landlord)
-                .FirstOrDefaultAsync(t => t.Id == tenantId);
+            var tenant = await _tenantRepository.GetTenantWithDetailsAsync(tenantId);
 
             if (tenant == null)
             {
@@ -196,17 +188,23 @@ namespace RentCollection.Application.Services
             }
 
             // Get landlord settings
-            var settings = await GetOrCreateDefaultSettingsAsync(tenant.Unit.Property.LandlordId);
+            var landlordId = tenant.Unit?.Property?.LandlordId ?? 0;
+            if (landlordId == 0)
+            {
+                _logger.LogWarning("Cannot determine landlord ID for tenant {TenantId}", tenantId);
+                return;
+            }
+
+            var settings = await GetOrCreateDefaultSettingsAsync(landlordId);
 
             if (!settings.IsEnabled)
             {
-                _logger.LogDebug("Reminders disabled for landlord {LandlordId}, skipping", tenant.Unit.Property.LandlordId);
+                _logger.LogDebug("Reminders disabled for landlord {LandlordId}, skipping", landlordId);
                 return;
             }
 
             // Get tenant preferences
-            var preferences = await _context.TenantReminderPreferences
-                .FirstOrDefaultAsync(p => p.TenantId == tenantId);
+            var preferences = await _preferenceRepository.GetByTenantIdAsync(tenantId);
 
             if (preferences != null && !preferences.RemindersEnabled)
             {
@@ -219,15 +217,12 @@ namespace RentCollection.Application.Services
             var today = DateTime.Today;
 
             // Cancel any existing scheduled reminders for this rent cycle
-            var existingReminders = await _context.RentReminders
-                .Where(r => r.TenantId == tenantId &&
-                           r.RentDueDate == nextDueDate &&
-                           r.Status == ReminderStatus.Scheduled)
-                .ToListAsync();
+            var existingReminders = await _reminderRepository.GetScheduledRemindersByTenantIdAsync(tenantId, nextDueDate);
 
             foreach (var existing in existingReminders)
             {
                 existing.Status = ReminderStatus.Cancelled;
+                await _reminderRepository.UpdateAsync(existing);
             }
 
             // Schedule reminders based on settings
@@ -252,11 +247,8 @@ namespace RentCollection.Application.Services
                 if (scheduledDate < today) continue;
 
                 // Check if payment already made for this cycle
-                var paymentExists = await _context.Payments
-                    .AnyAsync(p => p.TenantId == tenantId &&
-                                  p.Status == PaymentStatus.Confirmed &&
-                                  p.Month == nextDueDate.Month &&
-                                  p.Year == nextDueDate.Year);
+                var paymentExists = await _paymentRepository.HasConfirmedPaymentAsync(
+                    tenantId, nextDueDate.Month, nextDueDate.Year);
 
                 if (paymentExists)
                 {
@@ -268,8 +260,8 @@ namespace RentCollection.Application.Services
                 var reminder = new RentReminder
                 {
                     TenantId = tenant.Id,
-                    LandlordId = tenant.Unit.Property.LandlordId,
-                    PropertyId = tenant.Unit.PropertyId,
+                    LandlordId = landlordId,
+                    PropertyId = tenant.Unit?.PropertyId ?? 0,
                     UnitId = tenant.UnitId,
                     ReminderType = type,
                     Channel = preferences?.PreferredChannel ?? settings.DefaultChannel,
@@ -280,10 +272,8 @@ namespace RentCollection.Application.Services
                     MessageTemplate = template ?? _templateService.GetDefaultTemplate(type.ToString())
                 };
 
-                _context.RentReminders.Add(reminder);
+                await _reminderRepository.AddAsync(reminder);
             }
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Scheduled reminders for tenant {TenantId} with due date {DueDate}",
                 tenantId, nextDueDate);
@@ -295,12 +285,7 @@ namespace RentCollection.Application.Services
 
         public async Task SendReminderNowAsync(int reminderId)
         {
-            var reminder = await _context.RentReminders
-                .Include(r => r.Tenant)
-                .Include(r => r.Landlord)
-                .Include(r => r.Property)
-                .Include(r => r.Unit)
-                .FirstOrDefaultAsync(r => r.Id == reminderId);
+            var reminder = await _reminderRepository.GetReminderWithDetailsAsync(reminderId);
 
             if (reminder == null)
             {
@@ -315,17 +300,14 @@ namespace RentCollection.Application.Services
             try
             {
                 // Check if payment was made (skip reminder if paid)
-                var paymentExists = await _context.Payments
-                    .AnyAsync(p => p.TenantId == reminder.TenantId &&
-                                  p.Status == PaymentStatus.Confirmed &&
-                                  p.Month == reminder.RentDueDate.Month &&
-                                  p.Year == reminder.RentDueDate.Year);
+                var paymentExists = await _paymentRepository.HasConfirmedPaymentAsync(
+                    reminder.TenantId, reminder.RentDueDate.Month, reminder.RentDueDate.Year);
 
                 if (paymentExists)
                 {
                     reminder.Status = ReminderStatus.Skipped;
                     reminder.UpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
+                    await _reminderRepository.UpdateAsync(reminder);
 
                     _logger.LogInformation("Reminder {ReminderId} skipped - payment already made", reminder.Id);
                     return;
@@ -376,7 +358,7 @@ namespace RentCollection.Application.Services
                 }
 
                 reminder.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                await _reminderRepository.UpdateAsync(reminder);
             }
             catch (Exception ex)
             {
@@ -386,7 +368,7 @@ namespace RentCollection.Application.Services
                 reminder.LastRetryDate = DateTime.UtcNow;
                 reminder.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
+                await _reminderRepository.UpdateAsync(reminder);
 
                 _logger.LogError(ex, "Error sending reminder {ReminderId}", reminder.Id);
                 throw;
@@ -399,58 +381,19 @@ namespace RentCollection.Application.Services
 
         public async Task<List<RentReminderDto>> GetRemindersForLandlordAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var query = _context.RentReminders
-                .Include(r => r.Tenant)
-                .Include(r => r.Property)
-                .Include(r => r.Unit)
-                .Where(r => r.LandlordId == landlordId);
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(r => r.ScheduledDate >= startDate.Value);
-            }
-
-            if (endDate.HasValue)
-            {
-                query = query.Where(r => r.ScheduledDate <= endDate.Value);
-            }
-
-            var reminders = await query
-                .OrderByDescending(r => r.ScheduledDate)
-                .ToListAsync();
-
+            var reminders = await _reminderRepository.GetRemindersByLandlordIdAsync(landlordId, startDate, endDate);
             return reminders.Select(MapReminderToDto).ToList();
         }
 
         public async Task<List<RentReminderDto>> GetRemindersForTenantAsync(int tenantId)
         {
-            var reminders = await _context.RentReminders
-                .Include(r => r.Tenant)
-                .Include(r => r.Property)
-                .Include(r => r.Unit)
-                .Where(r => r.TenantId == tenantId)
-                .OrderByDescending(r => r.ScheduledDate)
-                .ToListAsync();
-
+            var reminders = await _reminderRepository.GetRemindersByTenantIdAsync(tenantId);
             return reminders.Select(MapReminderToDto).ToList();
         }
 
         public async Task<ReminderStatisticsDto> GetReminderStatisticsAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var query = _context.RentReminders
-                .Where(r => r.LandlordId == landlordId);
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(r => r.ScheduledDate >= startDate.Value);
-            }
-
-            if (endDate.HasValue)
-            {
-                query = query.Where(r => r.ScheduledDate <= endDate.Value);
-            }
-
-            var reminders = await query.ToListAsync();
+            var reminders = (await _reminderRepository.GetRemindersByLandlordIdAsync(landlordId, startDate, endDate)).ToList();
 
             var totalReminders = reminders.Count;
             var sentReminders = reminders.Count(r => r.Status == ReminderStatus.Sent);
@@ -459,13 +402,8 @@ namespace RentCollection.Application.Services
 
             var successRate = totalReminders > 0 ? (decimal)sentReminders / totalReminders * 100 : 0;
 
-            var remindersByType = reminders
-                .GroupBy(r => r.ReminderType.ToString())
-                .ToDictionary(g => g.Key, g => g.Count());
-
-            var remindersByStatus = reminders
-                .GroupBy(r => r.Status.ToString())
-                .ToDictionary(g => g.Key, g => g.Count());
+            var remindersByType = await _reminderRepository.GetRemindersByTypeAsync(landlordId, startDate, endDate);
+            var remindersByStatus = await _reminderRepository.GetRemindersByStatusAsync(landlordId, startDate, endDate);
 
             return new ReminderStatisticsDto
             {
@@ -485,8 +423,7 @@ namespace RentCollection.Application.Services
 
         public async Task<bool> UpdateTenantPreferencesAsync(int tenantId, bool remindersEnabled, ReminderChannel preferredChannel)
         {
-            var preference = await _context.TenantReminderPreferences
-                .FirstOrDefaultAsync(p => p.TenantId == tenantId);
+            var preference = await _preferenceRepository.GetByTenantIdAsync(tenantId);
 
             if (preference == null)
             {
@@ -496,16 +433,15 @@ namespace RentCollection.Application.Services
                     RemindersEnabled = remindersEnabled,
                     PreferredChannel = preferredChannel
                 };
-                _context.TenantReminderPreferences.Add(preference);
+                await _preferenceRepository.AddAsync(preference);
             }
             else
             {
                 preference.RemindersEnabled = remindersEnabled;
                 preference.PreferredChannel = preferredChannel;
                 preference.UpdatedAt = DateTime.UtcNow;
+                await _preferenceRepository.UpdateAsync(preference);
             }
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Updated reminder preferences for tenant {TenantId}", tenantId);
 
@@ -514,7 +450,7 @@ namespace RentCollection.Application.Services
 
         public async Task CancelReminderAsync(int reminderId)
         {
-            var reminder = await _context.RentReminders.FindAsync(reminderId);
+            var reminder = await _reminderRepository.GetByIdAsync(reminderId);
 
             if (reminder == null)
             {
@@ -524,9 +460,15 @@ namespace RentCollection.Application.Services
             reminder.Status = ReminderStatus.Cancelled;
             reminder.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _reminderRepository.UpdateAsync(reminder);
 
             _logger.LogInformation("Cancelled reminder {ReminderId}", reminderId);
+        }
+
+        public async Task<List<RentReminderDto>> GetScheduledRemindersAsync()
+        {
+            var reminders = await _reminderRepository.GetScheduledRemindersAsync();
+            return reminders.Select(MapReminderToDto).ToList();
         }
 
         #endregion

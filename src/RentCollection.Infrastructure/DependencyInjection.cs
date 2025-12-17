@@ -41,6 +41,9 @@ public static class DependencyInjection
         services.AddScoped<IMaintenanceRequestRepository, MaintenanceRequestRepository>();
         services.AddScoped<ILeaseRenewalRepository, LeaseRenewalRepository>();
         services.AddScoped<ISecurityDepositRepository, SecurityDepositRepository>();
+        services.AddScoped<IRentReminderRepository, RentReminderRepository>();
+        services.AddScoped<IReminderSettingsRepository, ReminderSettingsRepository>();
+        services.AddScoped<ITenantReminderPreferenceRepository, TenantReminderPreferenceRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();

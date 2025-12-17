@@ -104,4 +104,14 @@ public class PaymentRepository : Repository<Payment>, IPaymentRepository
             .OrderBy(p => p.DueDate)
             .ToListAsync();
     }
+
+    public async Task<bool> HasConfirmedPaymentAsync(int tenantId, int month, int year)
+    {
+        // Check if there's a completed payment for this tenant in the specified month/year
+        return await _context.Payments
+            .AnyAsync(p => p.TenantId == tenantId &&
+                          p.Status == PaymentStatus.Completed &&
+                          ((p.PeriodStart.Month == month && p.PeriodStart.Year == year) ||
+                           (p.PeriodEnd.Month == month && p.PeriodEnd.Year == year)));
+    }
 }

@@ -17,6 +17,7 @@ namespace RentCollection.Application.Interfaces
         // Manual reminder operations
         Task SendReminderNowAsync(int reminderId);
         Task CancelReminderAsync(int reminderId);
+        Task<List<RentReminderDto>> GetScheduledRemindersAsync();
 
         // Query reminders
         Task<List<RentReminderDto>> GetRemindersForLandlordAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null);

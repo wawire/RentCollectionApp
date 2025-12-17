@@ -44,6 +44,19 @@ public class TenantRepository : Repository<Tenant>, ITenantRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Tenant>> GetActiveTenantsWithFullDetailsAsync()
+    {
+        return await _context.Tenants
+            .Include(t => t.Unit)
+                .ThenInclude(u => u.Property)
+                    .ThenInclude(p => p.Landlord)
+            .Where(t => t.Status == Domain.Enums.TenantStatus.Active)
+            .OrderBy(t => t.Unit.Property.Name)
+            .ThenBy(t => t.Unit.UnitNumber)
+            .ThenBy(t => t.LastName)
+            .ToListAsync();
+    }
+
     public override async Task<IEnumerable<Tenant>> GetAllAsync()
     {
         return await _context.Tenants
