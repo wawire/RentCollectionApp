@@ -41,9 +41,26 @@ export default function UnitCard({ unit, onUpdate }: UnitCardProps) {
                 <p className="text-xs text-gray-500">{unit.propertyName}</p>
               </div>
             </div>
-            <Badge variant={unit.isOccupied ? 'success' : 'default'}>
-              {unit.isOccupied ? 'Occupied' : 'Vacant'}
-            </Badge>
+            <div className="flex flex-col gap-1 items-end">
+              <Badge variant={unit.isOccupied ? 'success' : 'default'}>
+                {unit.isOccupied ? 'Occupied' : 'Vacant'}
+              </Badge>
+              {unit.isOccupied && unit.paymentStatus && (
+                <Badge
+                  variant={
+                    unit.paymentStatus === 'Paid' ? 'success' :
+                    unit.paymentStatus === 'Pending' ? 'warning' :
+                    unit.paymentStatus === 'Overdue' ? 'danger' :
+                    'default'
+                  }
+                >
+                  {unit.paymentStatus === 'Paid' && '✓ Paid'}
+                  {unit.paymentStatus === 'Pending' && '⏳ Pending'}
+                  {unit.paymentStatus === 'Overdue' && `⚠ ${unit.daysOverdue}d Overdue`}
+                  {unit.paymentStatus === 'NoTenant' && 'No Tenant'}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Rent */}
@@ -74,9 +91,17 @@ export default function UnitCard({ unit, onUpdate }: UnitCardProps) {
 
           {/* Tenant Info */}
           {unit.currentTenantName && (
-            <div className="flex items-center space-x-2 text-sm p-2 bg-green-50 rounded-lg">
-              <FaUser className="text-green-600" />
-              <span className="text-gray-700">{unit.currentTenantName}</span>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-sm p-2 bg-green-50 rounded-lg">
+                <FaUser className="text-green-600" />
+                <span className="text-gray-700">{unit.currentTenantName}</span>
+              </div>
+              {unit.lastPaymentDate && unit.lastPaymentAmount && (
+                <div className="text-xs text-gray-600 px-2">
+                  Last payment: <span className="font-semibold">KSh {unit.lastPaymentAmount.toLocaleString()}</span>
+                  <span className="text-gray-400"> • {new Date(unit.lastPaymentDate).toLocaleDateString()}</span>
+                </div>
+              )}
             </div>
           )}
 

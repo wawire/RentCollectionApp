@@ -22,6 +22,9 @@ export default function UnitsPage() {
 
   const vacantUnits = filteredUnits.filter(u => !u.isOccupied).length
   const occupiedUnits = filteredUnits.filter(u => u.isOccupied).length
+  const paidUnits = filteredUnits.filter(u => u.paymentStatus === 'Paid').length
+  const overdueUnits = filteredUnits.filter(u => u.paymentStatus === 'Overdue').length
+  const pendingUnits = filteredUnits.filter(u => u.paymentStatus === 'Pending').length
 
   if (loading) {
     return (
@@ -85,7 +88,7 @@ export default function UnitsPage() {
       {/* Stats */}
       {units.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-gray-900">{filteredUnits.length}</p>
               <p className="text-sm text-gray-600">Total Units</p>
@@ -102,7 +105,19 @@ export default function UnitsPage() {
               <p className="text-2xl font-bold text-primary-600">
                 {filteredUnits.length > 0 ? ((occupiedUnits / filteredUnits.length) * 100).toFixed(0) : 0}%
               </p>
-              <p className="text-sm text-gray-600">Occupancy Rate</p>
+              <p className="text-sm text-gray-600">Occupancy</p>
+            </div>
+            <div className="border-l border-gray-200 pl-4">
+              <p className="text-2xl font-bold text-green-600">{paidUnits}</p>
+              <p className="text-sm text-gray-600">Paid</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-600">{overdueUnits}</p>
+              <p className="text-sm text-gray-600">Overdue</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-600">{pendingUnits}</p>
+              <p className="text-sm text-gray-600">Pending</p>
             </div>
           </div>
         </div>

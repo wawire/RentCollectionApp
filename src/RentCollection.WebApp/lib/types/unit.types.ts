@@ -13,6 +13,13 @@ export interface Unit {
   rentalType: number
   currentTenantName?: string
   createdAt: string
+
+  // Payment Status Information
+  lastPaymentDate?: string
+  lastPaymentAmount?: number
+  paymentStatus?: 'Paid' | 'Overdue' | 'Pending' | 'NoTenant'
+  daysOverdue?: number
+  currentTenantId?: number
 }
 
 export interface CreateUnitDto {

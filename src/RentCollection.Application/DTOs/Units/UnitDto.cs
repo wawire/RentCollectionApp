@@ -18,4 +18,11 @@ public class UnitDto
     public RentalType RentalType { get; set; }
     public string? CurrentTenantName { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Payment Status Information
+    public DateTime? LastPaymentDate { get; set; }
+    public decimal? LastPaymentAmount { get; set; }
+    public string? PaymentStatus { get; set; } // "Paid", "Overdue", "Pending", "NoTenant"
+    public int? DaysOverdue { get; set; }
+    public int? CurrentTenantId { get; set; }
 }
