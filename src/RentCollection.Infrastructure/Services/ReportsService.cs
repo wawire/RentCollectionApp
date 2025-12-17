@@ -84,9 +84,14 @@ namespace RentCollection.Infrastructure.Services
 
                     propertyReport.TotalIncome = propertyReport.RentCollected + propertyReport.LateFees;
 
-                    // For this implementation, we don't have expense tracking yet
-                    // In a real system, you'd query expenses from a separate table
-                    propertyReport.Expenses = 0;
+                    // Get expenses for this property in the period
+                    var propertyExpenses = await _context.Expenses
+                        .Where(e => e.PropertyId == property.Id &&
+                                   e.ExpenseDate >= startDate &&
+                                   e.ExpenseDate <= endDate)
+                        .SumAsync(e => e.Amount);
+
+                    propertyReport.Expenses = propertyExpenses;
 
                     propertyReport.NetProfit = propertyReport.TotalIncome - propertyReport.Expenses;
 
@@ -102,6 +107,47 @@ namespace RentCollection.Infrastructure.Services
                 report.LateFees = report.PropertiesBreakdown.Sum(p => p.LateFees);
                 report.TotalIncome = report.TotalRentCollected + report.LateFees;
                 report.TotalExpenses = report.PropertiesBreakdown.Sum(p => p.Expenses);
+
+                // Get expenses by category for the entire period
+                var expensesQuery = _context.Expenses
+                    .Where(e => e.ExpenseDate >= startDate && e.ExpenseDate <= endDate);
+
+                if (landlordId.HasValue)
+                {
+                    expensesQuery = expensesQuery.Where(e => e.LandlordId == landlordId.Value);
+                }
+
+                var expensesByCategory = await expensesQuery
+                    .GroupBy(e => e.Category)
+                    .Select(g => new { Category = g.Key.ToString(), Total = g.Sum(e => e.Amount) })
+                    .ToListAsync();
+
+                foreach (var item in expensesByCategory)
+                {
+                    report.ExpensesByCategory[item.Category] = item.Total;
+
+                    // Also populate the specific category fields for backward compatibility
+                    switch (item.Category)
+                    {
+                        case "Maintenance":
+                            report.MaintenanceExpenses = item.Total;
+                            break;
+                        case "Utilities":
+                            report.UtilitiesExpenses = item.Total;
+                            break;
+                        case "Management":
+                            report.PropertyManagementFees = item.Total;
+                            break;
+                        case "Insurance":
+                        case "PropertyTax":
+                            report.TaxesAndInsurance += item.Total;
+                            break;
+                        default:
+                            report.OtherExpenses += item.Total;
+                            break;
+                    }
+                }
+
                 report.NetProfit = report.TotalIncome - report.TotalExpenses;
                 report.ProfitMargin = report.TotalIncome > 0
                     ? report.NetProfit / report.TotalIncome * 100

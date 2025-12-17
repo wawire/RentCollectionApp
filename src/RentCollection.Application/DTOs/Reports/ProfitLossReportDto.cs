@@ -21,6 +21,7 @@ namespace RentCollection.Application.DTOs.Reports
         public decimal TaxesAndInsurance { get; set; }
         public decimal OtherExpenses { get; set; }
         public decimal TotalExpenses { get; set; }
+        public Dictionary<string, decimal> ExpensesByCategory { get; set; } = new();
 
         // Summary
         public decimal NetProfit { get; set; }
