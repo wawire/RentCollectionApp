@@ -29,6 +29,9 @@ public static class DependencyInjection
         services.AddSingleton<MessageTemplateService>();
         services.AddHostedService<RentReminderBackgroundService>();
 
+        // Register Expense Services
+        services.AddScoped<IExpenseService, ExpenseService>();
+
         // Register HttpClient for M-Pesa API
         services.AddHttpClient();
 

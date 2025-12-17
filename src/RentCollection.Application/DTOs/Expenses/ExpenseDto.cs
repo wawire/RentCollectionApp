@@ -27,7 +27,7 @@ namespace RentCollection.Application.DTOs.Expenses
         public bool IsTaxDeductible { get; set; }
         public string? Tags { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 
     public class CreateExpenseDto

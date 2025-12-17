@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IRentReminderRepository, RentReminderRepository>();
         services.AddScoped<IReminderSettingsRepository, ReminderSettingsRepository>();
         services.AddScoped<ITenantReminderPreferenceRepository, TenantReminderPreferenceRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
