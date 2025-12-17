@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { MapPin, Bed, Bath, Search, Star, Heart, Filter } from 'lucide-react'
 import { useVacantUnits } from '@/lib/hooks/usePublicListings'
@@ -8,8 +9,12 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import FilterSidebar from '@/components/public/FilterSidebar'
+import { useAuth } from '@/contexts/AuthContext'
+import { UserRole } from '@/lib/types/auth.types'
 
 export default function PublicLandingPage() {
+  const router = useRouter()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const { units, loading, error } = useVacantUnits()
   const [searchTerm, setSearchTerm] = useState('')
   const [minPrice, setMinPrice] = useState<number | ''>('')
@@ -19,6 +24,31 @@ export default function PublicLandingPage() {
   const [rentalType, setRentalType] = useState<string>('all')
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
   const [sortBy, setSortBy] = useState<string>('featured')
+
+  // Redirect authenticated users to their respective dashboards
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      if (user.role === UserRole.Tenant) {
+        router.replace('/tenant-portal')
+      } else {
+        router.replace('/dashboard')
+      }
+    }
+  }, [authLoading, isAuthenticated, user, router])
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-bg-light flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
+  // Don't render public page for authenticated users (they're being redirected)
+  if (isAuthenticated && user) {
+    return null
+  }
 
   const filteredUnits = units.filter((unit) => {
     const matchesSearch =
