@@ -113,7 +113,7 @@ export default function TenantForm({ initialData, onSubmit, loading, preselected
         label="Unit"
         value={formData.unitId}
         onChange={(e) => setFormData({ ...formData, unitId: Number(e.target.value) })}
-        options={vacantUnits.map(u => ({
+        options={(vacantUnits || []).map(u => ({
           value: u.id,
           label: `${u.propertyName} - ${u.unitNumber} (KSh ${u.monthlyRent.toLocaleString()})`
         }))}
