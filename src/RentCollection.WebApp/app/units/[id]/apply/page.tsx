@@ -115,7 +115,7 @@ export default function TenantApplicationPage() {
       <>
         <Navbar />
         <div className="min-h-screen bg-gray-50 py-12">
-          <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto px-6">
             <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h1 className="text-3xl font-bold text-gray-900 mb-4">Application Submitted!</h1>
@@ -169,7 +169,7 @@ export default function TenantApplicationPage() {
       <div className="min-h-screen bg-gray-50">
         {/* Breadcrumb Navigation */}
         <div className="bg-white border-b border-gray-200">
-          <div className="container mx-auto px-6 py-4">
+          <div className="max-w-7xl mx-auto px-6 py-4">
             <Breadcrumb
               items={[
                 { label: 'Browse Properties', href: '/' },
@@ -181,7 +181,7 @@ export default function TenantApplicationPage() {
         </div>
 
         {/* Main Content - Split Layout */}
-        <div className="container mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Left Column - Image Gallery & Property Details (Sticky) */}
             <div className="lg:sticky lg:top-24 lg:self-start space-y-6">

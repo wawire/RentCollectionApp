@@ -14,9 +14,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
-  // Don't show layout on auth pages or public landing page
+  // Don't show layout on auth pages, public pages, or unit application pages
   const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register')
-  const isPublicPage = pathname === '/'
+  const isPublicPage = pathname === '/' || pathname?.startsWith('/units/') && pathname?.includes('/apply')
 
   if (isAuthPage || isPublicPage) {
     return <>{children}</>

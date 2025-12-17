@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { securityDepositService } from '@/lib/services/securityDepositService'
 import type {
   SecurityDepositBalance,
   SecurityDepositTransaction
 } from '@/lib/types/securityDeposit.types'
-import { FaMoneyBillWave, FaArrowDown, FaArrowUp, FaInfoCircle } from 'react-icons/fa'
+import { FaMoneyBillWave, FaArrowDown, FaArrowUp, FaInfoCircle, FaMobileAlt } from 'react-icons/fa'
 
 export default function TenantSecurityDepositPage() {
   const { user } = useAuth()
@@ -81,19 +82,57 @@ export default function TenantSecurityDepositPage() {
     return 'text-gray-600'
   }
 
+  const amountOwed = depositBalance.initialDeposit - depositBalance.currentBalance
+  const needsPayment = amountOwed > 0
+
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">My Security Deposit</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Security Deposit</h1>
+        {needsPayment && (
+          <Link
+            href="/tenant-portal/pay-security-deposit"
+            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+          >
+            <FaMobileAlt />
+            Pay Deposit
+          </Link>
+        )}
+      </div>
+
+      {/* Alert for unpaid deposit */}
+      {needsPayment && (
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 rounded-lg p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <FaInfoCircle className="text-yellow-600 text-2xl" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-yellow-900">Security Deposit Payment Required</h3>
+              <p className="text-yellow-700 mt-1">
+                You need to pay <strong>KSh {amountOwed.toLocaleString()}</strong> to complete your security deposit.
+              </p>
+              <Link
+                href="/tenant-portal/pay-security-deposit"
+                className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+              >
+                <FaMobileAlt />
+                Pay Now with M-Pesa
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Info Box */}
-      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded mb-6">
-        <div className="flex items-start">
-          <FaInfoCircle className="text-blue-400 text-xl mr-3 mt-1" />
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <div className="flex items-start gap-4">
+          <FaInfoCircle className="text-blue-600 text-xl flex-shrink-0 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">
               About Your Security Deposit
             </h3>
-            <p className="text-blue-700 text-sm">
+            <p className="text-blue-700">
               Your security deposit is held by the landlord and will be refunded when you move out, minus any deductions for damages or unpaid rent.
             </p>
           </div>
@@ -101,32 +140,34 @@ export default function TenantSecurityDepositPage() {
       </div>
 
       {/* Balance Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-gray-600 text-sm mb-2">Initial Deposit</p>
-          <p className="text-2xl font-bold text-blue-600">
-            KES {depositBalance.initialDeposit.toLocaleString()}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Required Deposit</p>
+          <p className="text-2xl font-bold text-blue-600 mt-1">
+            KSh {depositBalance.initialDeposit.toLocaleString()}
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-gray-600 text-sm mb-2">Total Deductions</p>
-          <p className="text-2xl font-bold text-red-600">
-            KES {depositBalance.totalDeductions.toLocaleString()}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Amount Paid</p>
+          <p className="text-2xl font-bold text-green-600 mt-1">
+            KSh {depositBalance.currentBalance.toLocaleString()}
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-gray-600 text-sm mb-2">Total Refunds</p>
-          <p className="text-2xl font-bold text-orange-600">
-            KES {depositBalance.totalRefunds.toLocaleString()}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Deductions</p>
+          <p className="text-2xl font-bold text-red-600 mt-1">
+            KSh {depositBalance.totalDeductions.toLocaleString()}
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border-2 border-green-500">
-          <p className="text-gray-600 text-sm mb-2">Current Balance</p>
-          <p className="text-2xl font-bold text-green-600">
-            KES {depositBalance.currentBalance.toLocaleString()}
+        <div className={`bg-white rounded-lg shadow-sm p-5 ${needsPayment ? 'border-2 border-yellow-500' : 'border-2 border-green-500'}`}>
+          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            {needsPayment ? 'Amount Owed' : 'Refunds'}
+          </p>
+          <p className={`text-2xl font-bold mt-1 ${needsPayment ? 'text-yellow-600' : 'text-orange-600'}`}>
+            KSh {needsPayment ? amountOwed.toLocaleString() : depositBalance.totalRefunds.toLocaleString()}
           </p>
         </div>
       </div>
