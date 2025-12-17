@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
 import { tenantPortalService, TenantDashboardDto } from '@/lib/services/tenantPortalService'
-import { FaMoneyBillWave, FaClock, FaCheckCircle, FaExclamationTriangle, FaReceipt, FaFileAlt, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa'
+import { FaMoneyBillWave, FaClock, FaCheckCircle, FaExclamationTriangle, FaReceipt, FaFileAlt, FaCalendarAlt, FaInfoCircle, FaMobileAlt } from 'react-icons/fa'
 
 export default function TenantPortalPage() {
   const [dashboard, setDashboard] = useState<TenantDashboardDto | null>(null)
@@ -82,7 +82,7 @@ export default function TenantPortalPage() {
 
       {/* Overdue Alert */}
       {dashboard.hasOverduePayments && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <FaExclamationTriangle className="text-red-600 text-xl mt-1" />
             <div className="flex-1">
@@ -92,6 +92,15 @@ export default function TenantPortalPage() {
                 {dashboard.daysOverdue > 0 && ` Payment is ${dashboard.daysOverdue} day(s) overdue.`}
               </p>
               <p className="text-xs text-red-600 mt-2">{dashboard.lateFeePolicy}</p>
+              <div className="mt-3">
+                <Link
+                  href="/tenant-portal/pay-now"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  <FaMobileAlt />
+                  Pay Now with M-Pesa
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -196,13 +205,13 @@ export default function TenantPortalPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
-            href="/tenant-portal/payment-instructions"
-            className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+            href="/tenant-portal/pay-now"
+            className="flex items-center gap-3 p-4 border-2 border-green-500 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
           >
-            <FaMoneyBillWave className="text-blue-600 text-xl" />
+            <FaMobileAlt className="text-green-600 text-xl" />
             <div>
-              <p className="font-medium text-primary">Pay Rent</p>
-              <p className="text-sm text-primary/60">Instructions</p>
+              <p className="font-medium text-green-700">Pay with M-Pesa</p>
+              <p className="text-sm text-green-600">STK Push</p>
             </div>
           </Link>
 
@@ -210,10 +219,21 @@ export default function TenantPortalPage() {
             href="/tenant-portal/record-payment"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <FaReceipt className="text-green-600 text-xl" />
+            <FaReceipt className="text-blue-600 text-xl" />
             <div>
               <p className="font-medium text-primary">Record Payment</p>
-              <p className="text-sm text-primary/60">Submit details</p>
+              <p className="text-sm text-primary/60">Already paid?</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/tenant-portal/payment-instructions"
+            className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+          >
+            <FaMoneyBillWave className="text-purple-600 text-xl" />
+            <div>
+              <p className="font-medium text-primary">Payment Info</p>
+              <p className="text-sm text-primary/60">Instructions</p>
             </div>
           </Link>
 
