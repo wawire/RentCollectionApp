@@ -31,6 +31,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<LeaseRenewal> LeaseRenewals { get; set; } = null!;
     public DbSet<SecurityDepositTransaction> SecurityDepositTransactions { get; set; } = null!;
     public DbSet<MPesaTransaction> MPesaTransactions { get; set; } = null!;
+    public DbSet<RentReminder> RentReminders { get; set; } = null!;
+    public DbSet<ReminderSettings> ReminderSettings { get; set; } = null!;
+    public DbSet<TenantReminderPreference> TenantReminderPreferences { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
