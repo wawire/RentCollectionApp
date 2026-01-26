@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Card, Button, SearchBar, Select, Alert } from '@/components/common'
 import { useGetActiveTenants, useSendSms } from '@/lib/hooks'
-import { FaPaperPlane, FaUsers, FaCheckSquare, FaSquare } from 'react-icons/fa'
+import { CheckSquare, Send, Square, Users } from 'lucide-react'
 
 interface BulkSmsProps {
   onSmsSent?: () => void
@@ -131,7 +131,7 @@ export default function BulkSms({ onSmsSent }: BulkSmsProps) {
     <Card padding="md">
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
-          <FaUsers className="text-primary-600 text-xl" />
+          <Users className="text-primary-600 w-5 h-5" />
           <h2 className="text-lg font-semibold text-gray-900">Bulk SMS</h2>
         </div>
 
@@ -188,7 +188,7 @@ export default function BulkSms({ onSmsSent }: BulkSmsProps) {
               onClick={handleSelectAll}
               className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
             >
-              {allSelected ? <FaCheckSquare /> : <FaSquare />}
+              {allSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
               {allSelected ? 'Deselect All' : 'Select All'}
             </button>
           </div>
@@ -253,7 +253,7 @@ export default function BulkSms({ onSmsSent }: BulkSmsProps) {
             disabled={selectedTenantIds.size === 0 || !message.trim()}
             fullWidth
           >
-            <FaPaperPlane className="mr-2" />
+            <Send className="mr-2 w-4 h-4" />
             Send to {selectedTenantIds.size} Tenant{selectedTenantIds.size !== 1 ? 's' : ''}
           </Button>
         </div>

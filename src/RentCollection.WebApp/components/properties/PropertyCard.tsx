@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Property } from '@/lib/types'
 import { Card, Badge, Button, Modal } from '@/components/common'
-import { FaBuilding, FaDoorOpen, FaEdit, FaTrash, FaEye } from 'react-icons/fa'
+import { Building2, Eye, Pencil, Trash2 } from 'lucide-react'
 import { useDeleteProperty } from '@/lib/hooks'
 
 interface PropertyCardProps {
@@ -36,7 +36,7 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 flex-1">
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                <FaBuilding className="text-primary-600 text-xl" />
+                <Building2 className="text-primary-600 text-xl" />
               </div>
               <div className="flex-1">
                 <Link href={`/properties/${property.id}`}>
@@ -82,16 +82,16 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
               <div className="flex gap-2">
                 <Link href={`/properties/${property.id}`}>
                   <Button variant="secondary" size="sm">
-                    <FaEye />
+                    <Eye />
                   </Button>
                 </Link>
                 <Link href={`/properties/${property.id}/edit`}>
                   <Button variant="secondary" size="sm">
-                    <FaEdit />
+                    <Pencil />
                   </Button>
                 </Link>
-                <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
-                  <FaTrash />
+                <Button variant="destructive" size="sm" onClick={() => setShowDeleteModal(true)}>
+                  <Trash2 />
                 </Button>
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
               <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
                 Cancel
               </Button>
-              <Button variant="danger" onClick={handleDelete} loading={deleting}>
+              <Button variant="destructive" onClick={handleDelete} loading={deleting}>
                 Delete
               </Button>
             </>
@@ -128,7 +128,7 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-              <FaBuilding className="text-primary-600 text-xl" />
+              <Building2 className="text-primary-600 text-xl" />
             </div>
             <Badge variant={property.isActive ? 'success' : 'default'}>
               {property.isActive ? 'Active' : 'Inactive'}
@@ -208,17 +208,17 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
           <div className="flex gap-2">
             <Link href={`/properties/${property.id}`} className="flex-1">
               <Button variant="secondary" size="sm" fullWidth>
-                <FaEye className="mr-2" />
+                <Eye className="mr-2" />
                 View
               </Button>
             </Link>
             <Link href={`/properties/${property.id}/edit`}>
               <Button variant="secondary" size="sm">
-                <FaEdit />
+                <Pencil />
               </Button>
             </Link>
-            <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
-              <FaTrash />
+            <Button variant="destructive" size="sm" onClick={() => setShowDeleteModal(true)}>
+              <Trash2 />
             </Button>
           </div>
         </div>
@@ -233,9 +233,9 @@ export default function PropertyCard({ property, viewMode = 'grid', onUpdate }: 
             <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={handleDelete} loading={deleting}>
-              Delete
-            </Button>
+              <Button variant="destructive" onClick={handleDelete} loading={deleting}>
+                Delete
+              </Button>
           </>
         }
       >

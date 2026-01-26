@@ -17,7 +17,7 @@ namespace RentCollection.Infrastructure.Services
             _context = context;
         }
 
-        public async Task<ServiceResult<ProfitLossReportDto>> GenerateProfitLossReportAsync(DateTime startDate, DateTime endDate, int? landlordId = null)
+        public async Task<ServiceResult<ProfitLossReportDto>> GenerateProfitLossReportAsync(DateTime startDate, DateTime endDate, int? landlordId = null, IReadOnlyCollection<int>? propertyIds = null, int? organizationId = null)
         {
             try
             {
@@ -28,9 +28,22 @@ namespace RentCollection.Infrastructure.Services
                             .ThenInclude(t => t.Payments)
                     .AsQueryable();
 
+                if (organizationId.HasValue)
+                {
+                    propertiesQuery = propertiesQuery.Where(p => p.OrganizationId == organizationId.Value);
+                }
+
                 if (landlordId.HasValue)
                 {
                     propertiesQuery = propertiesQuery.Where(p => p.LandlordId == landlordId.Value);
+                }
+                else if (propertyIds != null && propertyIds.Count > 0)
+                {
+                    propertiesQuery = propertiesQuery.Where(p => propertyIds.Contains(p.Id));
+                }
+                else if (propertyIds != null && propertyIds.Count > 0)
+                {
+                    propertiesQuery = propertiesQuery.Where(p => propertyIds.Contains(p.Id));
                 }
 
                 var properties = await propertiesQuery.ToListAsync();
@@ -112,9 +125,18 @@ namespace RentCollection.Infrastructure.Services
                 var expensesQuery = _context.Expenses
                     .Where(e => e.ExpenseDate >= startDate && e.ExpenseDate <= endDate);
 
+                if (organizationId.HasValue)
+                {
+                    expensesQuery = expensesQuery.Where(e => e.Property.OrganizationId == organizationId.Value);
+                }
+
                 if (landlordId.HasValue)
                 {
                     expensesQuery = expensesQuery.Where(e => e.LandlordId == landlordId.Value);
+                }
+                else if (propertyIds != null && propertyIds.Count > 0)
+                {
+                    expensesQuery = expensesQuery.Where(e => propertyIds.Contains(e.PropertyId));
                 }
 
                 var expensesByCategory = await expensesQuery
@@ -161,74 +183,98 @@ namespace RentCollection.Infrastructure.Services
             }
         }
 
-        public async Task<ServiceResult<ArrearsReportDto>> GenerateArrearsReportAsync(int? landlordId = null)
+        public async Task<ServiceResult<ArrearsReportDto>> GenerateArrearsReportAsync(int? landlordId = null, IReadOnlyCollection<int>? propertyIds = null, int? organizationId = null)
         {
             try
             {
                 var today = DateTime.UtcNow.Date;
 
-                // Get all tenants with overdue payments
-                var tenantsQuery = _context.Tenants
-                    .Include(t => t.Unit)
-                        .ThenInclude(u => u.Property)
-                    .Include(t => t.Payments)
-                    .Where(t => t.IsActive)
+                // Use invoices (with allocations) as the source of truth for arrears
+                var invoicesQuery = _context.Invoices
+                    .Include(i => i.Tenant)
+                        .ThenInclude(t => t.Unit)
+                            .ThenInclude(u => u.Property)
+                    .Include(i => i.Allocations)
+                    .Include(i => i.LineItems)
+                    .Where(i => i.Status != InvoiceStatus.Void && i.Tenant.Status == TenantStatus.Active)
                     .AsQueryable();
+
+                if (organizationId.HasValue)
+                {
+                    invoicesQuery = invoicesQuery.Where(i => i.Property.OrganizationId == organizationId.Value);
+                }
 
                 if (landlordId.HasValue)
                 {
-                    tenantsQuery = tenantsQuery.Where(t => t.Unit.Property.LandlordId == landlordId.Value);
+                    invoicesQuery = invoicesQuery.Where(i => i.LandlordId == landlordId.Value);
+                }
+                else if (propertyIds != null && propertyIds.Count > 0)
+                {
+                    invoicesQuery = invoicesQuery.Where(i => propertyIds.Contains(i.PropertyId));
                 }
 
-                var tenants = await tenantsQuery.ToListAsync();
+                var invoices = await invoicesQuery.ToListAsync();
 
                 var report = new ArrearsReportDto
                 {
                     ReportDate = today
                 };
 
-                foreach (var tenant in tenants)
-                {
-                    var overduePayments = tenant.Payments
-                        .Where(p => p.Status == PaymentStatus.Pending && p.DueDate.Date < today)
-                        .OrderBy(p => p.DueDate)
-                        .ToList();
-
-                    if (overduePayments.Any())
+                var invoiceSummaries = invoices
+                    .Select(invoice =>
                     {
-                        var tenantArrears = new TenantArrearsDto
-                        {
-                            TenantId = tenant.Id,
-                            TenantName = tenant.FullName,
-                            Email = tenant.Email,
-                            PhoneNumber = tenant.PhoneNumber,
-                            PropertyName = tenant.Unit.Property.Name,
-                            UnitNumber = tenant.Unit.UnitNumber,
-                            TotalArrears = overduePayments.Sum(p => p.Amount),
-                            TotalLateFees = overduePayments.Sum(p => p.LateFeeAmount),
-                            OldestOverdueDate = overduePayments.First().DueDate,
-                            DaysOverdue = (today - overduePayments.First().DueDate).Days
-                        };
+                        var allocated = invoice.Allocations.Sum(a => a.Amount);
+                        var balance = InvoiceStatusCalculator.CalculateBalance(invoice, allocated);
+                        var lateFee = invoice.LineItems
+                            .Where(li => li.LineItemType == InvoiceLineItemType.LateFee)
+                            .Sum(li => li.Amount);
+                        return new { Invoice = invoice, Balance = balance, LateFee = lateFee };
+                    })
+                    .Where(summary => summary.Balance > 0 && summary.Invoice.DueDate.Date < today)
+                    .ToList();
 
-                        tenantArrears.TotalOutstanding = tenantArrears.TotalArrears + tenantArrears.TotalLateFees;
-
-                        foreach (var payment in overduePayments)
-                        {
-                            tenantArrears.OverduePayments.Add(new OverduePaymentDto
-                            {
-                                PaymentId = payment.Id,
-                                DueDate = payment.DueDate,
-                                DaysOverdue = (today - payment.DueDate).Days,
-                                Amount = payment.Amount,
-                                LateFee = payment.LateFeeAmount,
-                                TotalDue = payment.Amount + payment.LateFeeAmount,
-                                PeriodStart = payment.PeriodStart.ToString("MMM dd, yyyy"),
-                                PeriodEnd = payment.PeriodEnd.ToString("MMM dd, yyyy")
-                            });
-                        }
-
-                        report.TenantArrears.Add(tenantArrears);
+                foreach (var tenantGroup in invoiceSummaries.GroupBy(s => s.Invoice.TenantId))
+                {
+                    var first = tenantGroup.First();
+                    var tenant = first.Invoice.Tenant;
+                    if (tenant?.Unit?.Property == null)
+                    {
+                        continue;
                     }
+
+                    var tenantArrears = new TenantArrearsDto
+                    {
+                        TenantId = tenant.Id,
+                        TenantName = tenant.FullName,
+                        Email = tenant.Email,
+                        PhoneNumber = tenant.PhoneNumber,
+                        PropertyName = tenant.Unit.Property.Name,
+                        UnitNumber = tenant.Unit.UnitNumber,
+                        TotalArrears = tenantGroup.Sum(i => Math.Max(0, i.Balance - i.LateFee)),
+                        TotalLateFees = tenantGroup.Sum(i => i.LateFee),
+                        OldestOverdueDate = tenantGroup.OrderBy(i => i.Invoice.DueDate).First().Invoice.DueDate,
+                        DaysOverdue = (today - tenantGroup.OrderBy(i => i.Invoice.DueDate).First().Invoice.DueDate).Days
+                    };
+
+                    tenantArrears.TotalOutstanding = tenantArrears.TotalArrears + tenantArrears.TotalLateFees;
+
+                    foreach (var item in tenantGroup.OrderBy(i => i.Invoice.DueDate))
+                    {
+                        var baseAmount = Math.Max(0, item.Balance - item.LateFee);
+                        tenantArrears.OverduePayments.Add(new OverduePaymentDto
+                        {
+                            PaymentId = item.Invoice.Id,
+                            DueDate = item.Invoice.DueDate,
+                            DaysOverdue = (today - item.Invoice.DueDate).Days,
+                            Amount = baseAmount,
+                            LateFee = item.LateFee,
+                            TotalDue = item.Balance,
+                            PeriodStart = item.Invoice.PeriodStart.ToString("MMM dd, yyyy"),
+                            PeriodEnd = item.Invoice.PeriodEnd.ToString("MMM dd, yyyy")
+                        });
+                    }
+
+                    report.TenantArrears.Add(tenantArrears);
                 }
 
                 // Calculate totals
@@ -244,9 +290,18 @@ namespace RentCollection.Infrastructure.Services
                             .ThenInclude(t => t.Payments)
                     .AsQueryable();
 
+                if (organizationId.HasValue)
+                {
+                    propertiesQuery = propertiesQuery.Where(p => p.OrganizationId == organizationId.Value);
+                }
+
                 if (landlordId.HasValue)
                 {
                     propertiesQuery = propertiesQuery.Where(p => p.LandlordId == landlordId.Value);
+                }
+                else if (propertyIds != null && propertyIds.Count > 0)
+                {
+                    propertiesQuery = propertiesQuery.Where(p => propertyIds.Contains(p.Id));
                 }
 
                 var properties = await propertiesQuery.ToListAsync();
@@ -284,7 +339,7 @@ namespace RentCollection.Infrastructure.Services
             }
         }
 
-        public async Task<ServiceResult<OccupancyReportDto>> GenerateOccupancyReportAsync(int? landlordId = null)
+        public async Task<ServiceResult<OccupancyReportDto>> GenerateOccupancyReportAsync(int? landlordId = null, IReadOnlyCollection<int>? propertyIds = null, int? organizationId = null)
         {
             try
             {
@@ -294,6 +349,11 @@ namespace RentCollection.Infrastructure.Services
                     .Include(p => p.Units)
                         .ThenInclude(u => u.Tenants)
                     .AsQueryable();
+
+                if (organizationId.HasValue)
+                {
+                    propertiesQuery = propertiesQuery.Where(p => p.OrganizationId == organizationId.Value);
+                }
 
                 if (landlordId.HasValue)
                 {

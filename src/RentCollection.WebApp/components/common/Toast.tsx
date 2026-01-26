@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimes } from 'react-icons/fa'
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react'
 
 export interface ToastProps {
   id: string
@@ -26,31 +26,31 @@ export default function Toast({ id, type, message, duration = 5000, onClose }: T
     switch (type) {
       case 'success':
         return {
-          bg: 'bg-green-50',
-          border: 'border-green-200',
-          text: 'text-green-800',
-          icon: <FaCheckCircle className="text-green-600" />,
+          bg: 'bg-state-success/10',
+          border: 'border-state-success/30',
+          text: 'text-text-primary',
+          icon: <CheckCircle2 className="text-state-success w-4 h-4" />,
         }
       case 'error':
         return {
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          text: 'text-red-800',
-          icon: <FaExclamationCircle className="text-red-600" />,
+          bg: 'bg-state-error/10',
+          border: 'border-state-error/30',
+          text: 'text-text-primary',
+          icon: <AlertCircle className="text-state-error w-4 h-4" />,
         }
       case 'warning':
         return {
-          bg: 'bg-yellow-50',
-          border: 'border-yellow-200',
-          text: 'text-yellow-800',
-          icon: <FaExclamationCircle className="text-yellow-600" />,
+          bg: 'bg-state-warning/10',
+          border: 'border-state-warning/30',
+          text: 'text-text-primary',
+          icon: <AlertTriangle className="text-state-warning w-4 h-4" />,
         }
       case 'info':
         return {
-          bg: 'bg-blue-50',
-          border: 'border-blue-200',
-          text: 'text-blue-800',
-          icon: <FaInfoCircle className="text-blue-600" />,
+          bg: 'bg-state-info/10',
+          border: 'border-state-info/30',
+          text: 'text-text-primary',
+          icon: <Info className="text-state-info w-4 h-4" />,
         }
     }
   }
@@ -59,7 +59,7 @@ export default function Toast({ id, type, message, duration = 5000, onClose }: T
 
   return (
     <div
-      className={`${styles.bg} ${styles.border} ${styles.text} border rounded-lg shadow-lg p-4 mb-3 flex items-start gap-3 animate-slide-in-right max-w-md`}
+      className={`${styles.bg} ${styles.border} ${styles.text} border rounded-lg shadow-subtle p-4 mb-3 flex items-start gap-3 animate-slide-in-right max-w-md`}
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
@@ -71,7 +71,7 @@ export default function Toast({ id, type, message, duration = 5000, onClose }: T
         className={`flex-shrink-0 ${styles.text} hover:opacity-70 transition-opacity`}
         aria-label="Close notification"
       >
-        <FaTimes />
+        <X className="w-4 h-4" />
       </button>
     </div>
   )

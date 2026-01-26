@@ -3,19 +3,20 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  FaPlus,
-  FaSpinner,
-  FaChartBar,
-  FaDollarSign,
-  FaReceipt,
-  FaEdit,
-  FaTrash,
-  FaFilter,
-  FaCalendar,
-  FaBuilding,
-  FaTags
-} from 'react-icons/fa'
+  BarChart3,
+  Building2,
+  Calendar,
+  DollarSign,
+  Filter,
+  Loader2,
+  Pencil,
+  Plus,
+  Receipt,
+  Tags,
+  Trash2,
+} from 'lucide-react'
 import { expenseService, Expense, ExpenseSummary } from '@/lib/services/expenseService'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function ExpensesPage() {
   const [loading, setLoading] = useState(true)
@@ -129,15 +130,11 @@ export default function ExpensesPage() {
     })
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <FaSpinner className="animate-spin text-4xl text-blue-600" />
-      </div>
-    )
-  }
-
-  return (
+  const content = loading ? (
+    <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="animate-spin w-10 h-10 text-blue-600" />
+    </div>
+  ) : (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
@@ -150,7 +147,7 @@ export default function ExpensesPage() {
             href="/dashboard/expenses/new"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
           >
-            <FaPlus /> Add Expense
+            <Plus className="w-4 h-4" /> Add Expense
           </Link>
         </div>
       </div>
@@ -175,7 +172,7 @@ export default function ExpensesPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">{summary.totalExpenses} transactions</p>
               </div>
-              <FaDollarSign className="text-4xl text-blue-600 opacity-20" />
+              <DollarSign className="text-4xl text-blue-600 opacity-20" />
             </div>
           </div>
 
@@ -189,7 +186,7 @@ export default function ExpensesPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Per transaction</p>
               </div>
-              <FaChartBar className="text-4xl text-green-600 opacity-20" />
+              <BarChart3 className="text-4xl text-green-600 opacity-20" />
             </div>
           </div>
 
@@ -203,7 +200,7 @@ export default function ExpensesPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Eligible for deduction</p>
               </div>
-              <FaReceipt className="text-4xl text-purple-600 opacity-20" />
+              <Receipt className="text-4xl text-purple-600 opacity-20" />
             </div>
           </div>
 
@@ -217,7 +214,7 @@ export default function ExpensesPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Recurring expenses</p>
               </div>
-              <FaCalendar className="text-4xl text-orange-600 opacity-20" />
+              <Calendar className="text-4xl text-orange-600 opacity-20" />
             </div>
           </div>
         </div>
@@ -226,7 +223,7 @@ export default function ExpensesPage() {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow mb-6 p-4">
         <div className="flex items-center gap-4 mb-4">
-          <FaFilter className="text-gray-600" />
+          <Filter className="text-gray-600 w-4 h-4" />
           <span className="font-medium text-gray-700">Filters</span>
         </div>
 
@@ -344,7 +341,7 @@ export default function ExpensesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <FaBuilding className="text-gray-400 mr-2" />
+                        <Building2 className="text-gray-400 mr-2 w-4 h-4" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">{expense.propertyName}</div>
                           {expense.unitNumber && (
@@ -392,7 +389,7 @@ export default function ExpensesPage() {
                           href={`/dashboard/expenses/${expense.id}/edit`}
                           className="text-blue-600 hover:text-blue-900"
                         >
-                          <FaEdit />
+                          <Pencil className="w-4 h-4" />
                         </Link>
                         <button
                           onClick={() => handleDelete(expense.id)}
@@ -400,9 +397,9 @@ export default function ExpensesPage() {
                           className="text-red-600 hover:text-red-900 disabled:opacity-50"
                         >
                           {deleteId === expense.id ? (
-                            <FaSpinner className="animate-spin" />
+                            <Loader2 className="animate-spin w-4 h-4" />
                           ) : (
-                            <FaTrash />
+                            <Trash2 className="w-4 h-4" />
                           )}
                         </button>
                       </div>
@@ -419,7 +416,7 @@ export default function ExpensesPage() {
       {summary && summary.expensesByCategory && Object.keys(summary.expensesByCategory).length > 0 && (
         <div className="bg-white rounded-lg shadow p-6 mt-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <FaTags /> Expenses by Category
+            <Tags className="w-5 h-5" /> Expenses by Category
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(summary.expensesByCategory).map(([category, amount]) => (
@@ -439,5 +436,11 @@ export default function ExpensesPage() {
         </div>
       )}
     </div>
+  )
+
+  return (
+    <ProtectedRoute allowedRoles={['Landlord', 'Manager', 'Accountant']}>
+      {content}
+    </ProtectedRoute>
   )
 }

@@ -3,18 +3,26 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  FaArrowLeft,
-  FaShieldAlt,
-  FaQrcode,
-  FaKey,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaSpinner,
-  FaLock,
-  FaWallet,
-  FaUser,
-  FaCog,
-} from 'react-icons/fa'
+  Badge,
+  Button,
+  Card,
+  Input,
+  Modal,
+  PageHeader,
+  Alert,
+} from '@/components/common'
+import {
+  CheckCircle,
+  Shield,
+  QrCode,
+  KeyRound,
+  XCircle,
+  Loader2,
+  Lock,
+  Wallet,
+  User,
+  Settings,
+} from 'lucide-react'
 import { twoFactorAuthService, Setup2FAResponse } from '@/lib/services/twoFactorAuthService'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -24,7 +32,6 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // 2FA Setup State
   const [is2FAEnabled, setIs2FAEnabled] = useState(false)
   const [showSetupModal, setShowSetupModal] = useState(false)
   const [setupData, setSetupData] = useState<Setup2FAResponse | null>(null)
@@ -32,8 +39,7 @@ export default function SettingsPage() {
   const [disablePassword, setDisablePassword] = useState('')
 
   useEffect(() => {
-    // Check 2FA status from user object if available
-    setIs2FAEnabled(false) // Default, update based on your user object structure
+    setIs2FAEnabled(false)
   }, [user])
 
   const handleSetup2FA = async () => {
@@ -58,7 +64,7 @@ export default function SettingsPage() {
       setLoading(true)
       setError(null)
       await twoFactorAuthService.enable(verificationCode)
-      setSuccessMessage('Two-Factor Authentication enabled successfully!')
+      setSuccessMessage('Two-Factor Authentication enabled successfully.')
       setIs2FAEnabled(true)
       setShowSetupModal(false)
       setVerificationCode('')
@@ -82,7 +88,7 @@ export default function SettingsPage() {
       setLoading(true)
       setError(null)
       await twoFactorAuthService.disable(disablePassword)
-      setSuccessMessage('Two-Factor Authentication disabled successfully')
+      setSuccessMessage('Two-Factor Authentication disabled successfully.')
       setIs2FAEnabled(false)
       setDisablePassword('')
     } catch (err: any) {
@@ -94,271 +100,241 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Account Settings</h1>
-        <p className="mt-2 text-primary/60 tracking-wide">
-          Manage your account security and preferences
-        </p>
-      </div>
+      <PageHeader
+        title="Account Settings"
+        subtitle="Manage your account security and preferences."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Settings' },
+        ]}
+      />
 
-      {/* Error/Success Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-          {error}
-        </div>
+        <Alert type="error" message={error} />
       )}
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-          {successMessage}
-        </div>
+        <Alert type="success" message={successMessage} />
       )}
 
-      {/* Quick Links Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link
-          href="/dashboard/payment-accounts"
-          className="bg-white rounded-lg shadow-sm border border-primary/10 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-              <FaWallet className="text-green-600 text-xl" />
+        <Link href="/dashboard/payment-accounts" className="block">
+          <Card className="hover:shadow-subtle transition-shadow">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-state-success/10 flex items-center justify-center">
+                <Wallet className="text-state-success" size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-text-primary">Payment Accounts</h3>
+                <p className="text-sm text-text-secondary">Manage how you receive payments</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-primary">Payment Accounts</h3>
-              <p className="text-sm text-primary/60">Manage how you receive payments</p>
-            </div>
-          </div>
+          </Card>
         </Link>
 
-        <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6 opacity-50 cursor-not-allowed">
+        <Card className="opacity-50 cursor-not-allowed">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-              <FaUser className="text-blue-600 text-xl" />
+            <div className="w-12 h-12 rounded-full bg-brand-bg flex items-center justify-center">
+              <User className="text-brand-secondary" size={20} />
             </div>
             <div>
-              <h3 className="font-semibold text-primary">Profile Settings</h3>
-              <p className="text-sm text-primary/60">Coming soon</p>
+              <h3 className="font-semibold text-text-primary">Profile Settings</h3>
+              <p className="text-sm text-text-secondary">Coming soon</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6 opacity-50 cursor-not-allowed">
+        <Card className="opacity-50 cursor-not-allowed">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-              <FaCog className="text-yellow-600 text-xl" />
+            <div className="w-12 h-12 rounded-full bg-brand-bg flex items-center justify-center">
+              <Settings className="text-brand-secondary" size={20} />
             </div>
             <div>
-              <h3 className="font-semibold text-primary">Preferences</h3>
-              <p className="text-sm text-primary/60">Coming soon</p>
+              <h3 className="font-semibold text-text-primary">Preferences</h3>
+              <p className="text-sm text-text-secondary">Coming soon</p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Two-Factor Authentication Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
+      <Card>
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-primary flex items-center">
-              <FaShieldAlt className="mr-2 text-blue-600" />
+            <h2 className="text-xl font-semibold text-text-primary flex items-center">
+              <Shield className="mr-2 text-brand-secondary" size={20} />
               Two-Factor Authentication
             </h2>
-            <p className="mt-2 text-primary/60">
-              Add an extra layer of security to your account by enabling two-factor authentication
+            <p className="mt-2 text-text-secondary">
+              Add an extra layer of security to your account by enabling two-factor authentication.
             </p>
           </div>
           <div>
             {is2FAEnabled ? (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
-                <FaCheckCircle className="mr-1" />
-                Enabled
-              </span>
+              <Badge variant="success">Enabled</Badge>
             ) : (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                <FaTimesCircle className="mr-1" />
-                Disabled
-              </span>
+              <Badge variant="default">Disabled</Badge>
             )}
           </div>
         </div>
 
         {!is2FAEnabled ? (
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">Why enable 2FA?</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-blue-800">
-                <li>Protects your account even if your password is compromised</li>
-                <li>Uses industry-standard TOTP (Time-based One-Time Password)</li>
-                <li>Works with popular authenticator apps like Google Authenticator, Authy, or Microsoft Authenticator</li>
-                <li>Provides an additional verification step during login</li>
-              </ul>
-            </div>
+            <Alert
+              type="info"
+              title="Why enable 2FA?"
+              message="Protects your account even if your password is compromised. Uses TOTP with common authenticator apps and adds verification during login."
+            />
 
-            <button
-              onClick={handleSetup2FA}
-              disabled={loading}
-              className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-            >
+            <Button onClick={handleSetup2FA} disabled={loading}>
               {loading ? (
                 <>
-                  <FaSpinner className="animate-spin" />
+                  <Loader2 className="mr-2 animate-spin" size={16} />
                   Setting up...
                 </>
               ) : (
                 <>
-                  <FaShieldAlt />
+                  <Shield className="mr-2" size={16} />
                   Enable Two-Factor Authentication
                 </>
               )}
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-800">
-                Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when you sign in.
-              </p>
-            </div>
+            <Alert
+              type="success"
+              message="Your account is protected with two-factor authentication. You will need a code from your authenticator app when you sign in."
+            />
 
             <form onSubmit={handleDisable2FA} className="space-y-4">
-              <div>
-                <label htmlFor="disablePassword" className="block text-sm font-medium text-primary/80 mb-1">
-                  Enter your password to disable 2FA
-                </label>
-                <input
-                  id="disablePassword"
-                  type="password"
-                  value={disablePassword}
-                  onChange={(e) => setDisablePassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
+              <Input
+                id="disablePassword"
+                type="password"
+                label="Enter your password to disable 2FA"
+                value={disablePassword}
+                onChange={(e) => setDisablePassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                fullWidth
+              />
 
-              <button
-                type="submit"
-                disabled={loading || !disablePassword}
-                className="bg-red-600 text-white py-2 px-6 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-              >
+              <Button variant="destructive" type="submit" disabled={loading || !disablePassword}>
                 {loading ? (
                   <>
-                    <FaSpinner className="animate-spin" />
+                    <Loader2 className="mr-2 animate-spin" size={16} />
                     Disabling...
                   </>
                 ) : (
                   <>
-                    <FaTimesCircle />
+                    <XCircle className="mr-2" size={16} />
                     Disable Two-Factor Authentication
                   </>
                 )}
-              </button>
+              </Button>
             </form>
           </div>
         )}
-      </div>
+      </Card>
 
-      {/* Password & Security Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
-        <h2 className="text-xl font-semibold text-primary flex items-center mb-4">
-          <FaLock className="mr-2 text-blue-600" />
+      <Card>
+        <h2 className="text-xl font-semibold text-text-primary flex items-center mb-4">
+          <Lock className="mr-2 text-brand-secondary" size={20} />
           Password & Security
         </h2>
-        <p className="text-primary/60 mb-4">
-          Additional security settings coming soon...
+        <p className="text-text-secondary mb-4">
+          Additional security settings coming soon.
         </p>
-      </div>
+      </Card>
 
-      {/* 2FA Setup Modal */}
-      {showSetupModal && setupData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-2xl font-semibold text-primary mb-4 flex items-center">
-              <FaQrcode className="mr-2 text-blue-600" />
-              Setup Two-Factor Authentication
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-primary/60 mb-3">
-                  Scan this QR code with your authenticator app:
-                </p>
-                <div className="bg-white border-4 border-gray-200 rounded-lg p-4 flex items-center justify-center">
-                  <img
-                    src={setupData.qrCodeUri}
-                    alt="2FA QR Code"
-                    className="w-64 h-64"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <p className="text-xs text-primary/60 mb-1">Or enter this code manually:</p>
-                <code className="text-sm font-mono text-primary break-all">
-                  {setupData.secretKey}
-                </code>
-              </div>
-
-              <form onSubmit={handleEnable2FA} className="space-y-4">
-                <div>
-                  <label htmlFor="verificationCode" className="block text-sm font-medium text-primary/80 mb-1">
-                    Enter the 6-digit code from your app
-                  </label>
-                  <input
-                    id="verificationCode"
-                    type="text"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full px-3 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest font-mono"
-                    placeholder="000000"
-                    maxLength={6}
-                    required
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowSetupModal(false)
-                      setSetupData(null)
-                      setVerificationCode('')
-                      setError(null)
-                    }}
-                    className="flex-1 bg-gray-200 text-primary py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading || verificationCode.length !== 6}
-                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <FaSpinner className="animate-spin" />
-                        Verifying...
-                      </>
-                    ) : (
-                      <>
-                        <FaKey />
-                        Verify & Enable
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-xs text-yellow-800">
-                  <strong>Important:</strong> Make sure to save your secret code in a safe place. You'll need it if you lose access to your authenticator app.
-                </p>
+      <Modal
+        isOpen={showSetupModal && !!setupData}
+        onClose={() => {
+          setShowSetupModal(false)
+          setSetupData(null)
+          setVerificationCode('')
+          setError(null)
+        }}
+        title="Setup Two-Factor Authentication"
+        footer={
+          <div className="flex gap-3 w-full">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowSetupModal(false)
+                setSetupData(null)
+                setVerificationCode('')
+                setError(null)
+              }}
+              fullWidth
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEnable2FA}
+              disabled={loading || verificationCode.length !== 6}
+              fullWidth
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 animate-spin" size={16} />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <KeyRound className="mr-2" size={16} />
+                  Verify & Enable
+                </>
+              )}
+            </Button>
+          </div>
+        }
+      >
+        {setupData && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-text-secondary mb-3">
+                Scan this QR code with your authenticator app:
+              </p>
+              <div className="bg-surface border border-border-muted rounded-lg p-4 flex items-center justify-center">
+                <img
+                  src={setupData.qrCodeUri}
+                  alt="2FA QR Code"
+                  className="w-64 h-64"
+                />
               </div>
             </div>
+
+            <div className="bg-brand-bg/60 border border-border-muted rounded-lg p-3">
+              <p className="text-xs text-text-muted mb-1">Or enter this code manually:</p>
+              <code className="text-sm font-mono text-text-primary break-all">
+                {setupData.secretKey}
+              </code>
+            </div>
+
+            <form onSubmit={handleEnable2FA} className="space-y-4">
+              <div>
+                <label htmlFor="verificationCode" className="block text-sm font-medium text-text-secondary mb-1">
+                  Enter the 6-digit code from your app
+                </label>
+                <input
+                  id="verificationCode"
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full px-3 py-2 border border-border-muted rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 text-center text-xl tracking-widest font-mono"
+                  placeholder="000000"
+                  maxLength={6}
+                  required
+                />
+              </div>
+            </form>
+
+            <Alert
+              type="warning"
+              message="Important: Save your secret code in a safe place. You will need it if you lose access to your authenticator app."
+            />
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   )
 }

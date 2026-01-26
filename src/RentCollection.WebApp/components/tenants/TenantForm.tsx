@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { CreateTenantDto } from '@/lib/types'
-import { Button, Input, Select } from '@/components/common'
+import { Button, Input, Select, TextArea } from '@/components/common'
 import { useGetVacantUnits } from '@/lib/hooks'
 
 interface TenantFormProps {
@@ -165,18 +165,13 @@ export default function TenantForm({ initialData, onSubmit, loading, preselected
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notes
-        </label>
-        <textarea
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={3}
-          className="w-full px-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 resize-none"
-          placeholder="Additional notes about the tenant..."
-        />
-      </div>
+      <TextArea
+        label="Notes"
+        value={formData.notes}
+        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+        rows={3}
+        placeholder="Additional notes about the tenant..."
+      />
 
       <Button type="submit" variant="primary" loading={loading} fullWidth>
         {initialData ? 'Update Tenant' : 'Create Tenant'}

@@ -7,4 +7,5 @@ public class CreatePropertyDto
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
     public int TotalUnits { get; set; }
+    public int? OrganizationId { get; set; }
 }

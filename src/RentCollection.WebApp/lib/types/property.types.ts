@@ -9,6 +9,7 @@ export interface Property {
   vacantUnits: number
   isActive: boolean
   createdAt: string
+  organizationId: number
 
   // Payment Status Information
   unitsPaid: number
@@ -25,6 +26,7 @@ export interface CreatePropertyDto {
   description?: string
   imageUrl?: string
   totalUnits: number
+  organizationId?: number
 }
 
 export interface UpdatePropertyDto {

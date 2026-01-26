@@ -8,12 +8,16 @@ public interface ICurrentUserService
     string? Role { get; }
     string? LandlordId { get; }
     int? LandlordIdInt { get; }
+    int? OrganizationId { get; }
     int? TenantId { get; }
     int? PropertyId { get; }
     bool IsAuthenticated { get; }
-    bool IsSystemAdmin { get; }
+    bool IsPlatformAdmin { get; }
     bool IsLandlord { get; }
     bool IsCaretaker { get; }
+    bool IsManager { get; }
     bool IsAccountant { get; }
     bool IsTenant { get; }
+    Task<IReadOnlyCollection<int>> GetAssignedPropertyIdsAsync(CancellationToken cancellationToken = default);
 }
+

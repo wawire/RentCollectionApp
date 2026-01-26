@@ -27,7 +27,7 @@ public class DashboardController : ControllerBase
     /// </summary>
     /// <returns>Real-time dashboard statistics including properties, units, tenants, and financial data</returns>
     [HttpGet("stats")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetStats()
@@ -46,7 +46,7 @@ public class DashboardController : ControllerBase
     /// <param name="year">Year for the report (e.g., 2024)</param>
     /// <returns>12-month financial report with rent collection data</returns>
     [HttpGet("monthly-report/{year}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetMonthlyReport(int year)
@@ -59,4 +59,5 @@ public class DashboardController : ControllerBase
         return Ok(result);
     }
 }
+
 

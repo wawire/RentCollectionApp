@@ -40,6 +40,10 @@ public class LandlordPaymentAccount : BaseEntity
     public string? MPesaShortCode { get; set; }  // Business shortcode for Daraja API
     public string? MPesaPasskey { get; set; }    // Passkey for STK Push
 
+    // M-Pesa B2C Integration (For disbursements/refunds)
+    public string? MPesaInitiatorName { get; set; }  // Initiator name for B2C
+    public string? MPesaSecurityCredential { get; set; }  // Encrypted security credential for B2C
+
     // Settings
     public bool IsDefault { get; set; }  // Default account for this landlord/property
     public bool IsActive { get; set; } = true;

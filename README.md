@@ -380,21 +380,21 @@ See [COMPETITIVE_ANALYSIS.md](docs/COMPETITIVE_ANALYSIS.md) for detailed compari
 
 ### M-Pesa Setup
 1. Register for M-Pesa Daraja API at [developer.safaricom.co.ke](https://developer.safaricom.co.ke)
-2. Get Consumer Key and Consumer Secret
-3. Set up Paybill number
-4. Configure callback URL in `appsettings.json`:
+2. Set up Paybill number
+3. Configure callback base URL and STK settings in `appsettings.json`:
 
 ```json
 {
   "MPesa": {
-    "ConsumerKey": "your_consumer_key",
-    "ConsumerSecret": "your_consumer_secret",
-    "PassKey": "your_passkey",
-    "ShortCode": "your_paybill_number",
-    "CallbackUrl": "https://yourdomain.com/api/mpesa/callback"
+    "UseSandbox": true,
+    "CallbackBaseUrl": "https://yourdomain.com",
+    "StkPushTimeout": 60,
+    "EnableDetailedLogging": false
   }
 }
 ```
+
+Landlord-specific credentials (consumer key/secret, shortcode, passkey, B2C initiator/security credential) are stored per `LandlordPaymentAccount` via the API/UI.
 
 ### SMS Configuration
 1. Sign up at [AfricasTalking.com](https://africastalking.com/)
@@ -405,7 +405,8 @@ See [COMPETITIVE_ANALYSIS.md](docs/COMPETITIVE_ANALYSIS.md) for detailed compari
 {
   "AfricasTalking": {
     "ApiKey": "your_api_key",
-    "Username": "your_username"
+    "Username": "your_username",
+    "SenderId": "RENTPAY"
   }
 }
 ```

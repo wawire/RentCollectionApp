@@ -5,7 +5,7 @@ import { useGetProperties } from '@/lib/hooks'
 import PropertyList from '@/components/properties/PropertyList'
 import { Button, SearchBar, LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
-import { FaPlus } from 'react-icons/fa'
+import { Plus } from 'lucide-react'
 
 export default function PropertiesPage() {
   const { data: properties, loading, error, refetch } = useGetProperties()
@@ -46,7 +46,7 @@ export default function PropertiesPage() {
         </div>
         <Link href="/properties/new">
           <Button variant="primary">
-            <FaPlus className="mr-2" />
+            <Plus className="mr-2" />
             Add Property
           </Button>
         </Link>

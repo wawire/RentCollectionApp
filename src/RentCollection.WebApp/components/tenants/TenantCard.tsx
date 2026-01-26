@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Tenant } from '@/lib/types'
 import { Card, Badge, Button, Modal } from '@/components/common'
-import { FaUser, FaEnvelope, FaPhone, FaHome, FaEdit, FaTrash, FaEye, FaSms } from 'react-icons/fa'
+import { Eye, Home, Mail, Pencil, Phone, Trash2, User } from 'lucide-react'
 import { useDeleteTenant } from '@/lib/hooks'
 
 interface TenantCardProps {
@@ -28,17 +28,16 @@ export default function TenantCard({ tenant, onUpdate }: TenantCardProps) {
     <>
       <Card padding="md" hover>
         <div className="space-y-4">
-          {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                tenant.isActive ? 'bg-green-100' : 'bg-gray-100'
+                tenant.isActive ? 'bg-state-success/15' : 'bg-brand-bg'
               }`}>
-                <FaUser className={tenant.isActive ? 'text-green-600' : 'text-gray-400'} />
+                <User className={`w-5 h-5 ${tenant.isActive ? 'text-state-success' : 'text-text-muted'}`} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">{tenant.fullName}</h3>
-                <p className="text-xs text-gray-500">{tenant.idNumber || 'No ID'}</p>
+                <h3 className="font-semibold text-text-primary">{tenant.fullName}</h3>
+                <p className="text-xs text-text-muted">{tenant.idNumber || 'No ID'}</p>
               </div>
             </div>
             <div className="flex flex-col gap-1 items-end">
@@ -54,83 +53,78 @@ export default function TenantCard({ tenant, onUpdate }: TenantCardProps) {
                     'default'
                   }
                 >
-                  {tenant.paymentStatus === 'Paid' && '✓ Paid'}
-                  {tenant.paymentStatus === 'Pending' && '⏳ Pending'}
-                  {tenant.paymentStatus === 'Overdue' && `⚠ ${tenant.daysOverdue}d Overdue`}
+                  {tenant.paymentStatus === 'Paid' && 'Paid'}
+                  {tenant.paymentStatus === 'Pending' && 'Pending'}
+                  {tenant.paymentStatus === 'Overdue' && `${tenant.daysOverdue}d Overdue`}
                   {tenant.paymentStatus === 'NoPayment' && 'No Payment'}
                 </Badge>
               )}
             </div>
           </div>
 
-          {/* Contact Info */}
           <div className="space-y-2 text-sm">
-            <div className="flex items-center space-x-2 text-gray-600">
-              <FaEnvelope className="text-gray-400" />
+            <div className="flex items-center space-x-2 text-text-secondary">
+              <Mail className="text-text-muted w-4 h-4" />
               <span className="truncate">{tenant.email}</span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <FaPhone className="text-gray-400" />
+            <div className="flex items-center space-x-2 text-text-secondary">
+              <Phone className="text-text-muted w-4 h-4" />
               <span>{tenant.phoneNumber}</span>
             </div>
           </div>
 
-          {/* Unit Info */}
-          <div className="py-3 border-t border-b border-gray-200">
+          <div className="py-3 border-t border-b border-border-muted">
             <div className="flex items-center space-x-2 text-sm">
-              <FaHome className="text-primary-600" />
+              <Home className="text-brand-secondary w-4 h-4" />
               <div>
-                <p className="font-medium text-gray-900">{tenant.unitNumber}</p>
-                <p className="text-xs text-gray-500">{tenant.propertyName}</p>
+                <p className="font-medium text-text-primary">{tenant.unitNumber}</p>
+                <p className="text-xs text-text-muted">{tenant.propertyName}</p>
               </div>
             </div>
           </div>
 
-          {/* Rent Info */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-600">Monthly Rent</span>
-              <span className="font-semibold text-gray-900">KSh {tenant.monthlyRent.toLocaleString()}</span>
+              <span className="text-sm text-text-muted">Monthly Rent</span>
+              <span className="font-semibold text-text-primary">KSh {tenant.monthlyRent.toLocaleString()}</span>
             </div>
             {tenant.securityDeposit && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Security Deposit</span>
-                <span className="text-xs text-gray-700">KSh {tenant.securityDeposit.toLocaleString()}</span>
+                <span className="text-xs text-text-muted">Security Deposit</span>
+                <span className="text-xs text-text-secondary">KSh {tenant.securityDeposit.toLocaleString()}</span>
               </div>
             )}
             {tenant.lastPaymentDate && tenant.lastPaymentAmount && (
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-                <span className="text-xs text-gray-500">Last Payment</span>
-                <span className="text-xs text-gray-700">
-                  KSh {tenant.lastPaymentAmount.toLocaleString()} • {new Date(tenant.lastPaymentDate).toLocaleDateString()}
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-muted">
+                <span className="text-xs text-text-muted">Last Payment</span>
+                <span className="text-xs text-text-secondary">
+                  KSh {tenant.lastPaymentAmount.toLocaleString()} - {new Date(tenant.lastPaymentDate).toLocaleDateString()}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Lease Dates */}
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-text-muted">
             <p>Lease: {new Date(tenant.leaseStartDate).toLocaleDateString()}</p>
             {tenant.leaseEndDate && (
               <p>Ends: {new Date(tenant.leaseEndDate).toLocaleDateString()}</p>
             )}
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2">
             <Link href={`/tenants/${tenant.id}`} className="flex-1">
               <Button variant="secondary" size="sm" fullWidth>
-                <FaEye className="mr-2" />
+                <Eye className="mr-2 w-4 h-4" />
                 View
               </Button>
             </Link>
             <Link href={`/tenants/${tenant.id}/edit`}>
               <Button variant="secondary" size="sm">
-                <FaEdit />
+                <Pencil className="w-4 h-4" />
               </Button>
             </Link>
-            <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
-              <FaTrash />
+            <Button variant="destructive" size="sm" onClick={() => setShowDeleteModal(true)}>
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -145,13 +139,13 @@ export default function TenantCard({ tenant, onUpdate }: TenantCardProps) {
             <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={handleDelete} loading={deleting}>
+            <Button variant="destructive" onClick={handleDelete} loading={deleting}>
               Delete
             </Button>
           </>
         }
       >
-        <p className="text-gray-700">
+        <p className="text-text-secondary">
           Are you sure you want to delete tenant <strong>{tenant.fullName}</strong>? This action cannot be undone.
         </p>
       </Modal>

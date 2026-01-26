@@ -39,7 +39,7 @@ public class ExpensesController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>List of expenses</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAllExpenses([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -64,7 +64,7 @@ public class ExpensesController : ControllerBase
     /// <param name="id">Expense ID</param>
     /// <returns>Expense details</returns>
     [HttpGet("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -95,7 +95,7 @@ public class ExpensesController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>List of expenses for the property</returns>
     [HttpGet("property/{propertyId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetExpensesByProperty(int propertyId, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -120,7 +120,7 @@ public class ExpensesController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>List of expenses in the category</returns>
     [HttpGet("category/{category}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetExpensesByCategory(ExpenseCategory category, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -144,7 +144,7 @@ public class ExpensesController : ControllerBase
     /// </summary>
     /// <returns>List of recurring expenses</returns>
     [HttpGet("recurring")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRecurringExpenses()
@@ -174,7 +174,7 @@ public class ExpensesController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>Expense summary with breakdowns and analytics</returns>
     [HttpGet("summary")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetExpenseSummary([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -200,7 +200,7 @@ public class ExpensesController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>Total expense amount</returns>
     [HttpGet("total")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTotalExpenses([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -227,7 +227,7 @@ public class ExpensesController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>Total expense amount for the property</returns>
     [HttpGet("total/property/{propertyId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTotalExpensesByProperty(int propertyId, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -254,7 +254,7 @@ public class ExpensesController : ControllerBase
     /// <param name="dto">Expense details</param>
     /// <returns>Created expense</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -262,8 +262,7 @@ public class ExpensesController : ControllerBase
     {
         try
         {
-            var landlordId = int.Parse(_currentUserService.UserId!);
-            var expense = await _expenseService.CreateExpenseAsync(dto, landlordId);
+            var expense = await _expenseService.CreateExpenseAsync(dto);
 
             return CreatedAtAction(
                 nameof(GetExpenseById),
@@ -294,7 +293,7 @@ public class ExpensesController : ControllerBase
     /// <param name="dto">Updated expense details</param>
     /// <returns>Updated expense</returns>
     [HttpPut("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -323,7 +322,7 @@ public class ExpensesController : ControllerBase
     /// <param name="id">Expense ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -351,12 +350,12 @@ public class ExpensesController : ControllerBase
     #region Background Processing
 
     /// <summary>
-    /// Process recurring expenses (manual trigger - SystemAdmin only)
+    /// Process recurring expenses (manual trigger - PlatformAdmin only)
     /// Creates new expense entries for recurring expenses that are due
     /// </summary>
     /// <returns>Success message</returns>
     [HttpPost("process-recurring")]
-    [Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "PlatformAdmin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ProcessRecurringExpenses()
@@ -375,3 +374,4 @@ public class ExpensesController : ControllerBase
 
     #endregion
 }
+

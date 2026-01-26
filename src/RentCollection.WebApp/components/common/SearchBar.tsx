@@ -1,5 +1,7 @@
+'use client'
+
 import { useState } from 'react'
-import { FaSearch, FaTimes } from 'react-icons/fa'
+import { Search, X } from 'lucide-react'
 
 interface SearchBarProps {
   value?: string
@@ -43,7 +45,7 @@ export default function SearchBar({
   return (
     <div className={`relative ${className}`}>
       <div className="absolute left-0 bottom-3 pointer-events-none">
-        <FaSearch className="text-primary/40" />
+        <Search className="text-primary/40" />
       </div>
       <input
         type="text"
@@ -58,7 +60,7 @@ export default function SearchBar({
           onClick={handleClear}
           className="absolute right-0 bottom-3 flex items-center text-primary/40 hover:text-primary/60 transition-colors"
         >
-          <FaTimes />
+          <X />
         </button>
       )}
     </div>

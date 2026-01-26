@@ -5,7 +5,7 @@ import { useGetUnits, useGetProperties } from '@/lib/hooks'
 import UnitList from '@/components/units/UnitList'
 import { Button, SearchBar, Select, LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
-import { FaPlus } from 'react-icons/fa'
+import { Plus } from 'lucide-react'
 
 export default function UnitsPage() {
   const { data: units, loading, error, refetch } = useGetUnits()
@@ -55,7 +55,7 @@ export default function UnitsPage() {
         </div>
         <Link href="/units/new">
           <Button variant="primary">
-            <FaPlus className="mr-2" />
+            <Plus className="mr-2" />
             Add Unit
           </Button>
         </Link>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.DTOs.Payments;
 using RentCollection.Application.Services.Interfaces;
 
@@ -9,18 +10,28 @@ namespace RentCollection.API.Controllers;
 /// Payments management endpoints
 /// </summary>
 [Authorize]
+[Authorize(Policy = Policies.RequireVerifiedUser)]
+[Authorize(Policy = Policies.RequireActiveOrganization)]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
 public class PaymentsController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
+    private readonly IMPesaService _mpesaService;
     private readonly ILogger<PaymentsController> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger)
+    public PaymentsController(
+        IPaymentService paymentService,
+        IMPesaService mpesaService,
+        ILogger<PaymentsController> logger,
+        ICurrentUserService currentUserService)
     {
         _paymentService = paymentService;
+        _mpesaService = mpesaService;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     /// <summary>
@@ -28,7 +39,7 @@ public class PaymentsController : ControllerBase
     /// </summary>
     /// <returns>List of all payments</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -48,7 +59,7 @@ public class PaymentsController : ControllerBase
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <returns>Paginated list of payments</returns>
     [HttpGet("paginated")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaginated([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -67,7 +78,7 @@ public class PaymentsController : ControllerBase
     /// <param name="id">Payment ID</param>
     /// <returns>Payment details</returns>
     [HttpGet("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -86,7 +97,7 @@ public class PaymentsController : ControllerBase
     /// <param name="tenantId">Tenant ID</param>
     /// <returns>List of payments for the specified tenant</returns>
     [HttpGet("tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByTenantId(int tenantId)
@@ -105,7 +116,7 @@ public class PaymentsController : ControllerBase
     /// <param name="createDto">Payment creation data</param>
     /// <returns>Created payment</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreatePaymentDto createDto)
@@ -124,7 +135,7 @@ public class PaymentsController : ControllerBase
     /// <param name="id">Payment ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -144,15 +155,11 @@ public class PaymentsController : ControllerBase
     /// <param name="propertyId">Optional property filter</param>
     /// <returns>List of pending payments</returns>
     [HttpGet("pending")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPendingPayments([FromQuery] int? propertyId = null)
     {
-        // Get current user ID (would come from authentication context)
-        // For now, assuming landlordId is passed or derived from auth
-        var landlordId = 1; // TODO: Get from authenticated user context
-
-        var result = await _paymentService.GetPendingPaymentsAsync(landlordId, propertyId);
+        var result = await _paymentService.GetPendingPaymentsAsync(propertyId);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -166,16 +173,19 @@ public class PaymentsController : ControllerBase
     /// <param name="id">Payment ID</param>
     /// <returns>Updated payment</returns>
     [HttpPut("{id}/confirm")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ConfirmPayment(int id)
     {
-        // Get current user ID from authentication context
-        var confirmedByUserId = 1; // TODO: Get from authenticated user
+        var confirmedByUserId = _currentUserService.UserIdInt;
+        if (!confirmedByUserId.HasValue)
+        {
+            return Unauthorized();
+        }
 
-        var result = await _paymentService.ConfirmPaymentAsync(id, confirmedByUserId);
+        var result = await _paymentService.ConfirmPaymentAsync(id, confirmedByUserId.Value);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -190,7 +200,7 @@ public class PaymentsController : ControllerBase
     /// <param name="request">Rejection request with reason</param>
     /// <returns>Updated payment</returns>
     [HttpPut("{id}/reject")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -210,7 +220,7 @@ public class PaymentsController : ControllerBase
     /// <param name="propertyId">Optional property ID filter (for landlords)</param>
     /// <returns>List of overdue payments</returns>
     [HttpGet("overdue")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetOverduePayments([FromQuery] int? propertyId = null)
@@ -224,12 +234,38 @@ public class PaymentsController : ControllerBase
     }
 
     /// <summary>
+    /// Query M-Pesa STK Push status
+    /// </summary>
+    /// <param name="checkoutRequestId">CheckoutRequestID from STK Push</param>
+    /// <returns>STK Push query response</returns>
+    [HttpGet("stk-status")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetStkStatus([FromQuery] string checkoutRequestId)
+    {
+        if (string.IsNullOrWhiteSpace(checkoutRequestId))
+        {
+            return BadRequest(new { message = "CheckoutRequestID is required" });
+        }
+
+        var result = await _mpesaService.QueryStkPushStatusAsync(checkoutRequestId);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Calculate late fee for a payment (preview without applying)
     /// </summary>
     /// <param name="id">Payment ID</param>
     /// <returns>Late fee calculation details</returns>
     [HttpGet("{id}/calculate-late-fee")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -249,7 +285,7 @@ public class PaymentsController : ControllerBase
     /// <param name="id">Payment ID</param>
     /// <returns>Updated payment with late fee</returns>
     [HttpPost("{id}/apply-late-fee")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -271,3 +307,4 @@ public class RejectPaymentRequest
 {
     public string Reason { get; set; } = string.Empty;
 }
+

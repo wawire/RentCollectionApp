@@ -14,6 +14,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Amount)
             .HasPrecision(18, 2);
 
+        builder.Property(p => p.UnallocatedAmount)
+            .HasPrecision(18, 2)
+            .HasDefaultValue(0);
+
         builder.Property(p => p.LateFeeAmount)
             .HasPrecision(18, 2);
 
@@ -43,7 +47,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
         builder.HasIndex(p => p.PaymentDate);
         builder.HasIndex(p => p.Status);
-        builder.HasIndex(p => p.TransactionReference);
+        builder.HasIndex(p => p.TransactionReference)
+            .IsUnique()
+            .HasFilter("[TransactionReference] IS NOT NULL");
         builder.HasIndex(p => p.ConfirmedAt);
     }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { Card } from '@/components/common'
-import { FaCheckCircle, FaExclamationTriangle, FaClock } from 'react-icons/fa'
+import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 
 interface PaymentStatusWidgetProps {
   unitsPaid: number
@@ -35,7 +35,7 @@ export default function PaymentStatusWidget({
           {/* Paid */}
           <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
             <div className="flex justify-center mb-2">
-              <FaCheckCircle className="text-green-600 text-2xl" />
+              <CheckCircle2 className="text-green-600 w-6 h-6" />
             </div>
             <p className="text-3xl font-bold text-green-600">{unitsPaid}</p>
             <p className="text-sm text-gray-600 mt-1">Paid</p>
@@ -47,7 +47,7 @@ export default function PaymentStatusWidget({
           {/* Pending */}
           <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
             <div className="flex justify-center mb-2">
-              <FaClock className="text-yellow-600 text-2xl" />
+              <Clock className="text-yellow-600 w-6 h-6" />
             </div>
             <p className="text-3xl font-bold text-yellow-600">{unitsPending}</p>
             <p className="text-sm text-gray-600 mt-1">Pending</p>
@@ -59,7 +59,7 @@ export default function PaymentStatusWidget({
           {/* Overdue */}
           <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
             <div className="flex justify-center mb-2">
-              <FaExclamationTriangle className="text-red-600 text-2xl" />
+              <AlertTriangle className="text-red-600 w-6 h-6" />
             </div>
             <p className="text-3xl font-bold text-red-600">{unitsOverdue}</p>
             <p className="text-sm text-gray-600 mt-1">Overdue</p>

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FaChevronRight, FaHome } from 'react-icons/fa'
+import { ChevronRight, Home } from 'lucide-react'
 
 export interface BreadcrumbItem {
   label: string
@@ -19,10 +19,10 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
     >
       <Link
         href="/"
-        className="text-gray-500 hover:text-gray-700 transition-colors"
+        className="text-text-muted hover:text-brand-secondary transition-colors"
         aria-label="Home"
       >
-        <FaHome className="text-base" />
+        <Home className="w-4 h-4" />
       </Link>
 
       {items.map((item, index) => {
@@ -30,17 +30,17 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
 
         return (
           <div key={index} className="flex items-center space-x-2">
-            <FaChevronRight className="text-gray-400 text-xs" />
+            <ChevronRight className="text-text-muted w-3.5 h-3.5" />
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-text-muted hover:text-brand-secondary transition-colors"
               >
                 {item.label}
               </Link>
             ) : (
               <span
-                className={`${isLast ? 'text-gray-900 font-medium' : 'text-gray-500'}`}
+                className={`${isLast ? 'text-text-primary font-medium' : 'text-text-muted'}`}
                 aria-current={isLast ? 'page' : undefined}
               >
                 {item.label}

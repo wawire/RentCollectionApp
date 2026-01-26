@@ -18,7 +18,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
       <ol className="flex items-center space-x-2 text-sm">
         {/* Home icon */}
         <li>
-          <Link href="/" className="text-gray-500 hover:text-primary-600 transition-colors">
+          <Link href="/" className="text-text-muted hover:text-brand-secondary transition-colors">
             <Home size={16} />
           </Link>
         </li>
@@ -28,15 +28,15 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
 
           return (
             <li key={index} className="flex items-center space-x-2">
-              <ChevronRight size={14} className="text-gray-400" />
+              <ChevronRight size={14} className="text-text-muted" />
               {isLast || !item.href ? (
-                <span className="text-gray-900 font-semibold" aria-current="page">
+                <span className="text-text-primary font-semibold" aria-current="page">
                   {item.label}
                 </span>
               ) : (
                 <Link
                   href={item.href}
-                  className="text-gray-500 hover:text-primary-600 transition-colors"
+                  className="text-text-muted hover:text-brand-secondary transition-colors"
                 >
                   {item.label}
                 </Link>

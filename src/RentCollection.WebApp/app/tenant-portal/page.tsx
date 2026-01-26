@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
 import { tenantPortalService, TenantDashboardDto } from '@/lib/services/tenantPortalService'
-import { FaMoneyBillWave, FaClock, FaCheckCircle, FaExclamationTriangle, FaReceipt, FaFileAlt, FaCalendarAlt, FaInfoCircle, FaMobileAlt, FaArrowRight, FaHome } from 'react-icons/fa'
+import { AlertTriangle, ArrowRight, Banknote, Calendar, CheckCircle2, Clock, FileText, Home, Info, Receipt, Smartphone } from 'lucide-react'
 
 export default function TenantPortalPage() {
   const [dashboard, setDashboard] = useState<TenantDashboardDto | null>(null)
@@ -49,13 +49,13 @@ export default function TenantPortalPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Confirmed':
-        return <FaCheckCircle className="text-green-600" />
+        return <CheckCircle2 className="text-green-600 w-4 h-4" />
       case 'Pending':
-        return <FaClock className="text-yellow-600" />
+        return <Clock className="text-yellow-600 w-4 h-4" />
       case 'Rejected':
-        return <FaExclamationTriangle className="text-red-600" />
+        return <AlertTriangle className="text-red-600 w-4 h-4" />
       default:
-        return <FaReceipt className="text-gray-600" />
+        return <Receipt className="text-gray-600 w-4 h-4" />
     }
   }
 
@@ -86,7 +86,7 @@ export default function TenantPortalPage() {
           href="/tenant-portal/pay-now"
           className="hidden md:flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
         >
-          <FaMobileAlt />
+          <Smartphone className="w-4 h-4" />
           Pay Rent
         </Link>
       </div>
@@ -96,7 +96,7 @@ export default function TenantPortalPage() {
         <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-lg p-6 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <FaExclamationTriangle className="text-red-600 text-2xl" />
+              <AlertTriangle className="text-red-600 w-6 h-6" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-red-900">Payment Overdue</h3>
@@ -109,7 +109,7 @@ export default function TenantPortalPage() {
                 href="/tenant-portal/pay-now"
                 className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
               >
-                <FaMobileAlt />
+                <Smartphone className="w-4 h-4" />
                 Pay Now
               </Link>
             </div>
@@ -121,7 +121,7 @@ export default function TenantPortalPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <FaHome className="text-blue-600 text-lg" />
+            <Home className="text-blue-600 w-5 h-5" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900">Your Rental</h2>
         </div>
@@ -155,7 +155,7 @@ export default function TenantPortalPage() {
               </p>
             </div>
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FaMoneyBillWave className="text-blue-600 text-lg" />
+              <Banknote className="text-blue-600 w-5 h-5" />
             </div>
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function TenantPortalPage() {
               )}
             </div>
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
-              <FaCalendarAlt className={`text-lg ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
+              <Calendar className={`w-5 h-5 ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function TenantPortalPage() {
               </p>
             </div>
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <FaCheckCircle className="text-green-600 text-lg" />
+              <CheckCircle2 className="text-green-600 w-5 h-5" />
             </div>
           </div>
         </div>
@@ -213,7 +213,7 @@ export default function TenantPortalPage() {
               )}
             </div>
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <FaFileAlt className="text-purple-600 text-lg" />
+              <FileText className="text-purple-600 w-5 h-5" />
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function TenantPortalPage() {
             className="flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-lg hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <FaMobileAlt className="text-white text-xl" />
+              <Smartphone className="text-white w-6 h-6" />
             </div>
             <div>
               <p className="font-semibold text-green-900">Pay Rent</p>
@@ -241,7 +241,7 @@ export default function TenantPortalPage() {
             className="flex items-center gap-4 p-5 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
           >
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-              <FaReceipt className="text-blue-600 group-hover:text-white text-xl transition-colors" />
+              <Receipt className="text-blue-600 group-hover:text-white w-6 h-6 transition-colors" />
             </div>
             <div>
               <p className="font-semibold text-gray-900">Record Payment</p>
@@ -254,7 +254,7 @@ export default function TenantPortalPage() {
             className="flex items-center gap-4 p-5 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all group"
           >
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
-              <FaFileAlt className="text-purple-600 group-hover:text-white text-xl transition-colors" />
+              <FileText className="text-purple-600 group-hover:text-white w-6 h-6 transition-colors" />
             </div>
             <div>
               <p className="font-semibold text-gray-900">Documents</p>
@@ -270,10 +270,10 @@ export default function TenantPortalPage() {
             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <FaInfoCircle className="text-gray-400 text-lg" />
+              <Info className="text-gray-400 w-5 h-5" />
               <span className="text-sm font-medium text-gray-700">Payment Instructions</span>
             </div>
-            <FaArrowRight className="text-gray-400 text-sm" />
+            <ArrowRight className="text-gray-400 w-4 h-4" />
           </Link>
 
           <Link
@@ -281,10 +281,10 @@ export default function TenantPortalPage() {
             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <FaFileAlt className="text-gray-400 text-lg" />
+              <FileText className="text-gray-400 w-5 h-5" />
               <span className="text-sm font-medium text-gray-700">Lease Information</span>
             </div>
-            <FaArrowRight className="text-gray-400 text-sm" />
+            <ArrowRight className="text-gray-400 w-4 h-4" />
           </Link>
 
           <Link
@@ -292,10 +292,10 @@ export default function TenantPortalPage() {
             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <FaClock className="text-gray-400 text-lg" />
+              <Clock className="text-gray-400 w-5 h-5" />
               <span className="text-sm font-medium text-gray-700">Payment History</span>
             </div>
-            <FaArrowRight className="text-gray-400 text-sm" />
+            <ArrowRight className="text-gray-400 w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -362,21 +362,21 @@ export default function TenantPortalPage() {
             className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
           >
             View all
-            <FaArrowRight className="text-xs" />
+            <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
         {dashboard.recentPayments.length === 0 ? (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              <FaReceipt className="text-gray-400 text-2xl" />
+              <Receipt className="text-gray-400 w-6 h-6" />
             </div>
             <p className="text-gray-600">No payments recorded yet</p>
             <Link
               href="/tenant-portal/pay-now"
               className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
-              <FaMobileAlt />
+              <Smartphone className="w-4 h-4" />
               Make Your First Payment
             </Link>
           </div>

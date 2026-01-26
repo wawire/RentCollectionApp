@@ -6,17 +6,21 @@ namespace RentCollection.Application.Authorization;
 public static class Policies
 {
     // Role-based policies
-    public const string RequireSystemAdmin = "RequireSystemAdmin";
+    public const string RequirePlatformAdmin = "RequirePlatformAdmin";
     public const string RequireLandlord = "RequireLandlord";
     public const string RequireCaretaker = "RequireCaretaker";
+    public const string RequireManager = "RequireManager";
     public const string RequireAccountant = "RequireAccountant";
     public const string RequireTenant = "RequireTenant";
+    public const string RequireVerifiedUser = "RequireVerifiedUser";
+    public const string RequirePasswordChangeComplete = "RequirePasswordChangeComplete";
+    public const string RequireActiveOrganization = "RequireActiveOrganization";
 
     // Combined role policies
-    public const string RequireManagement = "RequireManagement"; // SystemAdmin + Landlord
-    public const string RequirePropertyAccess = "RequirePropertyAccess"; // SystemAdmin + Landlord + Caretaker
-    public const string RequireFinancialAccess = "RequireFinancialAccess"; // SystemAdmin + Landlord + Accountant
-    public const string RequireOperationalAccess = "RequireOperationalAccess"; // SystemAdmin + Landlord + Caretaker
+    public const string RequireManagement = "RequireManagement"; // PlatformAdmin + Landlord
+    public const string RequirePropertyAccess = "RequirePropertyAccess"; // PlatformAdmin + Landlord + Caretaker + Manager
+    public const string RequireFinancialAccess = "RequireFinancialAccess"; // PlatformAdmin + Landlord + Accountant + Manager
+    public const string RequireOperationalAccess = "RequireOperationalAccess"; // PlatformAdmin + Landlord + Caretaker + Manager
 
     // Permission-based policies
     public const string CanManageProperties = "CanManageProperties";
@@ -76,3 +80,4 @@ public static class Permissions
     public const string UpdateUser = "Permissions.User.Update";
     public const string DeleteUser = "Permissions.User.Delete";
 }
+

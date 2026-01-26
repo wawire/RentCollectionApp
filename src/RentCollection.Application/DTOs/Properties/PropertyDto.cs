@@ -12,6 +12,7 @@ public class PropertyDto
     public int VacantUnits { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int OrganizationId { get; set; }
 
     // Payment Status Information
     public int UnitsPaid { get; set; }

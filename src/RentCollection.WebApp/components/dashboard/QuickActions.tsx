@@ -1,31 +1,31 @@
 import Link from 'next/link'
 import { Card } from '@/components/common'
-import { FaPlus, FaUserPlus, FaMoneyBillWave, FaSms } from 'react-icons/fa'
+import { Banknote, MessageSquare, Plus, UserPlus } from 'lucide-react'
 
 export default function QuickActions() {
   const actions = [
     {
       label: 'Add Property',
       href: '/properties/new',
-      icon: FaPlus,
+      icon: Plus,
       color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
       label: 'Add Tenant',
       href: '/tenants/new',
-      icon: FaUserPlus,
+      icon: UserPlus,
       color: 'bg-green-500 hover:bg-green-600',
     },
     {
       label: 'Record Payment',
       href: '/payments/new',
-      icon: FaMoneyBillWave,
+      icon: Banknote,
       color: 'bg-yellow-500 hover:bg-yellow-600',
     },
     {
       label: 'Send Reminder',
       href: '/notifications',
-      icon: FaSms,
+      icon: MessageSquare,
       color: 'bg-purple-500 hover:bg-purple-600',
     },
   ]

@@ -2,7 +2,7 @@
 
 import { Payment, PaymentStatus } from '@/lib/types'
 import { Table, Badge } from '@/components/common'
-import { FaEye, FaDownload, FaEdit, FaTrash } from 'react-icons/fa'
+import { Download, Eye, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface PaymentListProps {
@@ -43,8 +43,8 @@ export default function PaymentList({ payments, loading, onDownloadReceipt, onDe
       sortable: true,
       render: (payment: Payment) => (
         <div>
-          <p className="font-medium text-gray-900">{payment.tenantName}</p>
-          <p className="text-xs text-gray-500">{payment.unitNumber} - {payment.propertyName}</p>
+          <p className="font-medium text-text-primary">{payment.tenantName}</p>
+          <p className="text-xs text-text-muted">{payment.unitNumber} - {payment.propertyName}</p>
         </div>
       ),
     },
@@ -53,7 +53,7 @@ export default function PaymentList({ payments, loading, onDownloadReceipt, onDe
       header: 'Amount',
       sortable: true,
       render: (payment: Payment) => (
-        <span className="font-semibold text-gray-900">KSh {payment.amount.toLocaleString()}</span>
+        <span className="font-semibold text-text-primary">KSh {payment.amount.toLocaleString()}</span>
       ),
     },
     {
@@ -72,7 +72,7 @@ export default function PaymentList({ payments, loading, onDownloadReceipt, onDe
       header: 'Period',
       sortable: false,
       render: (payment: Payment) => (
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-text-secondary">
           {new Date(payment.periodStart).toLocaleDateString()} - {new Date(payment.periodEnd).toLocaleDateString()}
         </span>
       ),
@@ -85,28 +85,28 @@ export default function PaymentList({ payments, loading, onDownloadReceipt, onDe
         <div className="flex gap-2">
           <Link href={`/payments/${payment.id}`}>
             <button
-              className="p-2 text-gray-600 hover:text-primary-600 hover:bg-gray-100 rounded transition-colors"
+              className="p-2 text-text-secondary hover:text-brand-secondary hover:bg-brand-bg/60 rounded transition-colors"
               title="View Details"
             >
-              <FaEye />
+              <Eye className="w-4 h-4" />
             </button>
           </Link>
           {onDownloadReceipt && (
             <button
               onClick={() => onDownloadReceipt(payment.id)}
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+              className="p-2 text-text-secondary hover:text-brand-secondary hover:bg-brand-bg/60 rounded transition-colors"
               title="Download Receipt"
             >
-              <FaDownload />
+              <Download className="w-4 h-4" />
             </button>
           )}
           {onDelete && (
             <button
               onClick={() => onDelete(payment.id)}
-              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              className="p-2 text-text-secondary hover:text-state-error hover:bg-state-error/10 rounded transition-colors"
               title="Delete"
             >
-              <FaTrash />
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
         </div>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Tenants;
 using RentCollection.Application.Services.Interfaces;
@@ -10,6 +11,8 @@ namespace RentCollection.API.Controllers;
 /// Tenants management endpoints
 /// </summary>
 [Authorize]
+[Authorize(Policy = Policies.RequireVerifiedUser)]
+[Authorize(Policy = Policies.RequireActiveOrganization)]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -29,7 +32,7 @@ public class TenantsController : ControllerBase
     /// </summary>
     /// <returns>List of all tenants</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -48,7 +51,7 @@ public class TenantsController : ControllerBase
     /// <param name="id">Tenant ID</param>
     /// <returns>Tenant details including payment history</returns>
     [HttpGet("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -67,7 +70,7 @@ public class TenantsController : ControllerBase
     /// <param name="unitId">Unit ID</param>
     /// <returns>List of tenants for the specified unit</returns>
     [HttpGet("unit/{unitId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByUnitId(int unitId)
@@ -85,7 +88,7 @@ public class TenantsController : ControllerBase
     /// </summary>
     /// <returns>List of active tenants in occupied units</returns>
     [HttpGet("occupied")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetOccupiedTenants()
@@ -107,7 +110,7 @@ public class TenantsController : ControllerBase
     /// <param name="createDto">Tenant creation data</param>
     /// <returns>Created tenant</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateTenantDto createDto)
@@ -127,7 +130,7 @@ public class TenantsController : ControllerBase
     /// <param name="updateDto">Tenant update data</param>
     /// <returns>Updated tenant</returns>
     [HttpPut("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -147,7 +150,7 @@ public class TenantsController : ControllerBase
     /// <param name="id">Tenant ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -181,3 +184,4 @@ public class TenantsController : ControllerBase
         return Ok(result);
     }
 }
+

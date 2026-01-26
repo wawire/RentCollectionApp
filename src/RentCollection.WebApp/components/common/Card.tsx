@@ -20,10 +20,10 @@ const Card: React.FC<CardProps> = ({
     lg: 'p-8',
   }
 
-  const hoverClass = hover ? 'hover:shadow-lg transition-shadow duration-200' : ''
+  const hoverClass = hover ? 'hover:shadow-subtle transition-shadow duration-200' : ''
 
   return (
-    <div className={`bg-white rounded-lg shadow-md ${paddingClasses[padding]} ${hoverClass} ${className}`}>
+    <div className={`bg-surface rounded-xl shadow-subtle border border-border-muted ${paddingClasses[padding]} ${hoverClass} ${className}`}>
       {children}
     </div>
   )

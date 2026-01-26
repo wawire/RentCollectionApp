@@ -36,21 +36,21 @@ export default function Table<T extends { id?: number | string }>({
     return (
       <div className="w-full overflow-x-auto">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-brand-bg/70 border-b border-border-muted">
             <tr>
               {columns.map((col) => (
-                <th key={col.key} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th key={col.key} className="px-6 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-surface divide-y divide-border-muted">
             {[...Array(5)].map((_, idx) => (
               <tr key={idx} className="animate-pulse">
                 {columns.map((col) => (
                   <td key={col.key} className="px-6 py-4 whitespace-nowrap">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-brand-bg rounded w-3/4"></div>
                   </td>
                 ))}
               </tr>
@@ -65,10 +65,10 @@ export default function Table<T extends { id?: number | string }>({
     return (
       <div className="w-full overflow-x-auto">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-brand-bg/70 border-b border-border-muted">
             <tr>
               {columns.map((col) => (
-                <th key={col.key} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th key={col.key} className="px-6 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {col.header}
                 </th>
               ))}
@@ -76,7 +76,7 @@ export default function Table<T extends { id?: number | string }>({
           </thead>
           <tbody>
             <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
+              <td colSpan={columns.length} className="px-6 py-12 text-center text-text-muted">
                 {emptyMessage}
               </td>
             </tr>
@@ -89,21 +89,21 @@ export default function Table<T extends { id?: number | string }>({
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead className="bg-brand-bg/70 border-b border-border-muted">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
                 onClick={() => handleSort(col.key, col.sortable)}
-                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                  col.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
+                className={`px-6 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider ${
+                  col.sortable ? 'cursor-pointer hover:bg-brand-bg/90' : ''
                 }`}
               >
                 <div className="flex items-center space-x-1">
                   <span>{col.header}</span>
                   {col.sortable && sortKey === col.key && (
-                    <span className="text-primary-600">
-                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    <span className="text-brand-secondary">
+                      {sortOrder === 'asc' ? '^' : 'v'}
                     </span>
                   )}
                 </div>
@@ -111,11 +111,11 @@ export default function Table<T extends { id?: number | string }>({
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-surface divide-y divide-border-muted">
           {data.map((item, idx) => (
-            <tr key={item.id || idx} className="hover:bg-gray-50 transition-colors">
+            <tr key={item.id || idx} className="hover:bg-brand-bg/50 transition-colors">
               {columns.map((col) => (
-                <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                   {col.render ? col.render(item) : String((item as any)[col.key] || '-')}
                 </td>
               ))}

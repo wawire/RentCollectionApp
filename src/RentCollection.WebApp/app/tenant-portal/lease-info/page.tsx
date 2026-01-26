@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaHome, FaUser, FaFileContract, FaMoneyBillWave, FaSpinner, FaBuilding, FaDoorOpen } from 'react-icons/fa'
+import { ArrowLeft, Banknote, Building2, DoorOpen, FileSignature, Loader2, User } from 'lucide-react'
 import { tenantPortalService, TenantLeaseInfoDto } from '@/lib/services/tenantPortalService'
 
 export default function LeaseInfoPage() {
@@ -31,7 +31,7 @@ export default function LeaseInfoPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-6xl text-blue-600 mx-auto mb-4" />
+          <Loader2 className="animate-spin text-6xl text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600 text-lg">Loading lease information...</p>
         </div>
       </div>
@@ -46,7 +46,7 @@ export default function LeaseInfoPage() {
             href="/tenant-portal"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
-            <FaArrowLeft className="mr-2" />
+            <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Dashboard
           </Link>
           <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg">
@@ -68,7 +68,7 @@ export default function LeaseInfoPage() {
             href="/tenant-portal"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
-            <FaArrowLeft className="mr-2" />
+            <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Lease Information</h1>
@@ -81,7 +81,7 @@ export default function LeaseInfoPage() {
           {/* Tenant Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FaUser className="mr-2 text-blue-600" />
+              <User className="mr-2 text-blue-600 w-5 h-5" />
               Tenant Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +109,7 @@ export default function LeaseInfoPage() {
           {/* Property Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FaBuilding className="mr-2 text-blue-600" />
+              <Building2 className="mr-2 text-blue-600 w-5 h-5" />
               Property Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -156,7 +156,7 @@ export default function LeaseInfoPage() {
           {/* Unit Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FaDoorOpen className="mr-2 text-blue-600" />
+              <DoorOpen className="mr-2 text-blue-600 w-5 h-5" />
               Unit Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,7 +194,7 @@ export default function LeaseInfoPage() {
           {/* Lease Details */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FaFileContract className="mr-2 text-blue-600" />
+              <FileSignature className="mr-2 text-blue-600 w-5 h-5" />
               Lease Agreement
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,7 +262,7 @@ export default function LeaseInfoPage() {
           {/* Payment Account Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FaMoneyBillWave className="mr-2 text-blue-600" />
+              <Banknote className="mr-2 text-blue-600 w-5 h-5" />
               Payment Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

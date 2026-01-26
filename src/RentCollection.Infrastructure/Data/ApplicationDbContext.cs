@@ -12,9 +12,12 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Property> Properties { get; set; } = null!;
+    public DbSet<Organization> Organizations { get; set; } = null!;
     public DbSet<Unit> Units { get; set; } = null!;
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<Invoice> Invoices { get; set; } = null!;
+    public DbSet<PaymentAllocation> PaymentAllocations { get; set; } = null!;
     public DbSet<SmsLog> SmsLogs { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Amenity> Amenities { get; set; } = null!;
@@ -31,10 +34,19 @@ public class ApplicationDbContext : DbContext
     public DbSet<LeaseRenewal> LeaseRenewals { get; set; } = null!;
     public DbSet<SecurityDepositTransaction> SecurityDepositTransactions { get; set; } = null!;
     public DbSet<MPesaTransaction> MPesaTransactions { get; set; } = null!;
+    public DbSet<UnmatchedPayment> UnmatchedPayments { get; set; } = null!;
     public DbSet<RentReminder> RentReminders { get; set; } = null!;
     public DbSet<ReminderSettings> ReminderSettings { get; set; } = null!;
     public DbSet<TenantReminderPreference> TenantReminderPreferences { get; set; } = null!;
     public DbSet<Expense> Expenses { get; set; } = null!;
+    public DbSet<MoveOutInspection> MoveOutInspections { get; set; } = null!;
+    public DbSet<InspectionItem> InspectionItems { get; set; } = null!;
+    public DbSet<InspectionPhoto> InspectionPhotos { get; set; } = null!;
+    public DbSet<UtilityType> UtilityTypes { get; set; } = null!;
+    public DbSet<UtilityConfig> UtilityConfigs { get; set; } = null!;
+    public DbSet<MeterReading> MeterReadings { get; set; } = null!;
+    public DbSet<InvoiceLineItem> InvoiceLineItems { get; set; } = null!;
+    public DbSet<UserPropertyAssignment> UserPropertyAssignments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,6 +54,37 @@ public class ApplicationDbContext : DbContext
 
         // Apply all configurations from the assembly
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.Entity<UtilityConfig>(entity =>
+        {
+            entity.Property(e => e.FixedAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Rate).HasPrecision(18, 2);
+            entity.Property(e => e.SharedAmount).HasPrecision(18, 2);
+            entity.HasOne(e => e.Unit)
+                .WithMany()
+                .HasForeignKey(e => e.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<MeterReading>(entity =>
+        {
+            entity.Property(e => e.ReadingValue).HasPrecision(18, 4);
+            entity.HasOne(e => e.UtilityConfig)
+                .WithMany(c => c.MeterReadings)
+                .HasForeignKey(e => e.UtilityConfigId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Unit)
+                .WithMany()
+                .HasForeignKey(e => e.UnitId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<InvoiceLineItem>(entity =>
+        {
+            entity.Property(e => e.Quantity).HasPrecision(18, 4);
+            entity.Property(e => e.Rate).HasPrecision(18, 2);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+        });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -35,6 +35,14 @@ public interface IEmailService
     Task SendEmailVerificationAsync(string toEmail, string verificationToken, string userName);
 
     /// <summary>
+    /// Send OTP verification email
+    /// </summary>
+    /// <param name="toEmail">Recipient email address</param>
+    /// <param name="userName">User's name</param>
+    /// <param name="otpCode">One-time code</param>
+    Task SendVerificationOtpEmailAsync(string toEmail, string userName, string otpCode);
+
+    /// <summary>
     /// Send rent payment reminder email
     /// </summary>
     /// <param name="toEmail">Tenant email address</param>

@@ -161,6 +161,46 @@ public enum PaymentStatus
 }
 ```
 
+**Invoicing and Allocation**
+
+Invoices track monthly rent obligations and arrears. Payments are allocated FIFO to outstanding invoices.
+
+```csharp
+public class Invoice
+{
+    public int Id { get; set; }
+    public int TenantId { get; set; }
+    public int UnitId { get; set; }
+    public int PropertyId { get; set; }
+    public int LandlordId { get; set; }
+    public DateTime PeriodStart { get; set; }
+    public DateTime PeriodEnd { get; set; }
+    public DateTime DueDate { get; set; }
+    public decimal Amount { get; set; }
+    public decimal OpeningBalance { get; set; }
+    public decimal Balance { get; set; }
+    public InvoiceStatus Status { get; set; }
+}
+
+public class PaymentAllocation
+{
+    public int Id { get; set; }
+    public int PaymentId { get; set; }
+    public int InvoiceId { get; set; }
+    public decimal Amount { get; set; }
+}
+```
+
+Unique constraint: `TenantId + PeriodStart + PeriodEnd` to guarantee idempotent invoice generation.
+
+## Background Jobs
+
+The API host runs background services for recurring workflows:
+
+- **RentReminderBackgroundService**: schedules reminders hourly and sends due reminders every 5 minutes.
+- **MpesaStkReconciliationBackgroundService**: checks pending STK pushes every 10 minutes with a 2-minute minimum age, batch size 50.
+- **InvoiceGenerationBackgroundService**: generates monthly invoices on a 12-hour interval with idempotency checks.
+
 ## Payment Flow Architecture
 
 ### M-Pesa Paybill Flow (Recommended)

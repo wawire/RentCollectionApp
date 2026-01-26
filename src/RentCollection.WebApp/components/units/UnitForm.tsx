@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { CreateUnitDto, UpdateUnitDto } from '@/lib/types'
-import { Button, Input, Select } from '@/components/common'
+import { Button, Input, Select, TextArea } from '@/components/common'
 import { useGetProperties } from '@/lib/hooks'
 
 interface UnitFormProps {
@@ -71,7 +71,7 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
         label="Property"
         value={formData.propertyId}
         onChange={(e) => setFormData({ ...formData, propertyId: Number(e.target.value) })}
-        options={properties.map(p => ({ value: p.id, label: p.name }))}
+        options={(properties || []).map(p => ({ value: p.id, label: p.name }))}
         placeholder="Select a property"
         error={errors.propertyId}
         required
@@ -145,18 +145,13 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
         fullWidth
       />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          rows={3}
-          className="w-full px-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 resize-none"
-          placeholder="Enter unit description..."
-        />
-      </div>
+      <TextArea
+        label="Description"
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        rows={3}
+        placeholder="Enter unit description..."
+      />
 
       <Input
         label="Image URL (Optional)"
@@ -173,9 +168,9 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
               type="checkbox"
               checked={formData.isOccupied}
               onChange={(e) => setFormData({ ...formData, isOccupied: e.target.checked })}
-              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              className="rounded border-border-muted text-brand-secondary focus-visible:ring-brand-secondary"
             />
-            <span className="text-sm text-gray-700">Unit is occupied</span>
+            <span className="text-sm text-text-secondary">Unit is occupied</span>
           </label>
 
           <label className="flex items-center space-x-2">
@@ -183,9 +178,9 @@ export default function UnitForm({ initialData, onSubmit, loading, preselectedPr
               type="checkbox"
               checked={formData.isActive}
               onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              className="rounded border-border-muted text-brand-secondary focus-visible:ring-brand-secondary"
             />
-            <span className="text-sm text-gray-700">Unit is active</span>
+            <span className="text-sm text-text-secondary">Unit is active</span>
           </label>
         </div>
       )}

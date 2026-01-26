@@ -8,7 +8,7 @@ import type {
   SecurityDepositBalance,
   SecurityDepositTransaction
 } from '@/lib/types/securityDeposit.types'
-import { FaMoneyBillWave, FaArrowDown, FaArrowUp, FaInfoCircle, FaMobileAlt } from 'react-icons/fa'
+import { ArrowDown, ArrowUp, Banknote, Info, Smartphone } from 'lucide-react'
 
 export default function TenantSecurityDepositPage() {
   const { user } = useAuth()
@@ -17,19 +17,17 @@ export default function TenantSecurityDepositPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user?.tenantId) {
+    if (user) {
       loadDepositData()
     }
   }, [user])
 
   const loadDepositData = async () => {
-    if (!user?.tenantId) return
-
     try {
       setLoading(true)
       const [balance, history] = await Promise.all([
-        securityDepositService.getDepositBalance(user.tenantId),
-        securityDepositService.getTransactionHistory(user.tenantId)
+        securityDepositService.getMyDepositBalance(),
+        securityDepositService.getMyTransactionHistory()
       ])
       setDepositBalance(balance)
       setTransactions(history)
@@ -53,7 +51,7 @@ export default function TenantSecurityDepositPage() {
       <div className="container mx-auto p-6">
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
           <div className="flex items-start">
-            <FaInfoCircle className="text-yellow-400 text-xl mr-3 mt-1" />
+            <Info className="text-yellow-400 text-xl mr-3 mt-1" />
             <div>
               <h3 className="text-lg font-semibold text-yellow-800 mb-2">
                 No Security Deposit Record
@@ -69,10 +67,10 @@ export default function TenantSecurityDepositPage() {
   }
 
   const getTransactionIcon = (type: number) => {
-    if (type === 1) return <FaMoneyBillWave className="text-blue-500" />
-    if (type === 2) return <FaArrowDown className="text-red-500" />
-    if (type === 3) return <FaArrowUp className="text-green-500" />
-    return <FaMoneyBillWave className="text-gray-500" />
+    if (type === 1) return <Banknote className="text-blue-500 w-4 h-4" />
+    if (type === 2) return <ArrowDown className="text-red-500 w-4 h-4" />
+    if (type === 3) return <ArrowUp className="text-green-500 w-4 h-4" />
+    return <Banknote className="text-gray-500 w-4 h-4" />
   }
 
   const getTransactionColor = (type: number) => {
@@ -94,7 +92,7 @@ export default function TenantSecurityDepositPage() {
             href="/tenant-portal/pay-security-deposit"
             className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
           >
-            <FaMobileAlt />
+            <Smartphone className="w-4 h-4" />
             Pay Deposit
           </Link>
         )}
@@ -105,7 +103,7 @@ export default function TenantSecurityDepositPage() {
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 rounded-lg p-6 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <FaInfoCircle className="text-yellow-600 text-2xl" />
+              <Info className="text-yellow-600 w-6 h-6" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-yellow-900">Security Deposit Payment Required</h3>
@@ -116,7 +114,7 @@ export default function TenantSecurityDepositPage() {
                 href="/tenant-portal/pay-security-deposit"
                 className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
               >
-                <FaMobileAlt />
+                <Smartphone className="w-4 h-4" />
                 Pay Now with M-Pesa
               </Link>
             </div>
@@ -127,7 +125,7 @@ export default function TenantSecurityDepositPage() {
       {/* Info Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
         <div className="flex items-start gap-4">
-          <FaInfoCircle className="text-blue-600 text-xl flex-shrink-0 mt-1" />
+          <Info className="text-blue-600 text-xl flex-shrink-0 mt-1" />
           <div>
             <h3 className="text-lg font-semibold text-blue-900 mb-2">
               About Your Security Deposit

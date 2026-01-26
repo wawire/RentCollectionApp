@@ -28,6 +28,8 @@ public static class DependencyInjection
         services.AddScoped<IRentReminderService, RentReminderService>();
         services.AddSingleton<MessageTemplateService>();
         services.AddHostedService<RentReminderBackgroundService>();
+        services.AddHostedService<MpesaStkReconciliationBackgroundService>();
+        services.AddHostedService<InvoiceGenerationBackgroundService>();
 
         // Register Expense Services
         services.AddScoped<IExpenseService, ExpenseService>();

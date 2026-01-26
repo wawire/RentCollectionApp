@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { Card, Button, SearchBar, Select, LoadingSpinner, Alert, Badge } from '@/components/common'
 import { useGetTenants, useGetProperties } from '@/lib/hooks'
 import { useDownloadTenantList } from '@/lib/hooks/useReports'
-import { FaDownload, FaUsers, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import { CheckCircle2, Download, Users, XCircle } from 'lucide-react'
 
 export default function TenantReport() {
   const { data: tenants, loading } = useGetTenants()
@@ -93,7 +93,7 @@ export default function TenantReport() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">Tenant Directory</h2>
         <Button variant="primary" onClick={handleDownloadPdf} loading={downloading}>
-          <FaDownload className="mr-2" />
+          <Download className="mr-2 w-4 h-4" />
           Download PDF
         </Button>
       </div>
@@ -114,7 +114,7 @@ export default function TenantReport() {
               <p className="text-sm text-blue-600 font-medium mb-1">Total Tenants</p>
               <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
             </div>
-            <FaUsers className="text-3xl text-blue-600" />
+            <Users className="text-3xl text-blue-600" />
           </div>
         </Card>
 
@@ -124,7 +124,7 @@ export default function TenantReport() {
               <p className="text-sm text-green-600 font-medium mb-1">Active</p>
               <p className="text-2xl font-bold text-green-900">{stats.active}</p>
             </div>
-            <FaCheckCircle className="text-3xl text-green-600" />
+            <CheckCircle2 className="text-3xl text-green-600" />
           </div>
         </Card>
 
@@ -134,7 +134,7 @@ export default function TenantReport() {
               <p className="text-sm text-orange-600 font-medium mb-1">Inactive</p>
               <p className="text-2xl font-bold text-orange-900">{stats.inactive}</p>
             </div>
-            <FaTimesCircle className="text-3xl text-orange-600" />
+            <XCircle className="text-3xl text-orange-600" />
           </div>
         </Card>
 
@@ -146,7 +146,7 @@ export default function TenantReport() {
                 KSh {(stats.totalMonthlyRent / 1000).toFixed(0)}K
               </p>
             </div>
-            <FaUsers className="text-3xl text-purple-600" />
+            <Users className="text-3xl text-purple-600" />
           </div>
         </Card>
       </div>

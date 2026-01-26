@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { CreatePaymentDto, PaymentMethod } from '@/lib/types'
-import { Button, Input, Select } from '@/components/common'
+import { Button, Input, Select, TextArea } from '@/components/common'
 import { useGetActiveTenants } from '@/lib/hooks'
 
 interface PaymentFormProps {
@@ -89,7 +89,7 @@ export default function PaymentForm({ initialData, onSubmit, loading, preselecte
         label="Tenant"
         value={formData.tenantId}
         onChange={(e) => setFormData({ ...formData, tenantId: Number(e.target.value) })}
-        options={tenants.map(t => ({
+        options={(tenants || []).map(t => ({
           value: t.id,
           label: `${t.fullName} - ${t.unitNumber} (KSh ${t.monthlyRent.toLocaleString()}/month)`
         }))}
@@ -141,8 +141,8 @@ export default function PaymentForm({ initialData, onSubmit, loading, preselecte
         />
       </div>
 
-      <div className="border-t border-gray-200 pt-4">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Payment Period</h3>
+      <div className="border-t border-border-muted pt-4">
+        <h3 className="text-sm font-medium text-text-secondary mb-3">Payment Period</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Period Start Date"
@@ -166,18 +166,13 @@ export default function PaymentForm({ initialData, onSubmit, loading, preselecte
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notes
-        </label>
-        <textarea
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="Additional notes about the payment..."
-        />
-      </div>
+      <TextArea
+        label="Notes"
+        value={formData.notes}
+        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+        rows={3}
+        placeholder="Additional notes about the payment..."
+      />
 
       <Button type="submit" variant="primary" loading={loading} fullWidth>
         {initialData ? 'Update Payment' : 'Record Payment'}

@@ -33,6 +33,11 @@ public interface IAuthService
     Task ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Complete forced password change for invited users
+    /// </summary>
+    Task<AuthResponseDto> CompletePasswordChangeAsync(int userId, CompletePasswordChangeDto dto, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Update user status (activate/suspend)
     /// </summary>
     Task UpdateUserStatusAsync(int userId, Domain.Enums.UserStatus status, CancellationToken cancellationToken = default);
@@ -82,4 +87,9 @@ public interface IAuthService
     /// Verify 2FA code during login
     /// </summary>
     Task<AuthResponseDto> Verify2FACodeAsync(Verify2FACodeDto dto, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Refresh authentication token and user payload
+    /// </summary>
+    Task<AuthResponseDto> RefreshAuthAsync(int userId, CancellationToken cancellationToken = default);
 }

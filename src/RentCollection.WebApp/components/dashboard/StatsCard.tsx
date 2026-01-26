@@ -1,11 +1,11 @@
-import { IconType } from 'react-icons'
+import { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/common'
 
 interface StatsCardProps {
   title: string
   value: string | number
   subtitle?: string
-  icon: IconType
+  icon: LucideIcon
   color: 'blue' | 'purple' | 'green' | 'yellow' | 'red'
   trend?: {
     value: number

@@ -29,6 +29,11 @@ public class Document : BaseEntity
     public int? UnitId { get; set; }
 
     /// <summary>
+    /// Optional: Landlord this document relates to (for landlord-level docs)
+    /// </summary>
+    public int? LandlordId { get; set; }
+
+    /// <summary>
     /// Original filename as uploaded
     /// </summary>
     public string FileName { get; set; } = string.Empty;

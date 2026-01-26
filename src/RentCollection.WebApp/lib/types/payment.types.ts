@@ -41,11 +41,23 @@ export interface Payment {
 
 export interface CreatePaymentDto {
   tenantId: number
+  unitId?: number
+  landlordAccountId?: number
   amount: number
   paymentDate: string
+  dueDate?: string
   paymentMethod: PaymentMethod
   transactionReference?: string
   notes?: string
   periodStart: string
   periodEnd: string
+}
+
+export interface StkPushStatusResponse {
+  responseCode?: string
+  responseDescription?: string
+  merchantRequestID?: string
+  checkoutRequestID?: string
+  resultCode?: string
+  resultDesc?: string
 }

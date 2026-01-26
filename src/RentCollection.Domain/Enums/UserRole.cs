@@ -6,9 +6,9 @@ namespace RentCollection.Domain.Enums;
 public enum UserRole
 {
     /// <summary>
-    /// System administrator with full access
+    /// Platform administrator with full access (Hisa internal team)
     /// </summary>
-    SystemAdmin = 1,
+    PlatformAdmin = 1,
 
     /// <summary>
     /// Property owner with full access to their properties
@@ -28,5 +28,10 @@ public enum UserRole
     /// <summary>
     /// Property tenant with self-service portal access
     /// </summary>
-    Tenant = 5
+    Tenant = 5,
+
+    /// <summary>
+    /// Property manager with assigned property access
+    /// </summary>
+    Manager = 6
 }

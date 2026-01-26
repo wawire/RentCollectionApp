@@ -1,16 +1,20 @@
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Enums;
+using RentCollection.Infrastructure.Data;
 
 namespace RentCollection.API.Services;
 
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ApplicationDbContext _context;
 
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor, ApplicationDbContext context)
     {
         _httpContextAccessor = httpContextAccessor;
+        _context = context;
     }
 
     public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -39,6 +43,15 @@ public class CurrentUserService : ICurrentUserService
         }
     }
 
+    public int? OrganizationId
+    {
+        get
+        {
+            var organizationId = _httpContextAccessor.HttpContext?.User?.FindFirstValue("OrganizationId");
+            return int.TryParse(organizationId, out var id) ? id : null;
+        }
+    }
+
     public int? TenantId
     {
         get
@@ -59,7 +72,7 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
-    public bool IsSystemAdmin => Role == UserRoleExtensions.SystemAdmin;
+    public bool IsPlatformAdmin => Role == UserRoleExtensions.PlatformAdmin;
 
     public bool IsLandlord => Role == UserRoleExtensions.Landlord;
 
@@ -68,4 +81,30 @@ public class CurrentUserService : ICurrentUserService
     public bool IsAccountant => Role == UserRoleExtensions.Accountant;
 
     public bool IsTenant => Role == UserRoleExtensions.Tenant;
+
+    public bool IsManager => Role == UserRoleExtensions.Manager;
+
+    public async Task<IReadOnlyCollection<int>> GetAssignedPropertyIdsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!UserIdInt.HasValue)
+        {
+            return Array.Empty<int>();
+        }
+
+        var assignedPropertyIds = await _context.UserPropertyAssignments
+            .AsNoTracking()
+            .Where(a => a.UserId == UserIdInt.Value && a.IsActive)
+            .Where(a => OrganizationId.HasValue && a.Property.OrganizationId == OrganizationId.Value)
+            .Select(a => a.PropertyId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (assignedPropertyIds.Count == 0 && PropertyId.HasValue)
+        {
+            assignedPropertyIds.Add(PropertyId.Value);
+        }
+
+        return assignedPropertyIds;
+    }
 }
+

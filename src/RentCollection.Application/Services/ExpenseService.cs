@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.DTOs.Expenses;
 using RentCollection.Application.Interfaces;
+using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
 
@@ -11,14 +12,17 @@ namespace RentCollection.Application.Services
         private readonly IExpenseRepository _expenseRepository;
         private readonly IPropertyRepository _propertyRepository;
         private readonly ILogger<ExpenseService> _logger;
+        private readonly ICurrentUserService _currentUserService;
 
         public ExpenseService(
             IExpenseRepository expenseRepository,
             IPropertyRepository propertyRepository,
+            ICurrentUserService currentUserService,
             ILogger<ExpenseService> logger)
         {
             _expenseRepository = expenseRepository;
             _propertyRepository = propertyRepository;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -30,57 +34,114 @@ namespace RentCollection.Application.Services
                 throw new InvalidOperationException($"Expense {id} not found");
             }
 
+            if (!CanAccessExpense(expense))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view this expense");
+            }
+
             return MapToDto(expense);
         }
 
         public async Task<List<ExpenseDto>> GetAllExpensesAsync(int landlordId)
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view these expenses");
+            }
+
             var expenses = await _expenseRepository.GetExpensesByLandlordIdAsync(landlordId);
             return expenses.Select(MapToDto).ToList();
         }
 
         public async Task<List<ExpenseDto>> GetExpensesByPropertyAsync(int propertyId, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (!await CanAccessPropertyAsync(propertyId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view expenses for this property");
+            }
+
             var expenses = await _expenseRepository.GetExpensesByPropertyIdAsync(propertyId, startDate, endDate);
             return expenses.Select(MapToDto).ToList();
         }
 
         public async Task<List<ExpenseDto>> GetExpensesByLandlordAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view these expenses");
+            }
+
             var expenses = await _expenseRepository.GetExpensesByLandlordIdAsync(landlordId, startDate, endDate);
             return expenses.Select(MapToDto).ToList();
         }
 
         public async Task<List<ExpenseDto>> GetExpensesByCategoryAsync(int landlordId, ExpenseCategory category, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view these expenses");
+            }
+
             var expenses = await _expenseRepository.GetExpensesByCategoryAsync(landlordId, category, startDate, endDate);
             return expenses.Select(MapToDto).ToList();
         }
 
         public async Task<List<ExpenseDto>> GetRecurringExpensesAsync(int landlordId)
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view these expenses");
+            }
+
             var expenses = await _expenseRepository.GetRecurringExpensesAsync(landlordId);
             return expenses.Select(MapToDto).ToList();
         }
 
-        public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto, int landlordId)
+        public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto)
         {
-            // Verify property exists and belongs to landlord
+            if (_currentUserService.IsCaretaker)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to add expenses");
+            }
+
             var property = await _propertyRepository.GetByIdAsync(dto.PropertyId);
             if (property == null)
             {
                 throw new InvalidOperationException($"Property {dto.PropertyId} not found");
             }
 
-            if (property.LandlordId != landlordId)
+            if (!property.LandlordId.HasValue)
             {
-                throw new UnauthorizedAccessException("You do not have permission to add expenses to this property");
+                throw new InvalidOperationException("Property does not have an owner");
+            }
+
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                if (_currentUserService.IsLandlord)
+                {
+                    if (!_currentUserService.UserIdInt.HasValue || property.LandlordId != _currentUserService.UserIdInt.Value)
+                    {
+                        throw new UnauthorizedAccessException("You do not have permission to add expenses to this property");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(property.Id))
+                    {
+                        throw new UnauthorizedAccessException("You do not have permission to add expenses to this property");
+                    }
+                }
+                else
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to add expenses");
+                }
             }
 
             var expense = new Expense
             {
                 PropertyId = dto.PropertyId,
-                LandlordId = landlordId,
+                LandlordId = property.LandlordId.Value,
                 UnitId = dto.UnitId,
                 Category = dto.Category,
                 Amount = dto.Amount,
@@ -106,7 +167,7 @@ namespace RentCollection.Application.Services
             var created = await _expenseRepository.AddAsync(expense);
 
             _logger.LogInformation("Created expense {ExpenseId} for property {PropertyId} by landlord {LandlordId}",
-                created.Id, dto.PropertyId, landlordId);
+                created.Id, dto.PropertyId, property.LandlordId.Value);
 
             // Reload with navigation properties
             var result = await _expenseRepository.GetExpenseWithDetailsAsync(created.Id);
@@ -119,6 +180,25 @@ namespace RentCollection.Application.Services
             if (expense == null)
             {
                 throw new InvalidOperationException($"Expense {id} not found");
+            }
+
+            if (!CanAccessExpense(expense))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to update this expense");
+            }
+
+            if (dto.PropertyId != expense.PropertyId)
+            {
+                var property = await _propertyRepository.GetByIdAsync(dto.PropertyId);
+                if (property == null)
+                {
+                    throw new InvalidOperationException($"Property {dto.PropertyId} not found");
+                }
+
+                if (!property.LandlordId.HasValue || !CanAccessLandlord(property.LandlordId.Value))
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to assign expenses to this property");
+                }
             }
 
             // Update properties
@@ -162,6 +242,11 @@ namespace RentCollection.Application.Services
                 throw new InvalidOperationException($"Expense {id} not found");
             }
 
+            if (!CanAccessLandlord(expense.LandlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to delete this expense");
+            }
+
             await _expenseRepository.DeleteAsync(expense);
 
             _logger.LogInformation("Deleted expense {ExpenseId}", id);
@@ -171,6 +256,11 @@ namespace RentCollection.Application.Services
 
         public async Task<ExpenseSummaryDto> GetExpenseSummaryAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view these expenses");
+            }
+
             var expenses = (await _expenseRepository.GetExpensesByLandlordIdAsync(landlordId, startDate, endDate)).ToList();
 
             var totalExpenses = expenses.Count;
@@ -202,11 +292,21 @@ namespace RentCollection.Application.Services
 
         public async Task<decimal> GetTotalExpensesAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view these expenses");
+            }
+
             return await _expenseRepository.GetTotalExpensesAsync(landlordId, startDate, endDate);
         }
 
         public async Task<decimal> GetTotalExpensesByPropertyAsync(int propertyId, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (!await CanAccessPropertyAsync(propertyId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view expenses for this property");
+            }
+
             return await _expenseRepository.GetTotalExpensesByPropertyAsync(propertyId, startDate, endDate);
         }
 
@@ -288,5 +388,69 @@ namespace RentCollection.Application.Services
                 UpdatedAt = expense.UpdatedAt
             };
         }
+
+        private bool CanAccessExpense(Expense expense)
+        {
+            if (_currentUserService.IsPlatformAdmin)
+            {
+                return true;
+            }
+
+            if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
+            {
+                return expense.LandlordId == _currentUserService.UserIdInt.Value;
+            }
+
+            if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            {
+                var assignedPropertyIds = _currentUserService.GetAssignedPropertyIdsAsync().GetAwaiter().GetResult();
+                return assignedPropertyIds.Contains(expense.PropertyId);
+            }
+
+            return false;
+        }
+
+        private bool CanAccessLandlord(int landlordId)
+        {
+            if (_currentUserService.IsPlatformAdmin)
+            {
+                return true;
+            }
+
+            if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
+            {
+                return _currentUserService.UserIdInt.Value == landlordId;
+            }
+
+            return false;
+        }
+
+        private async Task<bool> CanAccessPropertyAsync(int propertyId)
+        {
+            if (_currentUserService.IsPlatformAdmin)
+            {
+                return true;
+            }
+
+            var property = await _propertyRepository.GetByIdAsync(propertyId);
+            if (property == null)
+            {
+                return false;
+            }
+
+            if (property.LandlordId.HasValue && CanAccessLandlord(property.LandlordId.Value))
+            {
+                return true;
+            }
+
+            if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            {
+                var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                return assignedPropertyIds.Contains(propertyId);
+            }
+
+            return false;
+        }
     }
 }
+

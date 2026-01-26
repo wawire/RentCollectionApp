@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.DTOs.Payments;
 using RentCollection.Application.DTOs.Tenants;
 using RentCollection.Application.Services.Interfaces;
@@ -12,6 +13,9 @@ namespace RentCollection.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Tenant")] // Only tenants can access
+[Authorize(Policy = Policies.RequireVerifiedUser)]
+[Authorize(Policy = Policies.RequirePasswordChangeComplete)]
+[Authorize(Policy = Policies.RequireActiveOrganization)]
 public class TenantPortalController : ControllerBase
 {
     private readonly ITenantService _tenantService;

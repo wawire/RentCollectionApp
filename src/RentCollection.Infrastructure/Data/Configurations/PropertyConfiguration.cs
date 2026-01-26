@@ -24,11 +24,20 @@ public class PropertyConfiguration : IEntityTypeConfiguration<Property>
         builder.Property(p => p.ImageUrl)
             .HasMaxLength(500);
 
+        builder.Property(p => p.OrganizationId)
+            .IsRequired();
+
+        builder.HasOne(p => p.Organization)
+            .WithMany(o => o.Properties)
+            .HasForeignKey(p => p.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(p => p.Units)
             .WithOne(u => u.Property)
             .HasForeignKey(u => u.PropertyId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(p => p.Name);
+        builder.HasIndex(p => p.OrganizationId);
     }
 }

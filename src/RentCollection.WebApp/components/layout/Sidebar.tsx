@@ -5,26 +5,25 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@/lib/types/auth.types'
 import {
-  FaHome,
-  FaChartLine,
-  FaBuilding,
-  FaDoorOpen,
-  FaUsers,
-  FaMoneyBillWave,
-  FaFileAlt,
-  FaSms,
-  FaCog,
-  FaTimes,
-  FaWallet,
-  FaClipboardCheck,
-  FaFileContract,
-  FaBell,
-  FaTools,
-  FaFileSignature,
-  FaUpload,
-  FaShieldAlt,
-  FaReceipt,
-} from 'react-icons/fa'
+  Bell,
+  Building2,
+  ClipboardCheck,
+  DoorOpen,
+  FileSignature,
+  FileText,
+  Home,
+  LineChart,
+  MessageSquare,
+  Receipt,
+  Settings,
+  Shield,
+  Upload,
+  Users,
+  Wallet,
+  Wrench,
+  X,
+  Banknote,
+} from 'lucide-react'
 
 interface SidebarProps {
   isOpen: boolean
@@ -42,64 +41,64 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Role-based navigation items
   const isTenant = user?.role === UserRole.Tenant
-  const isLandlordOrAdmin = user?.role === UserRole.Landlord || user?.role === UserRole.SystemAdmin || user?.role === UserRole.Accountant || user?.role === UserRole.Caretaker
+  const isLandlordOrAdmin = user?.role === UserRole.Landlord || user?.role === UserRole.PlatformAdmin || user?.role === UserRole.Accountant || user?.role === UserRole.Caretaker
 
   const tenantNavItems = [
-    { name: 'Dashboard', path: '/tenant-portal', icon: FaWallet },
-    { name: 'Lease Info', path: '/tenant-portal/lease-info', icon: FaFileContract },
-    { name: 'Maintenance', path: '/tenant-portal/maintenance', icon: FaTools },
-    { name: 'Lease Renewals', path: '/tenant-portal/lease-renewals', icon: FaFileSignature },
-    { name: 'Security Deposit', path: '/tenant-portal/security-deposit', icon: FaShieldAlt },
-    { name: 'Documents', path: '/tenant-portal/documents', icon: FaFileAlt },
-    { name: 'Payment History', path: '/tenant-portal/history', icon: FaMoneyBillWave },
+    { name: 'Dashboard', path: '/tenant-portal', icon: Wallet },
+    { name: 'Lease Info', path: '/tenant-portal/lease-info', icon: FileSignature },
+    { name: 'Maintenance', path: '/tenant-portal/maintenance', icon: Wrench },
+    { name: 'Lease Renewals', path: '/tenant-portal/lease-renewals', icon: FileSignature },
+    { name: 'Security Deposit', path: '/tenant-portal/security-deposit', icon: Shield },
+    { name: 'Documents', path: '/tenant-portal/documents', icon: FileText },
+    { name: 'Payment History', path: '/tenant-portal/history', icon: Banknote },
   ]
 
   const landlordNavSections = [
     {
       title: 'Overview',
       items: [
-        { name: 'Home', path: '/', icon: FaHome },
-        { name: 'Dashboard', path: '/dashboard', icon: FaChartLine },
+        { name: 'Home', path: '/', icon: Home },
+        { name: 'Dashboard', path: '/dashboard', icon: LineChart },
       ]
     },
     {
       title: 'Property Management',
       items: [
-        { name: 'Properties', path: '/properties', icon: FaBuilding },
-        { name: 'Units', path: '/units', icon: FaDoorOpen },
-        { name: 'Tenants', path: '/tenants', icon: FaUsers },
+        { name: 'Properties', path: '/properties', icon: Building2 },
+        { name: 'Units', path: '/units', icon: DoorOpen },
+        { name: 'Tenants', path: '/tenants', icon: Users },
       ]
     },
     {
       title: 'Financial',
       items: [
-        { name: 'Payments', path: '/payments', icon: FaMoneyBillWave },
-        { name: 'Pending Payments', path: '/payments/pending', icon: FaClipboardCheck },
-        { name: 'Payment Accounts', path: '/dashboard/payment-accounts', icon: FaWallet },
-        { name: 'Expenses', path: '/dashboard/expenses', icon: FaReceipt },
+        { name: 'Payments', path: '/payments', icon: Banknote },
+        { name: 'Pending Payments', path: '/payments/pending', icon: ClipboardCheck },
+        { name: 'Payment Accounts', path: '/dashboard/payment-accounts', icon: Wallet },
+        { name: 'Expenses', path: '/dashboard/expenses', icon: Receipt },
       ]
     },
     {
       title: 'Reports & Analytics',
       items: [
-        { name: 'Reports', path: '/dashboard/reports', icon: FaFileContract },
-        { name: 'Rent Reminders', path: '/dashboard/reminders', icon: FaSms },
+        { name: 'Reports', path: '/dashboard/reports', icon: FileSignature },
+        { name: 'Rent Reminders', path: '/dashboard/reminders', icon: MessageSquare },
       ]
     },
     {
       title: 'Operations',
       items: [
-        { name: 'Maintenance', path: '/dashboard/maintenance', icon: FaTools },
-        { name: 'Lease Renewals', path: '/dashboard/lease-renewals', icon: FaFileSignature },
-        { name: 'Security Deposits', path: '/dashboard/security-deposits', icon: FaShieldAlt },
-        { name: 'Documents', path: '/dashboard/documents', icon: FaFileAlt },
+        { name: 'Maintenance', path: '/dashboard/maintenance', icon: Wrench },
+        { name: 'Lease Renewals', path: '/dashboard/lease-renewals', icon: FileSignature },
+        { name: 'Security Deposits', path: '/dashboard/security-deposits', icon: Shield },
+        { name: 'Documents', path: '/dashboard/documents', icon: FileText },
       ]
     },
     {
       title: 'System',
       items: [
-        { name: 'Bulk Import', path: '/dashboard/bulk-import', icon: FaUpload },
-        { name: 'Notifications', path: '/dashboard/notifications', icon: FaBell },
+        { name: 'Bulk Import', path: '/dashboard/bulk-import', icon: Upload },
+        { name: 'Notifications', path: '/dashboard/notifications', icon: Bell },
       ]
     }
   ]
@@ -133,14 +132,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo Section */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <Link href="/" className="flex items-center space-x-2">
-            <FaBuilding className="text-primary-600 text-2xl" />
+            <Building2 className="text-primary-600 text-2xl" />
             <span className="text-xl font-bold text-gray-800">RentPro</span>
           </Link>
           <button
             onClick={onClose}
             className="md:hidden text-gray-600 hover:text-gray-900"
           >
-            <FaTimes className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -215,7 +214,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               href={isTenant ? "/tenant-portal/settings" : "/settings"}
               className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             >
-              <FaCog className="text-lg text-gray-500" />
+              <Settings className="text-lg text-gray-500" />
               <span>Settings</span>
             </Link>
           </div>

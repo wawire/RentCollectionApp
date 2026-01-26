@@ -37,26 +37,38 @@
     --font-fenwick: 'Fenwick', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     --font-edmondsans: 'Edmondsans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 
-    /* Primary Palette */
-    --color-primary: #0B0B0D;        /* Charcoal Black - Headers, backgrounds */
-    --color-surface: #FFFFFF;         /* Pure White - Cards, content panels */
-    --color-accent: #D4AF37;          /* Matte Gold - CTAs, icons, highlights */
-    --color-muted: #BFC2C5;           /* Soft Grey - Borders, dividers, subtle text */
+    /* Brand palette */
+    --color-brand-primary: #1E3A5F;   /* Midnight Trust Blue */
+    --color-brand-secondary: #3A6EA5; /* Steel Blue */
+    --color-brand-bg: #E8F0FA;        /* Mist Blue */
+    --color-border-muted: rgba(107, 114, 128, 0.35); /* Neutral divider */
 
-    /* Secondary Palette */
-    --color-bg-light: #FAF7F2;        /* Ivory Tint - Light backgrounds */
-    --color-bg-dark: #000000;         /* Ultra Black - Dark hero sections */
-    --color-secondary: #DDE1E4;       /* Silver - Stats, filters, cards */
+    /* Text tokens */
+    --color-text-primary: #1E3A5F;
+    --color-text-secondary: rgba(30, 58, 95, 0.8);
+    --color-text-muted: #6B7280;
+
+    /* Surface tokens */
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #FFFFFF;
 
     /* Semantic colors */
-    --color-success: #10b981;         /* Green for success states */
-    --color-warning: #f59e0b;         /* Orange for warnings */
-    --color-error: #ef4444;           /* Red for errors */
-    --color-info: #3b82f6;            /* Blue for info */
+    --color-state-success: #1F7A5C;
+    --color-state-warning: #B45309;
+    --color-state-error: #B91C1C;
+    --color-state-info: #1D4ED8;
+
+    /* Elevation + focus */
+    --shadow-subtle: 0 12px 32px rgba(30, 58, 95, 0.12);
+    --focus-ring: 0 0 0 3px rgba(58, 110, 165, 0.35);
   }
 
   body {
-    @apply bg-[var(--color-bg-light)] text-[var(--color-primary)];
+    background-color: var(--color-brand-bg);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(30, 58, 95, 0.08), transparent 55%),
+      radial-gradient(circle at 80% 0%, rgba(58, 110, 165, 0.12), transparent 40%);
+    color: var(--color-text-primary);
     font-family: var(--font-edmondsans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
@@ -71,19 +83,23 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+    @apply bg-brand-primary text-white font-semibold py-2 px-4 rounded-lg transition duration-200 hover:bg-brand-secondary;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-200;
+    @apply bg-surface text-text-secondary font-semibold py-2 px-4 rounded-lg transition duration-200 border border-border-muted hover:text-text-primary;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-surface rounded-xl shadow-subtle p-6 border border-border-muted;
   }
 
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500;
+    @apply w-full px-3 py-2 border border-border-muted rounded-lg focus:outline-none;
+  }
+
+  .input:focus-visible {
+    box-shadow: var(--focus-ring);
   }
 }
 

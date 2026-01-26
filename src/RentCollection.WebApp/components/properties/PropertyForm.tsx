@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { CreatePropertyDto, UpdatePropertyDto } from '@/lib/types'
-import { Button, Input } from '@/components/common'
+import { Button, Input, TextArea } from '@/components/common'
 
 interface PropertyFormProps {
   initialData?: UpdatePropertyDto & { id?: number }
@@ -78,18 +78,13 @@ export default function PropertyForm({ initialData, onSubmit, loading }: Propert
         fullWidth
       />
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="Enter property description..."
-        />
-      </div>
+      <TextArea
+        label="Description"
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        rows={4}
+        placeholder="Enter property description..."
+      />
 
       <Input
         label="Image URL (Optional)"

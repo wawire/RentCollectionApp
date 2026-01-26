@@ -17,6 +17,9 @@ public class TenantService : ITenantService
     private readonly IUnitRepository _unitRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPaymentRepository _paymentRepository;
+    private readonly IInvoiceBalanceService _invoiceBalanceService;
+    private readonly IEmailService _emailService;
+    private readonly IVerificationService _verificationService;
     private readonly IMapper _mapper;
     private readonly ILogger<TenantService> _logger;
     private readonly ICurrentUserService _currentUserService;
@@ -26,6 +29,9 @@ public class TenantService : ITenantService
         IUnitRepository unitRepository,
         IUserRepository userRepository,
         IPaymentRepository paymentRepository,
+        IInvoiceBalanceService invoiceBalanceService,
+        IEmailService emailService,
+        IVerificationService verificationService,
         IMapper mapper,
         ILogger<TenantService> logger,
         ICurrentUserService currentUserService)
@@ -34,6 +40,9 @@ public class TenantService : ITenantService
         _unitRepository = unitRepository;
         _userRepository = userRepository;
         _paymentRepository = paymentRepository;
+        _invoiceBalanceService = invoiceBalanceService;
+        _emailService = emailService;
+        _verificationService = verificationService;
         _mapper = mapper;
         _logger = logger;
         _currentUserService = currentUserService;
@@ -45,9 +54,16 @@ public class TenantService : ITenantService
         {
             var tenants = await _tenantRepository.GetAllAsync();
 
-            // Filter tenants by unit's property's LandlordId (unless SystemAdmin)
-            if (!_currentUserService.IsSystemAdmin)
+            // Filter tenants by unit's property's LandlordId (unless PlatformAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!_currentUserService.OrganizationId.HasValue)
+                {
+                    return Result<IEnumerable<TenantDto>>.Success(Array.Empty<TenantDto>());
+                }
+
+                tenants = tenants.Where(t => t.Unit?.Property?.OrganizationId == _currentUserService.OrganizationId.Value).ToList();
+
                 // Tenants can only see themselves
                 if (_currentUserService.IsTenant)
                 {
@@ -61,17 +77,20 @@ public class TenantService : ITenantService
                         tenants = new List<Tenant>();
                     }
                 }
-                // Landlords, Caretakers, and Accountants filter by landlordId
-                else
+                // Landlords filter by landlordId; others by assigned properties
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue)
                     {
-                        tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                        tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == _currentUserService.UserIdInt.Value).ToList();
                     }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    tenants = assignedPropertyIds.Count == 0
+                        ? new List<Tenant>()
+                        : tenants.Where(t => t.Unit != null && assignedPropertyIds.Contains(t.Unit.PropertyId)).ToList();
                 }
             }
 
@@ -97,22 +116,30 @@ public class TenantService : ITenantService
             }
 
             // Check access permission to the unit's property
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(unit.Property))
+                {
+                    return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
+                }
+
                 // Tenants cannot access other units' tenant lists
                 if (_currentUserService.IsTenant)
                 {
                     return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
                 }
 
-                // Landlords, Caretakers, and Accountants check by landlordId
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (_currentUserService.IsLandlord)
                 {
-                    if (unit.Property?.LandlordId != landlordId.Value)
+                    if (_currentUserService.UserIdInt.HasValue && unit.Property?.LandlordId != _currentUserService.UserIdInt.Value)
+                    {
+                        return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(unit.PropertyId))
                     {
                         return Result<IEnumerable<TenantDto>>.Failure("You do not have permission to access tenants for this unit");
                     }
@@ -143,8 +170,13 @@ public class TenantService : ITenantService
             }
 
             // Check access permission via unit's property's LandlordId
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(tenant.Unit?.Property))
+                {
+                    return Result<TenantDto>.Failure("You do not have permission to access this tenant");
+                }
+
                 // Tenants can only access their own record
                 if (_currentUserService.IsTenant)
                 {
@@ -153,19 +185,20 @@ public class TenantService : ITenantService
                         return Result<TenantDto>.Failure("You do not have permission to access this tenant");
                     }
                 }
-                // Landlords, Caretakers, and Accountants check by landlordId
-                else
+                // Landlords check by landlordId, others by assignments
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue && tenant.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
                     {
-                        if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
-                        {
-                            return Result<TenantDto>.Failure("You do not have permission to access this tenant");
-                        }
+                        return Result<TenantDto>.Failure("You do not have permission to access this tenant");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                    {
+                        return Result<TenantDto>.Failure("You do not have permission to access this tenant");
                     }
                 }
             }
@@ -192,18 +225,31 @@ public class TenantService : ITenantService
             }
 
             // Check access permission - user must have access to the unit's property
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (!IsInOrganizationScope(unit.Property))
                 {
-                    if (unit.Property?.LandlordId != landlordId.Value)
+                    return Result<TenantDto>.Failure("You do not have permission to create tenants for this unit");
+                }
+
+                if (_currentUserService.IsLandlord)
+                {
+                    if (_currentUserService.UserIdInt.HasValue && unit.Property?.LandlordId != _currentUserService.UserIdInt.Value)
                     {
                         return Result<TenantDto>.Failure("You do not have permission to create tenants for this unit");
                     }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(unit.PropertyId))
+                    {
+                        return Result<TenantDto>.Failure("You do not have permission to create tenants for this unit");
+                    }
+                }
+                else
+                {
+                    return Result<TenantDto>.Failure("You do not have permission to create tenants");
                 }
 
                 // Accountants cannot create tenants (read-only access)
@@ -240,6 +286,49 @@ public class TenantService : ITenantService
             var tenantWithDetails = await _tenantRepository.GetTenantWithDetailsAsync(createdTenant.Id);
             var tenantDto = _mapper.Map<TenantDto>(tenantWithDetails);
 
+            if (createDto.CreatePortalUser)
+            {
+                if (await _userRepository.EmailExistsAsync(createdTenant.Email))
+                {
+                    return Result<TenantDto>.Failure("A user with this email already exists");
+                }
+
+                if (await _userRepository.PhoneNumberExistsAsync(createdTenant.PhoneNumber))
+                {
+                    return Result<TenantDto>.Failure("A user with this phone number already exists");
+                }
+
+                var temporaryPassword = GenerateRandomPassword();
+                var user = new User
+                {
+                    FirstName = createdTenant.FirstName,
+                    LastName = createdTenant.LastName,
+                    Email = createdTenant.Email,
+                    PhoneNumber = createdTenant.PhoneNumber,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(temporaryPassword),
+                    Role = UserRole.Tenant,
+                    Status = UserStatus.Invited,
+                    TenantId = createdTenant.Id,
+                    OrganizationId = unit.Property?.OrganizationId ?? 0,
+                    IsVerified = false,
+                    MustChangePassword = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _userRepository.AddAsync(user);
+
+                try
+                {
+                    await _emailService.SendWelcomeEmailAsync(user.Email, user.FullName, temporaryPassword);
+                    var channel = string.IsNullOrWhiteSpace(user.Email) ? VerificationChannel.Phone : VerificationChannel.Email;
+                    await _verificationService.SendVerificationOtpAsync(user.Id, channel);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send tenant invite for {TenantId}", createdTenant.Id);
+                }
+            }
+
             _logger.LogInformation("Tenant created successfully: {TenantName} in unit {UnitId}",
                 $"{createdTenant.FirstName} {createdTenant.LastName}", createDto.UnitId);
             return Result<TenantDto>.Success(tenantDto, "Tenant created successfully");
@@ -263,18 +352,31 @@ public class TenantService : ITenantService
             }
 
             // Check access permission via unit's property's LandlordId
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (!IsInOrganizationScope(existingTenant.Unit?.Property))
                 {
-                    if (existingTenant.Unit?.Property?.LandlordId != landlordId.Value)
+                    return Result<TenantDto>.Failure("You do not have permission to update this tenant");
+                }
+
+                if (_currentUserService.IsLandlord)
+                {
+                    if (_currentUserService.UserIdInt.HasValue && existingTenant.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
                     {
                         return Result<TenantDto>.Failure("You do not have permission to update this tenant");
                     }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (existingTenant.Unit == null || !assignedPropertyIds.Contains(existingTenant.Unit.PropertyId))
+                    {
+                        return Result<TenantDto>.Failure("You do not have permission to update this tenant");
+                    }
+                }
+                else
+                {
+                    return Result<TenantDto>.Failure("You do not have permission to update this tenant");
                 }
 
                 // Accountants cannot modify tenants (read-only access)
@@ -330,14 +432,19 @@ public class TenantService : ITenantService
                 return Result.Failure($"Tenant with ID {id} not found");
             }
 
-            // Check access permission - Only SystemAdmin and Landlords can delete
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            // Check access permission - Only PlatformAdmin and Landlords can delete
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
             {
                 return Result.Failure("You do not have permission to delete tenants");
             }
 
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(tenant.Unit?.Property))
+                {
+                    return Result.Failure("You do not have permission to delete this tenant");
+                }
+
                 var landlordId = _currentUserService.UserIdInt; // Must be landlord at this point
 
                 if (landlordId.HasValue)
@@ -473,15 +580,30 @@ public class TenantService : ITenantService
             var allTenants = await _tenantRepository.GetAllAsync();
 
             // Filter by landlord's properties
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (!_currentUserService.OrganizationId.HasValue)
                 {
-                    allTenants = allTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    return Result<IEnumerable<TenantApplicationResponseDto>>.Success(Array.Empty<TenantApplicationResponseDto>());
+                }
+
+                allTenants = allTenants
+                    .Where(t => t.Unit?.Property?.OrganizationId == _currentUserService.OrganizationId.Value)
+                    .ToList();
+
+                if (_currentUserService.IsLandlord)
+                {
+                    if (_currentUserService.UserIdInt.HasValue)
+                    {
+                        allTenants = allTenants.Where(t => t.Unit?.Property?.LandlordId == _currentUserService.UserIdInt.Value).ToList();
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    allTenants = assignedPropertyIds.Count == 0
+                        ? new List<Tenant>()
+                        : allTenants.Where(t => t.Unit != null && assignedPropertyIds.Contains(t.Unit.PropertyId)).ToList();
                 }
             }
 
@@ -533,15 +655,24 @@ public class TenantService : ITenantService
             }
 
             // Check access permission
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (!IsInOrganizationScope(tenant.Unit?.Property))
                 {
-                    if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
+                    return Result<TenantApplicationResponseDto>.Failure("You do not have permission to view this application");
+                }
+
+                if (_currentUserService.IsLandlord)
+                {
+                    if (_currentUserService.UserIdInt.HasValue && tenant.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
+                    {
+                        return Result<TenantApplicationResponseDto>.Failure("You do not have permission to view this application");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
                     {
                         return Result<TenantApplicationResponseDto>.Failure("You do not have permission to view this application");
                     }
@@ -596,13 +727,18 @@ public class TenantService : ITenantService
             }
 
             // Check access permission
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
             {
                 return Result<TenantApplicationResponseDto>.Failure("You do not have permission to review applications");
             }
 
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(tenant.Unit?.Property))
+                {
+                    return Result<TenantApplicationResponseDto>.Failure("You do not have permission to review this application");
+                }
+
                 var landlordId = _currentUserService.UserIdInt;
                 if (landlordId.HasValue)
                 {
@@ -641,12 +777,26 @@ public class TenantService : ITenantService
                         PhoneNumber = tenant.PhoneNumber,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                         Role = UserRole.Tenant,
-                        Status = UserStatus.Active,
+                        Status = UserStatus.Invited,
                         TenantId = tenant.Id,
+                        OrganizationId = tenant.Unit?.Property?.OrganizationId ?? 0,
+                        IsVerified = false,
+                        MustChangePassword = true,
                         CreatedAt = DateTime.UtcNow
                     };
 
                     var createdUser = await _userRepository.AddAsync(user);
+
+                    try
+                    {
+                        await _emailService.SendWelcomeEmailAsync(user.Email, user.FullName, password);
+                        var channel = string.IsNullOrWhiteSpace(user.Email) ? VerificationChannel.Phone : VerificationChannel.Email;
+                        await _verificationService.SendVerificationOtpAsync(user.Id, channel);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to send tenant invite for approved application {TenantId}", tenant.Id);
+                    }
 
                     _logger.LogInformation("User account created for tenant {TenantId}: {Email}", tenant.Id, tenant.Email);
                 }
@@ -731,11 +881,7 @@ public class TenantService : ITenantService
             var totalPaid = payments.Where(p => p.Status == PaymentStatus.Completed).Sum(p => p.Amount);
             var lastPayment = payments.OrderByDescending(p => p.PaymentDate).FirstOrDefault();
 
-            // Calculate outstanding balance (simplified - months since lease start * monthly rent - total paid)
-            var monthsSinceLease = (DateTime.UtcNow.Year - tenant.LeaseStartDate.Year) * 12 +
-                                   (DateTime.UtcNow.Month - tenant.LeaseStartDate.Month);
-            var expectedTotal = Math.Max(0, monthsSinceLease) * tenant.MonthlyRent;
-            var outstanding = Math.Max(0, expectedTotal - totalPaid);
+            var outstanding = await _invoiceBalanceService.GetOutstandingBalanceForTenantAsync(tenant.Id);
 
             var dto = new TenantPortalDto
             {
@@ -877,6 +1023,18 @@ public class TenantService : ITenantService
         }
     }
 
+    private bool IsInOrganizationScope(Property? property)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        return property != null &&
+               _currentUserService.OrganizationId.HasValue &&
+               property.OrganizationId == _currentUserService.OrganizationId.Value;
+    }
+
     // Helper method to generate random password
     private static string GenerateRandomPassword()
     {
@@ -886,3 +1044,4 @@ public class TenantService : ITenantService
             .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }
+

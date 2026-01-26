@@ -11,6 +11,9 @@ public class Property : BaseEntity
     public int TotalUnits { get; set; }
     public bool IsActive { get; set; } = true;
 
+    public int OrganizationId { get; set; }
+    public Organization? Organization { get; set; }
+
     // Owner of the property (Landlord User ID)
     public int? LandlordId { get; set; }
     public User? Landlord { get; set; }

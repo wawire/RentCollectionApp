@@ -8,17 +8,17 @@ import { UserRole } from '@/lib/types/auth.types'
 import { useGetDashboardStats } from '@/lib/hooks'
 import { LoadingSpinner } from '@/components/common'
 import {
-  FaBuilding,
-  FaDoorOpen,
-  FaUsers,
-  FaMoneyBillWave,
-  FaChartLine,
-  FaExclamationCircle,
-  FaCheckCircle,
-  FaClock,
-  FaPlus,
-  FaArrowRight
-} from 'react-icons/fa'
+  AlertCircle,
+  ArrowRight,
+  Banknote,
+  Building2,
+  CheckCircle,
+  Clock,
+  DoorOpen,
+  LineChart,
+  Plus,
+  Users,
+} from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -65,7 +65,7 @@ export default function DashboardPage() {
           href="/properties/new"
           className="hidden md:flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
         >
-          <FaPlus />
+          <Plus />
           Add Property
         </Link>
       </div>
@@ -75,7 +75,7 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-lg p-6 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <FaExclamationCircle className="text-red-600 text-2xl" />
+              <AlertCircle className="text-red-600 text-2xl" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-red-900">Action Required</h3>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-2 mt-3 text-red-700 font-medium hover:text-red-800"
               >
                 Review overdue payments
-                <FaArrowRight className="text-sm" />
+                <ArrowRight className="text-sm" />
               </Link>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalProperties}</p>
             </div>
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FaBuilding className="text-blue-600 text-lg" />
+              <Building2 className="text-blue-600 text-lg" />
             </div>
           </div>
           <Link
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-1 mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             View all
-            <FaArrowRight className="text-xs" />
+            <ArrowRight className="text-xs" />
           </Link>
         </div>
 
@@ -125,7 +125,7 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-500 mt-0.5">{stats.occupiedUnits}/{stats.totalUnits} units</p>
             </div>
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <FaDoorOpen className="text-purple-600 text-lg" />
+              <DoorOpen className="text-purple-600 text-lg" />
             </div>
           </div>
           <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
@@ -144,7 +144,7 @@ export default function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.activeTenants}</p>
             </div>
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <FaUsers className="text-green-600 text-lg" />
+              <Users className="text-green-600 text-lg" />
             </div>
           </div>
           <Link
@@ -152,7 +152,7 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-1 mt-4 text-sm text-green-600 hover:text-green-700 font-medium"
           >
             Manage tenants
-            <FaArrowRight className="text-xs" />
+            <ArrowRight className="text-xs" />
           </Link>
         </div>
 
@@ -169,7 +169,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <FaMoneyBillWave className="text-yellow-600 text-lg" />
+              <Banknote className="text-yellow-600 text-lg" />
             </div>
           </div>
           <Link
@@ -177,7 +177,7 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-1 mt-4 text-sm text-yellow-600 hover:text-yellow-700 font-medium"
           >
             View payments
-            <FaArrowRight className="text-xs" />
+            <ArrowRight className="text-xs" />
           </Link>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
             <div className="flex-shrink-0">
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                <FaCheckCircle className="text-white" />
+                <CheckCircle className="text-white" />
               </div>
             </div>
             <div>
@@ -212,7 +212,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
             <div className="flex-shrink-0">
               <div className="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center">
-                <FaClock className="text-white" />
+                <Clock className="text-white" />
               </div>
             </div>
             <div>
@@ -225,7 +225,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4 p-4 bg-red-50 rounded-lg border border-red-200">
             <div className="flex-shrink-0">
               <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-                <FaExclamationCircle className="text-white" />
+                <AlertCircle className="text-white" />
               </div>
             </div>
             <div>
@@ -245,7 +245,7 @@ export default function DashboardPage() {
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
           >
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-              <FaBuilding className="text-blue-600 group-hover:text-white transition-colors" />
+              <Building2 className="text-blue-600 group-hover:text-white transition-colors" />
             </div>
             <div>
               <p className="font-medium text-gray-900">Add Property</p>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all group"
           >
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
-              <FaDoorOpen className="text-purple-600 group-hover:text-white transition-colors" />
+              <DoorOpen className="text-purple-600 group-hover:text-white transition-colors" />
             </div>
             <div>
               <p className="font-medium text-gray-900">Add Unit</p>
@@ -271,7 +271,7 @@ export default function DashboardPage() {
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all group"
           >
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
-              <FaUsers className="text-green-600 group-hover:text-white transition-colors" />
+              <Users className="text-green-600 group-hover:text-white transition-colors" />
             </div>
             <div>
               <p className="font-medium text-gray-900">Add Tenant</p>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all group"
           >
             <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-600 transition-colors">
-              <FaMoneyBillWave className="text-yellow-600 group-hover:text-white transition-colors" />
+              <Banknote className="text-yellow-600 group-hover:text-white transition-colors" />
             </div>
             <div>
               <p className="font-medium text-gray-900">Record Payment</p>

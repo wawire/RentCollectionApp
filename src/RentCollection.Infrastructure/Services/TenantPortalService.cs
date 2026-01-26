@@ -107,27 +107,42 @@ public class TenantPortalService : ITenantPortalService
     {
         var today = DateTime.UtcNow.Date;
 
-        // Get all payments
+        // Payments history
         var allPayments = tenant.Payments.ToList();
         var confirmedPayments = allPayments.Where(p => p.Status == PaymentStatus.Completed).ToList();
-        var pendingPayments = allPayments.Where(p => p.Status == PaymentStatus.Pending).ToList();
 
-        // Calculate overdue payments
-        var overduePayments = pendingPayments
-            .Where(p => p.DueDate.Date < today)
-            .OrderBy(p => p.DueDate)
+        // Use invoices as the source of truth for balance and overdue status
+        var invoices = await _context.Invoices
+            .Include(i => i.Allocations)
+            .Include(i => i.LineItems)
+            .Where(i => i.TenantId == tenant.Id && i.Status != InvoiceStatus.Void)
+            .ToListAsync();
+
+        var invoiceSummaries = invoices
+            .Select(i =>
+            {
+                var allocated = i.Allocations.Sum(a => a.Amount);
+                var balance = InvoiceStatusCalculator.CalculateBalance(i, allocated);
+                var status = InvoiceStatusCalculator.CalculateStatus(i, allocated, DateTime.UtcNow);
+                return new { Invoice = i, Balance = balance, Status = status };
+            })
             .ToList();
 
-        var hasOverdue = overduePayments.Any();
-        var overdueAmount = overduePayments.Sum(p => p.Amount + p.LateFeeAmount);
-        var daysOverdue = hasOverdue ? (today - overduePayments.First().DueDate.Date).Days : 0;
+        var overdueInvoices = invoiceSummaries
+            .Where(i => i.Balance > 0 && i.Invoice.DueDate.Date < today)
+            .OrderBy(i => i.Invoice.DueDate)
+            .ToList();
+
+        var hasOverdue = overdueInvoices.Any();
+        var overdueAmount = overdueInvoices.Sum(i => i.Balance);
+        var daysOverdue = hasOverdue ? (today - overdueInvoices.First().Invoice.DueDate.Date).Days : 0;
 
         // Calculate next payment
         var nextDueDate = PaymentDueDateHelper.CalculateNextMonthDueDate(tenant.RentDueDay);
         var daysUntilDue = (nextDueDate.Date - today).Days;
 
-        // Current balance (all pending payments)
-        var currentBalance = pendingPayments.Sum(p => p.Amount + p.LateFeeAmount);
+        // Current balance (all outstanding invoices)
+        var currentBalance = invoiceSummaries.Sum(i => i.Balance);
 
         // Recent payments (last 5 confirmed)
         var recentPayments = confirmedPayments
@@ -149,22 +164,23 @@ public class TenantPortalService : ITenantPortalService
             })
             .ToList();
 
-        // Pending payments
-        var pendingPaymentsDtos = pendingPayments
-            .OrderBy(p => p.DueDate)
-            .Select(p => new RecentPaymentDto
+        // Pending invoices
+        var pendingPaymentsDtos = invoiceSummaries
+            .Where(i => i.Balance > 0)
+            .OrderBy(i => i.Invoice.DueDate)
+            .Select(i => new RecentPaymentDto
             {
-                Id = p.Id,
-                Amount = p.Amount,
-                LateFeeAmount = p.LateFeeAmount,
-                TotalAmount = p.TotalAmount,
-                PaymentDate = p.PaymentDate,
-                DueDate = p.DueDate,
-                PaymentMethod = p.PaymentMethod.ToString(),
-                Status = p.Status.ToString(),
-                TransactionReference = p.TransactionReference,
-                IsLate = p.DueDate.Date < today,
-                DaysOverdue = p.DueDate.Date < today ? (today - p.DueDate.Date).Days : 0
+                Id = i.Invoice.Id,
+                Amount = i.Invoice.Amount + i.Invoice.OpeningBalance,
+                LateFeeAmount = 0,
+                TotalAmount = i.Balance,
+                PaymentDate = i.Invoice.CreatedAt,
+                DueDate = i.Invoice.DueDate,
+                PaymentMethod = "Invoice",
+                Status = i.Status.ToString(),
+                TransactionReference = null,
+                IsLate = i.Invoice.DueDate.Date < today,
+                DaysOverdue = i.Invoice.DueDate.Date < today ? (today - i.Invoice.DueDate.Date).Days : 0
             })
             .ToList();
 

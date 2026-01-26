@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaCog, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaClock, FaPaperPlane, FaTimes, FaChartBar } from 'react-icons/fa'
+import { AlertTriangle, ArrowLeft, BarChart3, CheckCircle2, Clock, Loader2, Send, Settings, X } from 'lucide-react'
 import { rentReminderService, RentReminder, ReminderStatistics } from '@/lib/services/rentReminderService'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function ReminderHistoryPage() {
   const [loading, setLoading] = useState(true)
@@ -43,15 +44,15 @@ export default function ReminderHistoryPage() {
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'sent':
-        return <FaCheckCircle className="text-green-600" />
+        return <CheckCircle2 className="text-green-600 w-4 h-4" />
       case 'scheduled':
-        return <FaClock className="text-blue-600" />
+        return <Clock className="text-blue-600 w-4 h-4" />
       case 'failed':
-        return <FaExclamationTriangle className="text-red-600" />
+        return <AlertTriangle className="text-red-600 w-4 h-4" />
       case 'cancelled':
-        return <FaTimes className="text-gray-600" />
+        return <X className="text-gray-600 w-4 h-4" />
       default:
-        return <FaClock className="text-gray-600" />
+        return <Clock className="text-gray-600 w-4 h-4" />
     }
   }
 
@@ -76,20 +77,16 @@ export default function ReminderHistoryPage() {
     return r.status.toLowerCase() === filter
   })
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <FaSpinner className="animate-spin text-4xl text-blue-600" />
-      </div>
-    )
-  }
-
-  return (
+  const content = loading ? (
+    <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="animate-spin w-10 h-10 text-blue-600" />
+    </div>
+  ) : (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
         <Link href="/dashboard/reminders" className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4">
-          <FaArrowLeft /> Back to Settings
+          <ArrowLeft className="w-4 h-4" /> Back to Settings
         </Link>
         <div className="flex justify-between items-center">
           <div>
@@ -100,7 +97,7 @@ export default function ReminderHistoryPage() {
             href="/dashboard/reminders"
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
           >
-            <FaCog /> Settings
+            <Settings className="w-4 h-4" /> Settings
           </Link>
         </div>
       </div>
@@ -121,7 +118,7 @@ export default function ReminderHistoryPage() {
                 <p className="text-sm text-gray-600">Total Reminders</p>
                 <p className="text-3xl font-bold text-gray-800">{statistics.totalReminders}</p>
               </div>
-              <FaChartBar className="text-3xl text-blue-600" />
+              <BarChart3 className="text-3xl text-blue-600" />
             </div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -130,7 +127,7 @@ export default function ReminderHistoryPage() {
                 <p className="text-sm text-gray-600">Sent Successfully</p>
                 <p className="text-3xl font-bold text-green-600">{statistics.sentReminders}</p>
               </div>
-              <FaCheckCircle className="text-3xl text-green-600" />
+              <CheckCircle2 className="text-3xl text-green-600" />
             </div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -139,7 +136,7 @@ export default function ReminderHistoryPage() {
                 <p className="text-sm text-gray-600">Scheduled</p>
                 <p className="text-3xl font-bold text-blue-600">{statistics.scheduledReminders}</p>
               </div>
-              <FaClock className="text-3xl text-blue-600" />
+              <Clock className="text-3xl text-blue-600" />
             </div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -148,7 +145,7 @@ export default function ReminderHistoryPage() {
                 <p className="text-sm text-gray-600">Success Rate</p>
                 <p className="text-3xl font-bold text-blue-600">{statistics.successRate.toFixed(1)}%</p>
               </div>
-              <FaPaperPlane className="text-3xl text-blue-600" />
+              <Send className="text-3xl text-blue-600" />
             </div>
           </div>
         </div>
@@ -181,7 +178,7 @@ export default function ReminderHistoryPage() {
         <div className="overflow-x-auto">
           {filteredReminders.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
-              <FaClock className="text-5xl mx-auto mb-4 text-gray-300" />
+              <Clock className="text-5xl mx-auto mb-4 text-gray-300" />
               <p className="text-lg">No reminders found</p>
               <p className="text-sm mt-2">Reminders will appear here once they are scheduled or sent</p>
             </div>
@@ -242,4 +239,11 @@ export default function ReminderHistoryPage() {
       </div>
     </div>
   )
+
+  return (
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord']}>
+      {content}
+    </ProtectedRoute>
+  )
 }
+

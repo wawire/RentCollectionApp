@@ -361,8 +361,15 @@ To re-seed, drop and recreate the database.
 - `Jwt:Secret` - JWT signing key
 - `Jwt:Issuer` - Token issuer
 - `Jwt:Audience` - Token audience
-- `MPesa:ConsumerKey` - M-Pesa API key (optional)
-- `MPesa:ConsumerSecret` - M-Pesa secret (optional)
+- `MPesa:UseSandbox` - Use sandbox endpoints (true/false)
+- `MPesa:CallbackBaseUrl` - Base URL for webhook callbacks
+- `MPesa:StkPushTimeout` - STK push timeout (seconds)
+- `MPesa:EnableDetailedLogging` - Request/response logging toggle
+- `AfricasTalking:Username` - SMS username
+- `AfricasTalking:ApiKey` - SMS API key
+- `AfricasTalking:SenderId` - SMS sender ID
+
+Per-landlord M-Pesa credentials (consumer key/secret, shortcode, passkey, B2C initiator/security credential) are stored on `LandlordPaymentAccount` records and managed via the API.
 
 ### Frontend (Next.js)
 

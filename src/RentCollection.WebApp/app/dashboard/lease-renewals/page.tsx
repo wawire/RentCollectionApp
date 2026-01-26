@@ -8,6 +8,7 @@ import {
   CreateLeaseRenewalDto,
   RejectLeaseRenewalDto,
 } from '@/lib/types/leaseRenewal.types'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function LeaseRenewalsDashboardPage() {
   const [renewals, setRenewals] = useState<LeaseRenewal[]>([])
@@ -119,7 +120,8 @@ export default function LeaseRenewalsDashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord', 'Manager', 'Caretaker']}>
+      <div className="max-w-7xl mx-auto">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Lease Renewals</h1>
@@ -280,6 +282,8 @@ export default function LeaseRenewalsDashboardPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
+

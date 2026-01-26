@@ -7,7 +7,7 @@ import UnitForm from '@/components/units/UnitForm'
 import { useCreateUnit } from '@/lib/hooks'
 import { CreateUnitDto } from '@/lib/types'
 import Link from 'next/link'
-import { FaArrowLeft } from 'react-icons/fa'
+import { ArrowLeft } from 'lucide-react'
 
 function NewUnitContent() {
   const router = useRouter()
@@ -31,7 +31,7 @@ function NewUnitContent() {
           href="/units"
           className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2 w-4 h-4" />
           Back to Units
         </Link>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Add New Unit</h1>

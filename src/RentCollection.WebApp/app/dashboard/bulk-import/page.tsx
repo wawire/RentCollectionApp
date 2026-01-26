@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { apiClient } from '@/lib/services/api'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import { Alert, Button, Card, Input, PageHeader } from '@/components/common'
 
 interface ImportResult {
   successCount: number
@@ -125,166 +127,165 @@ export default function BulkImportPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Bulk Import</h1>
-        <p className="mt-2 text-gray-600">Import tenants and payments from CSV files</p>
-      </div>
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord']}>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <PageHeader
+          title="Bulk Import"
+          subtitle="Import tenants and payments from CSV files."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Bulk Import' },
+          ]}
+        />
 
-      {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
-        <div className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab('tenants')}
-            className={`pb-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'tenants'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Import Tenants
-          </button>
-          <button
-            onClick={() => setActiveTab('payments')}
-            className={`pb-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'payments'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Import Payments
-          </button>
+        <div className="border-b border-border-muted">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('tenants')}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'tenants'
+                  ? 'border-brand-secondary text-brand-primary'
+                  : 'border-transparent text-text-muted hover:text-text-secondary hover:border-border-muted'
+              }`}
+            >
+              Import Tenants
+            </button>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'payments'
+                  ? 'border-brand-secondary text-brand-primary'
+                  : 'border-transparent text-text-muted hover:text-text-secondary hover:border-border-muted'
+              }`}
+            >
+              Import Payments
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Template Download */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <p className="text-sm text-blue-800 mb-2">
-          <strong>Download Template:</strong> Use the CSV template to format your data correctly
-        </p>
-        <button
-          onClick={() => downloadTemplate(activeTab)}
-          className="text-sm text-blue-600 hover:text-blue-800 underline"
-        >
-          Download {activeTab} CSV template
-        </button>
-      </div>
+        <Alert
+          type="info"
+          title="Download Template"
+          message="Use the CSV template to format your data correctly."
+        />
+        <div>
+          <Button variant="secondary" size="sm" onClick={() => downloadTemplate(activeTab)}>
+            Download {activeTab} CSV template
+          </Button>
+        </div>
 
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
-      )}
+        {error && (
+          <Alert type="error" message={error} />
+        )}
 
-      {/* File Upload Form */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
-        <div className="space-y-4">
-          {activeTab === 'tenants' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Property ID *</label>
-              <input
+        <Card padding="md">
+          <div className="space-y-4">
+            {activeTab === 'tenants' && (
+              <Input
                 type="number"
+                label="Property ID"
+                required
                 value={propertyId}
                 onChange={(e) => setPropertyId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter property ID"
+                fullWidth
               />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">CSV File *</label>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            {file && (
-              <p className="mt-2 text-sm text-gray-600">
-                Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
-              </p>
             )}
-          </div>
 
-          <div className="flex space-x-3">
-            <button
-              onClick={handleValidate}
-              disabled={loading || !file || (activeTab === 'tenants' && !propertyId)}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
-            >
-              {loading ? 'Validating...' : 'Validate'}
-            </button>
-            <button
-              onClick={activeTab === 'tenants' ? handleImportTenants : handleImportPayments}
-              disabled={loading || !file || (activeTab === 'tenants' && !propertyId)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {loading ? 'Importing...' : 'Import'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Results */}
-      {result && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Import Results</h3>
-
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{result.totalCount}</p>
-            </div>
-            <div className="bg-green-50 p-4 rounded-md">
-              <p className="text-sm text-green-600">Success</p>
-              <p className="text-2xl font-bold text-green-900">{result.successCount}</p>
-            </div>
-            <div className="bg-red-50 p-4 rounded-md">
-              <p className="text-sm text-red-600">Failed</p>
-              <p className="text-2xl font-bold text-red-900">{result.failureCount}</p>
-            </div>
-          </div>
-
-          <p className="text-sm font-medium text-gray-900 mb-4">{result.summary}</p>
-
-          {result.errors.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-sm font-semibold text-red-700 mb-2">Errors:</h4>
-              <div className="bg-red-50 border border-red-200 rounded-md p-3 max-h-60 overflow-y-auto">
-                {result.errors.map((error, index) => (
-                  <p key={index} className="text-sm text-red-700 mb-1">
-                    {error}
-                  </p>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {result.successMessages.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-green-700 mb-2">Successfully Imported:</h4>
-              <div className="bg-green-50 border border-green-200 rounded-md p-3 max-h-60 overflow-y-auto">
-                {result.successMessages.map((msg, index) => (
-                  <p key={index} className="text-sm text-green-700 mb-1">
-                    ✓ {msg}
-                  </p>
-                ))}
+              <label className="block text-sm font-medium text-text-secondary mb-1">CSV File *</label>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-bg file:text-brand-primary hover:file:bg-brand-bg/80"
+              />
+              {file && (
+                <p className="mt-2 text-sm text-text-muted">
+                  Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                </p>
+              )}
+            </div>
+
+            <div className="flex space-x-3">
+              <Button
+                variant="secondary"
+                onClick={handleValidate}
+                disabled={loading || !file || (activeTab === 'tenants' && !propertyId)}
+              >
+                {loading ? 'Validating...' : 'Validate'}
+              </Button>
+              <Button
+                onClick={activeTab === 'tenants' ? handleImportTenants : handleImportPayments}
+                disabled={loading || !file || (activeTab === 'tenants' && !propertyId)}
+              >
+                {loading ? 'Importing...' : 'Import'}
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {result && (
+          <Card padding="md">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">Import Results</h3>
+
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-brand-bg/60 p-4 rounded-md">
+                <p className="text-sm text-text-muted">Total</p>
+                <p className="text-2xl font-semibold text-text-primary">{result.totalCount}</p>
+              </div>
+              <div className="bg-state-success/10 p-4 rounded-md">
+                <p className="text-sm text-state-success">Success</p>
+                <p className="text-2xl font-semibold text-text-primary">{result.successCount}</p>
+              </div>
+              <div className="bg-state-error/10 p-4 rounded-md">
+                <p className="text-sm text-state-error">Failed</p>
+                <p className="text-2xl font-semibold text-text-primary">{result.failureCount}</p>
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* Instructions */}
-      <div className="mt-6 bg-gray-50 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-gray-900 mb-2">Instructions:</h4>
-        <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-          <li>Download the CSV template and fill in your data</li>
-          <li>Ensure all required fields are filled correctly</li>
-          <li>Dates should be in YYYY-MM-DD format (e.g., 2024-01-15)</li>
-          <li>Use "Validate" to check for errors before importing</li>
-          <li>Review the results carefully after import</li>
-        </ul>
+            <p className="text-sm font-medium text-text-primary mb-4">{result.summary}</p>
+
+            {result.errors.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-state-error mb-2">Errors</h4>
+                <div className="bg-state-error/10 border border-state-error/30 rounded-md p-3 max-h-60 overflow-y-auto">
+                  {result.errors.map((issue, index) => (
+                    <p key={index} className="text-sm text-text-secondary mb-1">
+                      {issue}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {result.successMessages.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-state-success mb-2">Successfully Imported</h4>
+                <div className="bg-state-success/10 border border-state-success/30 rounded-md p-3 max-h-60 overflow-y-auto">
+                  {result.successMessages.map((msg, index) => (
+                    <p key={index} className="text-sm text-text-secondary mb-1">
+                      OK: {msg}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        <Card padding="md">
+          <h4 className="text-sm font-semibold text-text-primary mb-2">Instructions</h4>
+          <ul className="text-sm text-text-secondary space-y-1 list-disc list-inside">
+            <li>Download the CSV template and fill in your data</li>
+            <li>Ensure all required fields are filled correctly</li>
+            <li>Dates should be in YYYY-MM-DD format (e.g., 2024-01-15)</li>
+            <li>Use "Validate" to check for errors before importing</li>
+            <li>Review the results carefully after import</li>
+          </ul>
+        </Card>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }
+

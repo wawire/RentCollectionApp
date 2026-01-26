@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FaBars, FaTimes, FaBell, FaUser, FaCog, FaSignOutAlt, FaChevronDown } from 'react-icons/fa'
+import { Bell, ChevronDown, LogOut, Menu, Settings, User, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function Navbar() {
@@ -69,7 +69,7 @@ export default function Navbar() {
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative"
                 >
-                  <FaBell className="w-5 h-5 text-gray-600" />
+                  <Bell className="w-5 h-5 text-gray-600" />
                   {/* Notification badge */}
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
@@ -120,7 +120,7 @@ export default function Navbar() {
                     <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
                     <p className="text-xs text-gray-500">{user.role}</p>
                   </div>
-                  <FaChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
                 </button>
 
                 {/* Profile Dropdown Menu */}
@@ -136,7 +136,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setProfileDropdownOpen(false)}
                     >
-                      <FaUser className="w-4 h-4 text-gray-400" />
+                      <User className="w-4 h-4 text-gray-400" />
                       Dashboard
                     </Link>
 
@@ -145,7 +145,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setProfileDropdownOpen(false)}
                     >
-                      <FaCog className="w-4 h-4 text-gray-400" />
+                      <Settings className="w-4 h-4 text-gray-400" />
                       Settings
                     </Link>
 
@@ -157,7 +157,7 @@ export default function Navbar() {
                         }}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                       >
-                        <FaSignOutAlt className="w-4 h-4" />
+                        <LogOut className="w-4 h-4" />
                         Sign out
                       </button>
                     </div>
@@ -221,9 +221,9 @@ export default function Navbar() {
             className="md:hidden p-2 rounded-lg hover:bg-secondary/30 transition-colors"
           >
             {mobileMenuOpen ? (
-              <FaTimes className="text-xl text-primary" />
+              <X className="text-xl text-primary" />
             ) : (
-              <FaBars className="text-xl text-primary" />
+              <Menu className="text-xl text-primary" />
             )}
           </button>
         </div>

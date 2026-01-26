@@ -25,10 +25,10 @@ public class TenantApplicationsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all pending tenant applications (Landlord/SystemAdmin only)
+    /// Get all pending tenant applications (Landlord/PlatformAdmin only)
     /// </summary>
     [HttpGet("pending")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker")]
     [ProducesResponseType(typeof(IEnumerable<TenantApplicationResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPendingApplications()
     {
@@ -43,10 +43,10 @@ public class TenantApplicationsController : ControllerBase
     }
 
     /// <summary>
-    /// Get specific application details (Landlord/SystemAdmin only)
+    /// Get specific application details (Landlord/PlatformAdmin only)
     /// </summary>
     [HttpGet("{applicationId:int}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker")]
     [ProducesResponseType(typeof(TenantApplicationResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -68,10 +68,10 @@ public class TenantApplicationsController : ControllerBase
     }
 
     /// <summary>
-    /// Approve or reject a tenant application (Landlord/SystemAdmin only)
+    /// Approve or reject a tenant application (Landlord/PlatformAdmin only)
     /// </summary>
     [HttpPost("{applicationId:int}/review")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(typeof(TenantApplicationResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -105,3 +105,4 @@ public class TenantApplicationsController : ControllerBase
         return BadRequest(result.Errors);
     }
 }
+

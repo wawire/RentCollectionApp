@@ -17,6 +17,7 @@ namespace RentCollection.Application.Services
         private readonly IPaymentRepository _paymentRepository;
         private readonly ISmsService _smsService;
         private readonly MessageTemplateService _templateService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<RentReminderService> _logger;
 
         public RentReminderService(
@@ -27,6 +28,7 @@ namespace RentCollection.Application.Services
             IPaymentRepository paymentRepository,
             ISmsService smsService,
             MessageTemplateService templateService,
+            ICurrentUserService currentUserService,
             ILogger<RentReminderService> logger)
         {
             _reminderRepository = reminderRepository;
@@ -36,6 +38,7 @@ namespace RentCollection.Application.Services
             _paymentRepository = paymentRepository;
             _smsService = smsService;
             _templateService = templateService;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -387,6 +390,7 @@ namespace RentCollection.Application.Services
 
         public async Task<List<RentReminderDto>> GetRemindersForTenantAsync(int tenantId)
         {
+            await EnsureTenantAccessAsync(tenantId);
             var reminders = await _reminderRepository.GetRemindersByTenantIdAsync(tenantId);
             return reminders.Select(MapReminderToDto).ToList();
         }
@@ -423,6 +427,7 @@ namespace RentCollection.Application.Services
 
         public async Task<bool> UpdateTenantPreferencesAsync(int tenantId, bool remindersEnabled, ReminderChannel preferredChannel)
         {
+            await EnsureTenantAccessAsync(tenantId);
             var preference = await _preferenceRepository.GetByTenantIdAsync(tenantId);
 
             if (preference == null)
@@ -446,6 +451,54 @@ namespace RentCollection.Application.Services
             _logger.LogInformation("Updated reminder preferences for tenant {TenantId}", tenantId);
 
             return true;
+        }
+
+        private async Task EnsureTenantAccessAsync(int tenantId)
+        {
+            if (_currentUserService.IsPlatformAdmin)
+            {
+                return;
+            }
+
+            if (_currentUserService.IsTenant)
+            {
+                if (!_currentUserService.TenantId.HasValue || _currentUserService.TenantId.Value != tenantId)
+                {
+                    throw new UnauthorizedAccessException("You can only access your own reminders");
+                }
+
+                return;
+            }
+
+            var tenant = await _tenantRepository.GetTenantWithDetailsAsync(tenantId);
+            if (tenant == null)
+            {
+                throw new InvalidOperationException($"Tenant with ID {tenantId} not found");
+            }
+
+            if (_currentUserService.IsLandlord)
+            {
+                var landlordId = _currentUserService.UserIdInt;
+                if (!landlordId.HasValue || tenant.Unit?.Property?.LandlordId != landlordId.Value)
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to access this tenant");
+                }
+
+                return;
+            }
+
+            if (_currentUserService.IsCaretaker)
+            {
+                var propertyId = _currentUserService.PropertyId;
+                if (!propertyId.HasValue || tenant.Unit?.PropertyId != propertyId.Value)
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to access this tenant");
+                }
+
+                return;
+            }
+
+            throw new UnauthorizedAccessException("You do not have permission to access tenant reminders");
         }
 
         public async Task CancelReminderAsync(int reminderId)
@@ -551,3 +604,4 @@ namespace RentCollection.Application.Services
         #endregion
     }
 }
+

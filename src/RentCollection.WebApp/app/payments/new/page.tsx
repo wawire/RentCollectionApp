@@ -4,10 +4,12 @@ import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from '@/components/common'
 import PaymentForm from '@/components/payments/PaymentForm'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import { UserRole } from '@/lib/types/auth.types'
 import { useCreatePayment } from '@/lib/hooks'
 import { CreatePaymentDto } from '@/lib/types'
 import Link from 'next/link'
-import { FaArrowLeft } from 'react-icons/fa'
+import { ArrowLeft } from 'lucide-react'
 
 function NewPaymentContent() {
   const router = useRouter()
@@ -31,7 +33,7 @@ function NewPaymentContent() {
           href="/payments"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2 w-4 h-4" />
           Back to Payments
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">Record Payment</h1>
@@ -53,8 +55,11 @@ function NewPaymentContent() {
 
 export default function NewPaymentPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <NewPaymentContent />
-    </Suspense>
+    <ProtectedRoute allowedRoles={[UserRole.PlatformAdmin, UserRole.Landlord, UserRole.Manager]}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <NewPaymentContent />
+      </Suspense>
+    </ProtectedRoute>
   )
 }
+

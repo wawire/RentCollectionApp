@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
-import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi'
-import Image from 'next/image'
+import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -30,13 +29,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Full width image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-bg-dark via-primary-800 to-primary-900">
-        <div className="absolute inset-0 bg-black/20" />
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-brand-primary via-brand-secondary to-brand-primary">
+        <div className="absolute inset-0 bg-brand-primary/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">RentPro</h1>
-            <p className="text-white/70 text-lg tracking-wide">Simplifying property management for modern landlords</p>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Hisa Rentals</h1>
+            <p className="text-white/80 text-lg tracking-wide">
+              Smart Rent & Property Management for Modern Landlords and Agencies
+            </p>
+            <p className="text-white/70 mt-3 tracking-wide">
+              Collect rent, manage properties, and stay in control - without spreadsheets or chaos.
+            </p>
           </div>
 
           <div className="space-y-8">
@@ -48,22 +51,22 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Centralized Dashboard</h3>
-                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Monitor all properties, tenants, and payments from one intuitive dashboard</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Centralized Portfolio</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Monitor properties, tenants, and revenue in one unified workspace.</p>
                 </div>
               </div>
             </div>
 
             <div>
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
-                  <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Instant Payment Tracking</h3>
-                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Real-time M-Pesa integration with automatic receipt generation</p>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Real-time M-Pesa updates with receipts and reconciliation.</p>
                 </div>
               </div>
             </div>
@@ -76,62 +79,60 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Smart Analytics</h3>
-                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Generate financial reports and track occupancy rates effortlessly</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Operational Insights</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Generate reports, track occupancy, and plan growth confidently.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-secondary/60">
-            © 2024 RentPro. Designed for Kenyan property managers.
+          <div className="text-sm text-white/60">
+            (c) 2024 Hisa Rentals. Built for Kenyan property teams.
           </div>
         </div>
       </div>
 
-      {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-brand-bg">
         <div className="w-full max-w-md space-y-8">
-          {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentPro</h1>
-            <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
+            <h1 className="text-3xl font-serif font-normal text-brand-primary tracking-wide">Hisa Rentals</h1>
+            <p className="text-text-secondary mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
           <div>
-            <h2 className="text-3xl font-serif font-normal text-primary mb-3 tracking-wide">Welcome Back</h2>
-            <p className="text-base text-primary/70 tracking-wide leading-relaxed">
-              Sign in to manage your properties, track payments, and connect with tenants.
+            <h2 className="text-3xl font-serif font-normal text-text-primary mb-3 tracking-wide">Welcome Back</h2>
+            <p className="text-base text-text-secondary tracking-wide leading-relaxed">
+              Sign in to manage properties, track payments, and support tenants.
             </p>
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start space-x-3">
-                <FiAlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
+              <div className="rounded-lg bg-state-error/10 border border-state-error/30 p-4 flex items-start space-x-3">
+                <AlertCircle className="h-5 w-5 text-state-error mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                  <h3 className="text-sm font-medium text-text-primary">Error</h3>
+                  <p className="text-sm text-text-secondary mt-1">{error}</p>
                 </div>
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="emailOrPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="emailOrPhone" className="block text-sm font-medium text-text-secondary mb-1">
                   Email or Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute left-0 bottom-3 pointer-events-none">
-                    <FiMail className="h-5 w-5 text-primary/40" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Mail className="h-5 w-5 text-text-muted" />
                   </div>
                   <input
                     id="emailOrPhone"
                     name="emailOrPhone"
                     type="text"
                     required
-                    className="w-full pl-7 pr-2 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
-                    placeholder="admin@rentpro.com or 0712345678"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg"
+                    placeholder="admin@hisa.co.ke or 0712345678"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
                   />
@@ -139,32 +140,32 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute left-0 bottom-3 pointer-events-none">
-                    <FiLock className="h-5 w-5 text-primary/40" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Lock className="h-5 w-5 text-text-muted" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="w-full pl-7 pr-10 py-3 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
-                    className="absolute right-0 bottom-3 flex items-center"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
+                      <EyeOff className="h-5 w-5 text-text-muted hover:text-text-secondary transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
+                      <Eye className="h-5 w-5 text-text-muted hover:text-text-secondary transition-colors" />
                     )}
                   </button>
                 </div>
@@ -177,15 +178,15 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-accent focus:ring-accent border-muted rounded"
+                  className="h-4 w-4 text-brand-secondary focus:ring-brand-secondary border-border-muted rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-primary">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-text-secondary">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-accent hover:text-accent-600 transition-colors">
+                <a href="#" className="font-medium text-brand-secondary hover:text-brand-primary transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -194,7 +195,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-primary bg-accent hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all disabled:bg-accent/50 disabled:cursor-not-allowed shadow-sm"
+              className="group relative w-full flex justify-center py-3 px-4 text-sm font-semibold rounded-lg text-white bg-brand-primary hover:bg-brand-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-secondary/60 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-subtle"
             >
               {isLoading ? (
                 <span className="flex items-center">
@@ -210,9 +211,9 @@ export default function LoginPage() {
             </button>
 
             <div className="text-center">
-              <p className="text-sm text-primary/70 tracking-wide">
+              <p className="text-sm text-text-secondary tracking-wide">
                 Don't have an account?{' '}
-                <Link href="/register" className="font-medium text-accent hover:text-accent-600 transition-colors">
+                <Link href="/register" className="font-medium text-brand-secondary hover:text-brand-primary transition-colors">
                   Create account
                 </Link>
               </p>

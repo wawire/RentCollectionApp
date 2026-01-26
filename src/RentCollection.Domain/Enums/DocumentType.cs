@@ -26,6 +26,11 @@ public enum DocumentType
     ReferenceLetter = 4,
 
     /// <summary>
+    /// Owner statement document
+    /// </summary>
+    OwnerStatement = 5,
+
+    /// <summary>
     /// Other miscellaneous documents
     /// </summary>
     Other = 99

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using RentCollection.Application.Common;
 using RentCollection.Application.DTOs.BulkImport;
 using RentCollection.Application.DTOs.Tenants;
@@ -7,6 +8,8 @@ using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
+using RentCollection.Application.Helpers;
+using RentCollection.Infrastructure.Data;
 using System.Globalization;
 using System.Text;
 
@@ -17,23 +20,29 @@ namespace RentCollection.Infrastructure.Services
         private readonly IUnitRepository _unitRepository;
         private readonly ITenantRepository _tenantRepository;
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IPropertyRepository _propertyRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly IAuditLogService _auditLogService;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<BulkImportService> _logger;
 
         public BulkImportService(
             IUnitRepository unitRepository,
             ITenantRepository tenantRepository,
             IPaymentRepository paymentRepository,
+            IPropertyRepository propertyRepository,
             ICurrentUserService currentUserService,
             IAuditLogService auditLogService,
+            ApplicationDbContext context,
             ILogger<BulkImportService> logger)
         {
             _unitRepository = unitRepository;
             _tenantRepository = tenantRepository;
             _paymentRepository = paymentRepository;
+            _propertyRepository = propertyRepository;
             _currentUserService = currentUserService;
             _auditLogService = auditLogService;
+            _context = context;
             _logger = logger;
         }
 
@@ -41,9 +50,20 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<BulkImportResultDto>.Failure("Only landlords can import tenants");
+                }
+
+                var property = await _propertyRepository.GetByIdAsync(propertyId);
+                if (property == null)
+                {
+                    return ServiceResult<BulkImportResultDto>.Failure($"Property with ID {propertyId} not found");
+                }
+
+                if (!_currentUserService.IsPlatformAdmin && _currentUserService.UserIdInt != property.LandlordId)
+                {
+                    return ServiceResult<BulkImportResultDto>.Failure("You don't have permission to import tenants for this property");
                 }
 
                 var result = new BulkImportResultDto();
@@ -124,7 +144,7 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<BulkImportResultDto>.Failure("Only landlords can import payments");
                 }
@@ -137,8 +157,12 @@ namespace RentCollection.Infrastructure.Services
                 {
                     try
                     {
-                        // Find tenant by email
-                        var tenant = await _tenantRepository.GetByEmailAsync(row.TenantEmail);
+                        var tenant = await _context.Tenants
+                            .Include(t => t.Unit)
+                                .ThenInclude(u => u.Property)
+                                    .ThenInclude(p => p.PaymentAccounts)
+                            .FirstOrDefaultAsync(t => t.Email == row.TenantEmail);
+
                         if (tenant == null)
                         {
                             result.FailureCount++;
@@ -146,15 +170,88 @@ namespace RentCollection.Infrastructure.Services
                             continue;
                         }
 
+                        if (tenant.Unit == null || tenant.Unit.Property == null)
+                        {
+                            result.FailureCount++;
+                            result.Errors.Add($"Row {rows.IndexOf(row) + 2}: Tenant {row.TenantEmail} is missing unit/property assignment");
+                            continue;
+                        }
+
+                        if (!_currentUserService.IsPlatformAdmin)
+                        {
+                            if (!_currentUserService.OrganizationId.HasValue ||
+                                tenant.Unit.Property.OrganizationId != _currentUserService.OrganizationId.Value)
+                            {
+                                result.FailureCount++;
+                                result.Errors.Add($"Row {rows.IndexOf(row) + 2}: Tenant {row.TenantEmail} is outside your organization scope");
+                                continue;
+                            }
+
+                            if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue &&
+                                tenant.Unit.Property.LandlordId != _currentUserService.UserIdInt.Value)
+                            {
+                                result.FailureCount++;
+                                result.Errors.Add($"Row {rows.IndexOf(row) + 2}: Tenant {row.TenantEmail} does not belong to your properties");
+                                continue;
+                            }
+                        }
+
+                        if (!TryParsePaymentMethod(row.PaymentMethod, out var paymentMethod))
+                        {
+                            result.FailureCount++;
+                            result.Errors.Add($"Row {rows.IndexOf(row) + 2}: Invalid payment method '{row.PaymentMethod}'");
+                            continue;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(row.ReferenceNumber))
+                        {
+                            var referenceExists = await _context.Payments
+                                .AnyAsync(p => p.TransactionReference == row.ReferenceNumber);
+
+                            if (referenceExists)
+                            {
+                                result.FailureCount++;
+                                result.Errors.Add($"Row {rows.IndexOf(row) + 2}: Duplicate transaction reference {row.ReferenceNumber}");
+                                continue;
+                            }
+                        }
+
+                        var paymentAccount = tenant.Unit.Property.PaymentAccounts
+                            .FirstOrDefault(pa => pa.PropertyId == tenant.Unit.PropertyId && pa.IsDefault && pa.IsActive)
+                            ?? tenant.Unit.Property.PaymentAccounts.FirstOrDefault(pa => pa.IsDefault && pa.IsActive)
+                            ?? tenant.Unit.Property.PaymentAccounts.FirstOrDefault(pa => pa.IsActive);
+
+                        if (paymentAccount == null)
+                        {
+                            result.FailureCount++;
+                            result.Errors.Add($"Row {rows.IndexOf(row) + 2}: No active payment account configured for tenant {row.TenantEmail}");
+                            continue;
+                        }
+
+                        var dueDate = PaymentDueDateHelper.CalculateDueDateForMonth(
+                            row.PaymentDate.Year,
+                            row.PaymentDate.Month,
+                            tenant.RentDueDay);
+                        var (periodStart, periodEnd) = PaymentDueDateHelper.GetPaymentPeriod(dueDate);
+
                         // Create payment
                         var payment = new Payment
                         {
                             TenantId = tenant.Id,
+                            UnitId = tenant.Unit.Id,
+                            LandlordAccountId = paymentAccount.Id,
                             Amount = row.Amount,
                             PaymentDate = row.PaymentDate,
-                            PaymentMethod = Enum.Parse<PaymentMethod>(row.PaymentMethod, ignoreCase: true),
+                            DueDate = dueDate,
+                            PeriodStart = periodStart,
+                            PeriodEnd = periodEnd,
+                            PaymentMethod = paymentMethod,
+                            Status = PaymentStatus.Completed,
+                            UnallocatedAmount = row.Amount,
                             TransactionReference = row.ReferenceNumber,
-                            Notes = row.Notes
+                            Notes = row.Notes,
+                            PaybillAccountNumber = tenant.Unit.PaymentAccountNumber ?? tenant.Unit.UnitNumber,
+                            CreatedAt = DateTime.UtcNow
                         };
 
                         await _paymentRepository.AddAsync(payment);
@@ -192,6 +289,25 @@ namespace RentCollection.Infrastructure.Services
             var result = new BulkImportResultDto();
             try
             {
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsPlatformAdmin)
+                {
+                    result.Errors.Add("Only landlords can validate tenant imports");
+                    return result;
+                }
+
+                var property = await _propertyRepository.GetByIdAsync(propertyId);
+                if (property == null)
+                {
+                    result.Errors.Add($"Property with ID {propertyId} not found");
+                    return result;
+                }
+
+                if (!_currentUserService.IsPlatformAdmin && _currentUserService.UserIdInt != property.LandlordId)
+                {
+                    result.Errors.Add("You don't have permission to validate tenant imports for this property");
+                    return result;
+                }
+
                 var rows = await ParseTenantCsvAsync(file);
                 result.TotalCount = rows.Count;
 
@@ -240,6 +356,39 @@ namespace RentCollection.Infrastructure.Services
                     if (string.IsNullOrWhiteSpace(row.TenantEmail)) errors.Add("Tenant email is required");
                     if (row.Amount <= 0) errors.Add("Amount must be greater than 0");
                     if (string.IsNullOrWhiteSpace(row.PaymentMethod)) errors.Add("Payment method is required");
+                    if (!string.IsNullOrWhiteSpace(row.PaymentMethod) && !TryParsePaymentMethod(row.PaymentMethod, out _))
+                        errors.Add($"Invalid payment method '{row.PaymentMethod}'");
+
+                    if (!string.IsNullOrWhiteSpace(row.TenantEmail))
+                    {
+                        var tenant = await _context.Tenants
+                            .Include(t => t.Unit)
+                                .ThenInclude(u => u.Property)
+                            .FirstOrDefaultAsync(t => t.Email == row.TenantEmail);
+
+                        if (tenant == null)
+                        {
+                            errors.Add($"Tenant with email {row.TenantEmail} not found");
+                        }
+                        else if (tenant.Unit?.Property == null)
+                        {
+                            errors.Add($"Tenant with email {row.TenantEmail} is missing unit/property assignment");
+                        }
+                        else if (!_currentUserService.IsPlatformAdmin)
+                        {
+                            if (!_currentUserService.OrganizationId.HasValue ||
+                                tenant.Unit.Property.OrganizationId != _currentUserService.OrganizationId.Value)
+                            {
+                                errors.Add($"Tenant with email {row.TenantEmail} is outside your organization scope");
+                            }
+
+                            if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue &&
+                                tenant.Unit.Property.LandlordId != _currentUserService.UserIdInt.Value)
+                            {
+                                errors.Add($"Tenant with email {row.TenantEmail} does not belong to your properties");
+                            }
+                        }
+                    }
 
                     if (errors.Any())
                     {
@@ -258,6 +407,18 @@ namespace RentCollection.Infrastructure.Services
             }
 
             return result;
+        }
+
+        private static bool TryParsePaymentMethod(string rawValue, out PaymentMethod paymentMethod)
+        {
+            paymentMethod = PaymentMethod.Other;
+            if (string.IsNullOrWhiteSpace(rawValue))
+            {
+                return false;
+            }
+
+            var normalized = rawValue.Trim().Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase);
+            return Enum.TryParse(normalized, ignoreCase: true, out paymentMethod);
         }
 
         private async Task<List<TenantImportRow>> ParseTenantCsvAsync(IFormFile file)
@@ -317,8 +478,8 @@ namespace RentCollection.Infrastructure.Services
                 var row = new PaymentImportRow
                 {
                     TenantEmail = values[0].Trim(),
-                    Amount = decimal.Parse(values[1].Trim()),
-                    PaymentDate = DateTime.Parse(values[2].Trim()),
+                    Amount = decimal.Parse(values[1].Trim(), CultureInfo.InvariantCulture),
+                    PaymentDate = DateTime.Parse(values[2].Trim(), CultureInfo.InvariantCulture),
                     PaymentMethod = values[3].Trim(),
                     ReferenceNumber = values.Length > 4 ? values[4].Trim() : null,
                     Notes = values.Length > 5 ? values[5].Trim() : null
@@ -331,3 +492,4 @@ namespace RentCollection.Infrastructure.Services
         }
     }
 }
+

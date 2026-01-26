@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FaArrowLeft, FaSave, FaSpinner } from 'react-icons/fa'
+import { ArrowLeft, Loader2, Save } from 'lucide-react'
 import { expenseService, CreateExpense, ExpenseCategory, PaymentMethod } from '@/lib/services/expenseService'
 import { propertyService } from '@/lib/services/propertyService'
 import { Property } from '@/lib/types/property.types'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import { Alert, Button, Card, Input, PageHeader, Select, TextArea } from '@/components/common'
 
 export default function NewExpensePage() {
   const router = useRouter()
@@ -40,7 +42,6 @@ export default function NewExpensePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validation
     if (!formData.propertyId) {
       setError('Please select a property')
       return
@@ -65,7 +66,6 @@ export default function NewExpensePage() {
     try {
       setLoading(true)
       setError(null)
-
       await expenseService.createExpense(formData)
       router.push('/dashboard/expenses')
     } catch (err: any) {
@@ -79,296 +79,223 @@ export default function NewExpensePage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <Link href="/dashboard/expenses" className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4">
-          <FaArrowLeft /> Back to Expenses
-        </Link>
-        <h1 className="text-3xl font-bold text-gray-800">Add New Expense</h1>
-        <p className="text-gray-600 mt-1">Record a new property expense</p>
-      </div>
+    <ProtectedRoute allowedRoles={['Landlord', 'Manager']}>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <PageHeader
+          title="Add New Expense"
+          subtitle="Record a new property expense."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Expenses', href: '/dashboard/expenses' },
+            { label: 'New Expense' },
+          ]}
+          actions={
+            <Link href="/dashboard/expenses">
+              <Button variant="ghost">
+                <ArrowLeft size={16} className="mr-2" />
+                Back to Expenses
+              </Button>
+            </Link>
+          }
+        />
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
+        {error && (
+          <Alert type="error" message={error} />
+        )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
-        <div className="space-y-6">
-          {/* Property Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Property <span className="text-red-500">*</span>
-            </label>
-            <select
+        <Card padding="md">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Select
+              label="Property"
               value={formData.propertyId}
               onChange={(e) => handleInputChange('propertyId', parseInt(e.target.value))}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              options={[
+                { value: 0, label: 'Select a property' },
+                ...properties.map(property => ({ value: property.id, label: property.name })),
+              ]}
               required
-            >
-              <option value={0}>Select a property</option>
-              {properties.map(property => (
-                <option key={property.id} value={property.id}>
-                  {property.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            />
 
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <select
+            <Select
+              label="Category"
               value={formData.category}
               onChange={(e) => handleInputChange('category', e.target.value as ExpenseCategory)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              options={[
+                { value: 'Maintenance', label: 'Maintenance' },
+                { value: 'Utilities', label: 'Utilities' },
+                { value: 'Insurance', label: 'Insurance' },
+                { value: 'PropertyTax', label: 'Property Tax' },
+                { value: 'Management', label: 'Management' },
+                { value: 'Marketing', label: 'Marketing' },
+                { value: 'Legal', label: 'Legal' },
+                { value: 'Cleaning', label: 'Cleaning' },
+                { value: 'Landscaping', label: 'Landscaping' },
+                { value: 'Security', label: 'Security' },
+                { value: 'Mortgage', label: 'Mortgage' },
+                { value: 'Supplies', label: 'Supplies' },
+                { value: 'Other', label: 'Other' },
+              ]}
               required
-            >
-              <option value="Maintenance">Maintenance</option>
-              <option value="Utilities">Utilities</option>
-              <option value="Insurance">Insurance</option>
-              <option value="PropertyTax">Property Tax</option>
-              <option value="Management">Management</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Legal">Legal</option>
-              <option value="Cleaning">Cleaning</option>
-              <option value="Landscaping">Landscaping</option>
-              <option value="Security">Security</option>
-              <option value="Mortgage">Mortgage</option>
-              <option value="Supplies">Supplies</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+            />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Vendor */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vendor <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Vendor"
                 value={formData.vendor}
                 onChange={(e) => handleInputChange('vendor', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., ABC Plumbing"
                 required
               />
-            </div>
 
-            {/* Amount */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amount (KES) <span className="text-red-500">*</span>
-              </label>
-              <input
+              <Input
+                label="Amount (KES)"
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.amount}
                 onChange={(e) => handleInputChange('amount', parseFloat(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00"
                 required
               />
             </div>
-          </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description <span className="text-red-500">*</span>
-            </label>
-            <textarea
+            <TextArea
+              label="Description"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Describe the expense..."
               required
             />
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Expense Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Expense Date <span className="text-red-500">*</span>
-              </label>
-              <input
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Expense Date"
                 type="date"
                 value={formData.expenseDate}
                 onChange={(e) => handleInputChange('expenseDate', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
-            </div>
 
-            {/* Payment Method */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Method
-              </label>
-              <select
+              <Select
+                label="Payment Method"
                 value={formData.paymentMethod || ''}
                 onChange={(e) => handleInputChange('paymentMethod', e.target.value ? e.target.value as PaymentMethod : undefined)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select payment method</option>
-                <option value="Cash">Cash</option>
-                <option value="Check">Check</option>
-                <option value="BankTransfer">Bank Transfer</option>
-                <option value="CreditCard">Credit Card</option>
-                <option value="DebitCard">Debit Card</option>
-                <option value="MPesa">M-Pesa</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Reference Number */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reference Number
-              </label>
-              <input
-                type="text"
-                value={formData.referenceNumber || ''}
-                onChange={(e) => handleInputChange('referenceNumber', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Invoice/Receipt number"
+                options={[
+                  { value: '', label: 'Select payment method' },
+                  { value: 'Cash', label: 'Cash' },
+                  { value: 'Check', label: 'Check' },
+                  { value: 'BankTransfer', label: 'Bank Transfer' },
+                  { value: 'CreditCard', label: 'Credit Card' },
+                  { value: 'DebitCard', label: 'Debit Card' },
+                  { value: 'MPesa', label: 'M-Pesa' },
+                  { value: 'Other', label: 'Other' },
+                ]}
               />
             </div>
 
-            {/* Receipt URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Receipt URL
-              </label>
-              <input
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Reference Number"
+                value={formData.referenceNumber || ''}
+                onChange={(e) => handleInputChange('referenceNumber', e.target.value)}
+                placeholder="Invoice/Receipt number"
+              />
+
+              <Input
+                label="Receipt URL"
                 type="url"
                 value={formData.receiptUrl || ''}
                 onChange={(e) => handleInputChange('receiptUrl', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="https://..."
               />
             </div>
-          </div>
 
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Notes
-            </label>
-            <textarea
+            <TextArea
+              label="Notes"
               value={formData.notes || ''}
               onChange={(e) => handleInputChange('notes', e.target.value)}
               rows={2}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Additional notes..."
             />
-          </div>
 
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tags
-            </label>
-            <input
-              type="text"
+            <Input
+              label="Tags"
               value={formData.tags || ''}
               onChange={(e) => handleInputChange('tags', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Comma-separated tags (e.g., urgent, emergency)"
             />
-          </div>
 
-          {/* Checkboxes */}
-          <div className="space-y-4">
-            {/* Tax Deductible */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="taxDeductible"
-                checked={formData.isTaxDeductible}
-                onChange={(e) => handleInputChange('isTaxDeductible', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="taxDeductible" className="ml-2 block text-sm text-gray-700">
-                Tax Deductible
-              </label>
-            </div>
-
-            {/* Recurring */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="recurring"
-                checked={formData.isRecurring}
-                onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="recurring" className="ml-2 block text-sm text-gray-700">
-                Recurring Expense
-              </label>
-            </div>
-
-            {/* Recurrence Interval */}
-            {formData.isRecurring && (
-              <div className="ml-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Recurrence Interval (months) <span className="text-red-500">*</span>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="taxDeductible"
+                  checked={formData.isTaxDeductible}
+                  onChange={(e) => handleInputChange('isTaxDeductible', e.target.checked)}
+                  className="h-4 w-4 text-brand-secondary focus-visible:ring-brand-secondary border-border-muted rounded"
+                />
+                <label htmlFor="taxDeductible" className="ml-2 block text-sm text-text-secondary">
+                  Tax Deductible
                 </label>
-                <select
-                  value={formData.recurrenceMonths || ''}
-                  onChange={(e) => handleInputChange('recurrenceMonths', parseInt(e.target.value))}
-                  className="w-full md:w-64 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required={formData.isRecurring}
-                >
-                  <option value="">Select interval</option>
-                  <option value="1">Monthly (1 month)</option>
-                  <option value="2">Bi-monthly (2 months)</option>
-                  <option value="3">Quarterly (3 months)</option>
-                  <option value="6">Semi-annually (6 months)</option>
-                  <option value="12">Annually (12 months)</option>
-                </select>
               </div>
-            )}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4 pt-4 border-t border-gray-200">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <FaSpinner className="animate-spin" /> Saving...
-                </>
-              ) : (
-                <>
-                  <FaSave /> Save Expense
-                </>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="recurring"
+                  checked={formData.isRecurring}
+                  onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
+                  className="h-4 w-4 text-brand-secondary focus-visible:ring-brand-secondary border-border-muted rounded"
+                />
+                <label htmlFor="recurring" className="ml-2 block text-sm text-text-secondary">
+                  Recurring Expense
+                </label>
+              </div>
+
+              {formData.isRecurring && (
+                <div className="ml-6">
+                  <Select
+                    label="Recurrence Interval (months)"
+                    value={formData.recurrenceMonths || ''}
+                    onChange={(e) => handleInputChange('recurrenceMonths', parseInt(e.target.value))}
+                    options={[
+                      { value: '', label: 'Select interval' },
+                      { value: 1, label: 'Monthly (1 month)' },
+                      { value: 2, label: 'Bi-monthly (2 months)' },
+                      { value: 3, label: 'Quarterly (3 months)' },
+                      { value: 6, label: 'Semi-annually (6 months)' },
+                      { value: 12, label: 'Annually (12 months)' },
+                    ]}
+                    required
+                  />
+                </div>
               )}
-            </button>
-            <Link
-              href="/dashboard/expenses"
-              className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition text-center"
-            >
-              Cancel
-            </Link>
-          </div>
-        </div>
-      </form>
-    </div>
+            </div>
+
+            <div className="flex gap-4 pt-4 border-t border-border-muted">
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} className="mr-2" />
+                    Save Expense
+                  </>
+                )}
+              </Button>
+              <Link href="/dashboard/expenses" className="flex-1">
+                <Button variant="secondary" fullWidth>
+                  Cancel
+                </Button>
+              </Link>
+            </div>
+          </form>
+        </Card>
+      </div>
+    </ProtectedRoute>
   )
 }

@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useGetTenants } from '@/lib/hooks'
 import TenantList from '@/components/tenants/TenantList'
-import { Button, SearchBar, Select, LoadingSpinner } from '@/components/common'
+import { Button, SearchBar, Select, LoadingSpinner, Card, PageHeader } from '@/components/common'
 import Link from 'next/link'
-import { FaPlus } from 'react-icons/fa'
+import { Plus } from 'lucide-react'
 
 export default function TenantsPage() {
   const { data: tenants, loading, error, refetch } = useGetTenants()
@@ -44,7 +44,7 @@ export default function TenantsPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">Error loading tenants: {error.message}</p>
+        <p className="text-state-error">Error loading tenants: {error.message}</p>
         <Button onClick={refetch} className="mt-4">
           Retry
         </Button>
@@ -54,21 +54,23 @@ export default function TenantsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Tenants</h1>
-          <p className="text-primary/60 mt-2 tracking-wide">Manage tenant information and leases</p>
-        </div>
-        <Link href="/tenants/new">
-          <Button variant="primary">
-            <FaPlus className="mr-2" />
-            Add Tenant
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Tenants & Leases"
+        subtitle="Manage tenant profiles, lease status, and payment health."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Tenants & Leases' },
+        ]}
+        actions={
+          <Link href="/tenants/new">
+            <Button>
+              <Plus className="mr-2 w-4 h-4" />
+              Add Tenant
+            </Button>
+          </Link>
+        }
+      />
 
-      {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <SearchBar
@@ -90,39 +92,37 @@ export default function TenantsPage() {
         </div>
       </div>
 
-      {/* Tenants List */}
       <TenantList tenants={filteredTenants} onUpdate={refetch} />
 
-      {/* Stats */}
       {tenants.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <Card padding="md">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-gray-900">{tenants.length}</p>
-              <p className="text-sm text-gray-600">Total Tenants</p>
+              <p className="text-2xl font-semibold text-text-primary">{tenants.length}</p>
+              <p className="text-sm text-text-muted">Total Tenants</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">{activeTenants}</p>
-              <p className="text-sm text-gray-600">Active</p>
+              <p className="text-2xl font-semibold text-state-success">{activeTenants}</p>
+              <p className="text-sm text-text-muted">Active</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-400">{inactiveTenants}</p>
-              <p className="text-sm text-gray-600">Inactive</p>
+              <p className="text-2xl font-semibold text-text-muted">{inactiveTenants}</p>
+              <p className="text-sm text-text-muted">Inactive</p>
             </div>
-            <div className="border-l border-gray-200 pl-4">
-              <p className="text-2xl font-bold text-green-600">{paidTenants}</p>
-              <p className="text-sm text-gray-600">Paid</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-600">{overdueTenants}</p>
-              <p className="text-sm text-gray-600">Overdue</p>
+            <div className="border-l border-border-muted pl-4">
+              <p className="text-2xl font-semibold text-state-success">{paidTenants}</p>
+              <p className="text-sm text-text-muted">Paid</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-yellow-600">{pendingTenants}</p>
-              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-2xl font-semibold text-state-error">{overdueTenants}</p>
+              <p className="text-sm text-text-muted">Overdue</p>
+            </div>
+            <div>
+              <p className="text-2xl font-semibold text-state-warning">{pendingTenants}</p>
+              <p className="text-sm text-text-muted">Pending</p>
             </div>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   )

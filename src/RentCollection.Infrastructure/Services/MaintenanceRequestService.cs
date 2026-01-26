@@ -12,6 +12,7 @@ namespace RentCollection.Infrastructure.Services
     {
         private readonly IMaintenanceRequestRepository _maintenanceRequestRepository;
         private readonly ITenantRepository _tenantRepository;
+        private readonly IPropertyRepository _propertyRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly INotificationService _notificationService;
         private readonly IAuditLogService _auditLogService;
@@ -24,6 +25,7 @@ namespace RentCollection.Infrastructure.Services
         public MaintenanceRequestService(
             IMaintenanceRequestRepository maintenanceRequestRepository,
             ITenantRepository tenantRepository,
+            IPropertyRepository propertyRepository,
             IFileStorageService fileStorageService,
             INotificationService notificationService,
             IAuditLogService auditLogService,
@@ -32,6 +34,7 @@ namespace RentCollection.Infrastructure.Services
         {
             _maintenanceRequestRepository = maintenanceRequestRepository;
             _tenantRepository = tenantRepository;
+            _propertyRepository = propertyRepository;
             _fileStorageService = fileStorageService;
             _notificationService = notificationService;
             _auditLogService = auditLogService;
@@ -127,13 +130,27 @@ namespace RentCollection.Infrastructure.Services
                 }
                 else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.UserIdInt!.Value;
+                    var landlordId = _currentUserService.UserIdInt;
+                    if (!landlordId.HasValue)
+                    {
+                        return ServiceResult<List<MaintenanceRequestDto>>.Failure("You do not have permission to view maintenance requests");
+                    }
+
                     requests = requests.Where(r => r.Property.LandlordId == landlordId).ToList();
                 }
-                else if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
                 {
-                    var landlordId = _currentUserService.LandlordIdInt!.Value;
-                    requests = requests.Where(r => r.Property.LandlordId == landlordId).ToList();
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (assignedPropertyIds.Count == 0)
+                    {
+                        return ServiceResult<List<MaintenanceRequestDto>>.Failure("You do not have permission to view maintenance requests");
+                    }
+
+                    requests = requests.Where(r => assignedPropertyIds.Contains(r.PropertyId)).ToList();
+                }
+                else if (!_currentUserService.IsPlatformAdmin)
+                {
+                    return ServiceResult<List<MaintenanceRequestDto>>.Failure("You do not have permission to view maintenance requests");
                 }
 
                 var dtos = requests.Select(MapToDto).ToList();
@@ -196,14 +213,46 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
-                var requests = await _maintenanceRequestRepository.GetByPropertyIdAsync(propertyId);
-
-                // Apply RBAC filtering
-                if (_currentUserService.IsLandlord)
+                var property = await _propertyRepository.GetByIdAsync(propertyId);
+                if (property == null)
                 {
-                    var landlordId = _currentUserService.UserIdInt!.Value;
-                    requests = requests.Where(r => r.Property.LandlordId == landlordId).ToList();
+                    return ServiceResult<List<MaintenanceRequestDto>>.Failure("Property not found");
                 }
+
+                if (!_currentUserService.IsPlatformAdmin)
+                {
+                    if (_currentUserService.IsTenant)
+                    {
+                        if (!_currentUserService.PropertyId.HasValue || _currentUserService.PropertyId.Value != propertyId)
+                        {
+                            return ServiceResult<List<MaintenanceRequestDto>>.Failure("You don't have permission to view requests for this property");
+                        }
+                    }
+                    else
+                    {
+                        if (_currentUserService.IsLandlord)
+                        {
+                            if (!_currentUserService.UserIdInt.HasValue || property.LandlordId != _currentUserService.UserIdInt.Value)
+                            {
+                                return ServiceResult<List<MaintenanceRequestDto>>.Failure("You don't have permission to view requests for this property");
+                            }
+                        }
+                        else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                        {
+                            var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                            if (!assignedPropertyIds.Contains(propertyId))
+                            {
+                                return ServiceResult<List<MaintenanceRequestDto>>.Failure("You don't have permission to view requests for this property");
+                            }
+                        }
+                        else
+                        {
+                            return ServiceResult<List<MaintenanceRequestDto>>.Failure("You don't have permission to view requests for this property");
+                        }
+                    }
+                }
+
+                var requests = await _maintenanceRequestRepository.GetByPropertyIdAsync(propertyId);
 
                 var dtos = requests.Select(MapToDto).ToList();
                 return ServiceResult<List<MaintenanceRequestDto>>.Success(dtos);
@@ -228,8 +277,27 @@ namespace RentCollection.Infrastructure.Services
                 }
                 else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.UserIdInt!.Value;
+                    var landlordId = _currentUserService.UserIdInt;
+                    if (!landlordId.HasValue)
+                    {
+                        return ServiceResult<List<MaintenanceRequestDto>>.Failure("You do not have permission to view maintenance requests");
+                    }
+
                     requests = requests.Where(r => r.Property.LandlordId == landlordId).ToList();
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (assignedPropertyIds.Count == 0)
+                    {
+                        return ServiceResult<List<MaintenanceRequestDto>>.Failure("You do not have permission to view maintenance requests");
+                    }
+
+                    requests = requests.Where(r => assignedPropertyIds.Contains(r.PropertyId)).ToList();
+                }
+                else if (!_currentUserService.IsPlatformAdmin)
+                {
+                    return ServiceResult<List<MaintenanceRequestDto>>.Failure("You do not have permission to view maintenance requests");
                 }
 
                 var dtos = requests.Select(MapToDto).ToList();
@@ -325,7 +393,7 @@ namespace RentCollection.Infrastructure.Services
                 }
 
                 // Only tenant who created it or admin/landlord can delete
-                if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+                if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
                 {
                     if (!_currentUserService.IsTenant || request.TenantId != _currentUserService.TenantId)
                     {
@@ -364,10 +432,20 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
+                if (_currentUserService.IsTenant || _currentUserService.IsAccountant)
+                {
+                    return ServiceResult<MaintenanceRequestDto>.Failure("You do not have permission to assign maintenance requests");
+                }
+
                 var request = await _maintenanceRequestRepository.GetWithDetailsAsync(id);
                 if (request == null)
                 {
                     return ServiceResult<MaintenanceRequestDto>.Failure("Maintenance request not found");
+                }
+
+                if (!CanAccessRequest(request))
+                {
+                    return ServiceResult<MaintenanceRequestDto>.Failure("You don't have permission to assign this request");
                 }
 
                 request.AssignedToUserId = caretakerId;
@@ -396,10 +474,20 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
+                if (_currentUserService.IsTenant || _currentUserService.IsAccountant)
+                {
+                    return ServiceResult<MaintenanceRequestDto>.Failure("You do not have permission to complete maintenance requests");
+                }
+
                 var request = await _maintenanceRequestRepository.GetWithDetailsAsync(id);
                 if (request == null)
                 {
                     return ServiceResult<MaintenanceRequestDto>.Failure("Maintenance request not found");
+                }
+
+                if (!CanAccessRequest(request))
+                {
+                    return ServiceResult<MaintenanceRequestDto>.Failure("You don't have permission to complete this request");
                 }
 
                 request.Status = MaintenanceRequestStatus.Completed;
@@ -428,7 +516,7 @@ namespace RentCollection.Infrastructure.Services
 
         private bool CanAccessRequest(MaintenanceRequest request)
         {
-            if (_currentUserService.IsSystemAdmin) return true;
+            if (_currentUserService.IsPlatformAdmin) return true;
 
             if (_currentUserService.IsTenant)
             {
@@ -440,9 +528,10 @@ namespace RentCollection.Infrastructure.Services
                 return request.Property.LandlordId == _currentUserService.UserIdInt;
             }
 
-            if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
             {
-                return request.Property.LandlordId == _currentUserService.LandlordIdInt;
+                var assignedPropertyIds = _currentUserService.GetAssignedPropertyIdsAsync().GetAwaiter().GetResult();
+                return assignedPropertyIds.Contains(request.PropertyId);
             }
 
             return false;
@@ -480,3 +569,4 @@ namespace RentCollection.Infrastructure.Services
         }
     }
 }
+

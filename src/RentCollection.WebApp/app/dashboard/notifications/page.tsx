@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaBell, FaEnvelope, FaSms, FaPaperPlane, FaExclamationTriangle, FaUsers, FaSpinner, FaCheckCircle } from 'react-icons/fa'
+import { AlertTriangle, ArrowLeft, Bell, CheckCircle2, Loader2, Mail, MessageSquare, Send, Users } from 'lucide-react'
 import { notificationService } from '@/lib/services/notificationService'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 interface Tenant {
   id: number
@@ -115,15 +116,16 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord', 'Manager']}>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/dashboard"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
-            <FaArrowLeft className="mr-2" />
+            <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Notifications & Reminders</h1>
@@ -135,13 +137,13 @@ export default function NotificationsPage() {
         {/* Error/Success Messages */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-start">
-            <FaExclamationTriangle className="mr-2 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="mr-2 mt-0.5 flex-shrink-0 w-4 h-4" />
             <span>{error}</span>
           </div>
         )}
         {successMessage && (
           <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-start">
-            <FaCheckCircle className="mr-2 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="mr-2 mt-0.5 flex-shrink-0 w-4 h-4" />
             <span>{successMessage}</span>
           </div>
         )}
@@ -149,7 +151,7 @@ export default function NotificationsPage() {
         {/* Info Banner */}
         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
-            <FaBell className="mr-2" />
+            <Bell className="mr-2 w-4 h-4" />
             How Notifications Work
           </h3>
           <ul className="list-disc list-inside space-y-1 text-sm text-blue-800">
@@ -181,7 +183,7 @@ export default function NotificationsPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <FaUsers className="mr-2" />
+              <Users className="mr-2 w-4 h-4" />
               Bulk Operations
             </button>
           </nav>
@@ -191,7 +193,7 @@ export default function NotificationsPage() {
         {activeTab === 'single' && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FaPaperPlane className="mr-2 text-blue-600" />
+              <Send className="mr-2 text-blue-600 w-4 h-4" />
               Send Notification to Single Tenant
             </h2>
 
@@ -262,12 +264,12 @@ export default function NotificationsPage() {
               >
                 {loading ? (
                   <>
-                    <FaSpinner className="animate-spin mr-2" />
+                    <Loader2 className="animate-spin mr-2 w-4 h-4" />
                     Sending...
                   </>
                 ) : (
                   <>
-                    <FaPaperPlane className="mr-2" />
+                    <Send className="mr-2 w-4 h-4" />
                     Send Notification
                   </>
                 )}
@@ -282,7 +284,7 @@ export default function NotificationsPage() {
             {/* Bulk Payment Reminders */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <FaEnvelope className="mr-2 text-blue-600" />
+                <Mail className="mr-2 text-blue-600 w-4 h-4" />
                 Send Bulk Payment Reminders
               </h2>
               <p className="text-gray-600 mb-4">
@@ -320,7 +322,7 @@ export default function NotificationsPage() {
                         onChange={(e) => setIncludeEmail(e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <FaEnvelope className="ml-2 mr-1 text-gray-600" />
+                      <Mail className="ml-2 mr-1 text-gray-600 w-4 h-4" />
                       <span className="text-gray-700">Email</span>
                     </label>
                     <label className="flex items-center">
@@ -330,7 +332,7 @@ export default function NotificationsPage() {
                         onChange={(e) => setIncludeSms(e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <FaSms className="ml-2 mr-1 text-gray-600" />
+                      <MessageSquare className="ml-2 mr-1 text-gray-600 w-4 h-4" />
                       <span className="text-gray-700">SMS</span>
                     </label>
                   </div>
@@ -343,12 +345,12 @@ export default function NotificationsPage() {
                 >
                   {loading ? (
                     <>
-                      <FaSpinner className="animate-spin mr-2" />
+                      <Loader2 className="animate-spin mr-2 w-4 h-4" />
                       Sending Reminders...
                     </>
                   ) : (
                     <>
-                      <FaPaperPlane className="mr-2" />
+                      <Send className="mr-2 w-4 h-4" />
                       Send Bulk Reminders
                     </>
                   )}
@@ -359,7 +361,7 @@ export default function NotificationsPage() {
             {/* Bulk Overdue Notices */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <FaExclamationTriangle className="mr-2 text-orange-600" />
+                <AlertTriangle className="mr-2 text-orange-600 w-4 h-4" />
                 Send Bulk Overdue Notices
               </h2>
               <p className="text-gray-600 mb-4">
@@ -379,12 +381,12 @@ export default function NotificationsPage() {
               >
                 {loading ? (
                   <>
-                    <FaSpinner className="animate-spin mr-2" />
+                    <Loader2 className="animate-spin mr-2 w-4 h-4" />
                     Sending Overdue Notices...
                   </>
                 ) : (
                   <>
-                    <FaExclamationTriangle className="mr-2" />
+                    <AlertTriangle className="mr-2 w-4 h-4" />
                     Send Bulk Overdue Notices
                   </>
                 )}
@@ -392,7 +394,9 @@ export default function NotificationsPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }
+
