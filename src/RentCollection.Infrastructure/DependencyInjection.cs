@@ -45,14 +45,21 @@ public static class DependencyInjection
         services.AddScoped<IReminderSettingsRepository, ReminderSettingsRepository>();
         services.AddScoped<ITenantReminderPreferenceRepository, TenantReminderPreferenceRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IMoveOutInspectionRepository, MoveOutInspectionRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISmsService, AfricasTalkingSmsService>();
+        services.AddScoped<IVerificationService, VerificationService>();
         services.AddScoped<IPdfService, PdfGenerationService>();
         services.AddScoped<IPublicListingService, PublicListingService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IInvoiceBalanceService, InvoiceBalanceService>();
+        services.AddScoped<IPaymentAllocationService, PaymentAllocationService>();
+        services.AddScoped<IExportService, CsvExportService>();
+        services.AddScoped<IUnmatchedPaymentService, UnmatchedPaymentService>();
         services.AddScoped<ILandlordPaymentAccountService, LandlordPaymentAccountService>();
         services.AddScoped<IMPesaService, MPesaService>();
         services.AddScoped<IMPesaTransactionService, MPesaTransactionService>();
@@ -65,6 +72,12 @@ public static class DependencyInjection
         services.AddScoped<ILeaseRenewalService, LeaseRenewalService>();
         services.AddScoped<IBulkImportService, BulkImportService>();
         services.AddScoped<ISecurityDepositService, SecurityDepositService>();
+        services.AddScoped<IMoveOutInspectionService, MoveOutInspectionService>();
+        services.AddScoped<IUtilityTypeService, UtilityTypeService>();
+        services.AddScoped<IUtilityConfigService, UtilityConfigService>();
+        services.AddScoped<IMeterReadingService, MeterReadingService>();
+        services.AddScoped<IUtilityBillingService, UtilityBillingService>();
+        services.AddScoped<IOrganizationService, OrganizationService>();
 
         // File storage service - Use Local for development, Azure for production
         // To use Azure Blob Storage in production, update this registration to:

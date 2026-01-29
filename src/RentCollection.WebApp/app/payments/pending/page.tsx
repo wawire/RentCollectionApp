@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import { UserRole } from '@/lib/types/auth.types'
 import { paymentService } from '@/lib/services/paymentService'
 import { Payment } from '@/lib/types/payment.types'
-import { FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock, FaInfoCircle } from 'react-icons/fa'
+import { ArrowLeft, CheckCircle2, Clock, Info, XCircle } from 'lucide-react'
 
 export default function PendingPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
@@ -14,7 +16,6 @@ export default function PendingPaymentsPage() {
   const [actionLoading, setActionLoading] = useState<number | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState<{ show: boolean; payment: Payment | null }>({ show: false, payment: null })
   const [showRejectModal, setShowRejectModal] = useState<{ show: boolean; payment: Payment | null }>({ show: false, payment: null })
-  const [confirmNotes, setConfirmNotes] = useState('')
   const [rejectReason, setRejectReason] = useState('')
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
@@ -37,7 +38,6 @@ export default function PendingPaymentsPage() {
 
   const handleConfirmClick = (payment: Payment) => {
     setShowConfirmModal({ show: true, payment })
-    setConfirmNotes('')
   }
 
   const handleRejectClick = (payment: Payment) => {
@@ -50,7 +50,7 @@ export default function PendingPaymentsPage() {
 
     try {
       setActionLoading(showConfirmModal.payment.id)
-      await paymentService.confirmPayment(showConfirmModal.payment.id, confirmNotes)
+      await paymentService.confirmPayment(showConfirmModal.payment.id)
       setAlert({ type: 'success', message: 'Payment confirmed successfully!' })
       setShowConfirmModal({ show: false, payment: null })
       await fetchPendingPayments() // Refresh list
@@ -105,14 +105,15 @@ export default function PendingPaymentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <ProtectedRoute allowedRoles={[UserRole.PlatformAdmin, UserRole.Landlord, UserRole.Manager]}>
+      <div className="space-y-6">
       {/* Header */}
       <div>
         <Link
           href="/payments"
           className="inline-flex items-center gap-2 text-primary/60 hover:text-primary transition-colors mb-4"
         >
-          <FaArrowLeft />
+          <ArrowLeft className="w-4 h-4" />
           Back to All Payments
         </Link>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">
@@ -151,7 +152,7 @@ export default function PendingPaymentsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-primary/10 p-6">
           <p className="text-sm text-primary/60 tracking-wide">Awaiting Action</p>
           <div className="flex items-center gap-2 mt-2">
-            <FaClock className="text-yellow-600 text-xl" />
+            <Clock className="text-yellow-600 w-5 h-5" />
             <p className="text-lg font-medium text-primary">
               {payments.length} {payments.length === 1 ? 'payment' : 'payments'}
             </p>
@@ -163,7 +164,7 @@ export default function PendingPaymentsPage() {
       <div className="bg-white rounded-lg shadow-sm border border-primary/10">
         {payments.length === 0 ? (
           <div className="text-center py-12">
-            <FaCheckCircle className="text-green-600 text-5xl mx-auto mb-4" />
+            <CheckCircle2 className="text-green-600 w-12 h-12 mx-auto mb-4" />
             <p className="text-primary/60 text-lg">No pending payments</p>
             <p className="text-primary/60 text-sm mt-2">
               All tenant payments have been reviewed
@@ -181,8 +182,8 @@ export default function PendingPaymentsPage() {
               <div key={payment.id} className="p-6 hover:bg-primary/5 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <FaClock className="text-yellow-600 text-xl" />
+                  <div className="flex items-center gap-3 mb-3">
+                      <Clock className="text-yellow-600 w-5 h-5" />
                       <h3 className="text-xl font-medium text-primary">
                         KSh {payment.amount.toLocaleString()}
                       </h3>
@@ -236,8 +237,8 @@ export default function PendingPaymentsPage() {
 
                     {payment.periodStart && payment.periodEnd && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                        <div className="flex items-start gap-2">
-                          <FaInfoCircle className="text-blue-600 mt-0.5" />
+                      <div className="flex items-start gap-2">
+                          <Info className="text-blue-600 mt-0.5 w-4 h-4" />
                           <div>
                             <p className="text-sm font-medium text-blue-900">Payment Period</p>
                             <p className="text-sm text-blue-800">
@@ -271,7 +272,7 @@ export default function PendingPaymentsPage() {
                       disabled={actionLoading === payment.id}
                       className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <FaCheckCircle />
+                      <CheckCircle2 className="w-4 h-4" />
                       Confirm
                     </button>
                     <button
@@ -279,7 +280,7 @@ export default function PendingPaymentsPage() {
                       disabled={actionLoading === payment.id}
                       className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <FaTimesCircle />
+                      <XCircle className="w-4 h-4" />
                       Reject
                     </button>
                   </div>
@@ -295,7 +296,7 @@ export default function PendingPaymentsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <FaCheckCircle className="text-green-600 text-2xl" />
+              <CheckCircle2 className="text-green-600 w-6 h-6" />
               <h2 className="text-xl font-serif font-normal text-primary tracking-wide">
                 Confirm Payment
               </h2>
@@ -304,18 +305,6 @@ export default function PendingPaymentsPage() {
               Confirm payment of <strong>KSh {showConfirmModal.payment.amount.toLocaleString()}</strong> from{' '}
               <strong>{showConfirmModal.payment.tenantName}</strong>?
             </p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-primary/80 mb-2">
-                Notes (Optional)
-              </label>
-              <textarea
-                value={confirmNotes}
-                onChange={(e) => setConfirmNotes(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Add any notes about this confirmation..."
-              />
-            </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmModal({ show: false, payment: null })}
@@ -341,7 +330,7 @@ export default function PendingPaymentsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <FaTimesCircle className="text-red-600 text-2xl" />
+              <XCircle className="text-red-600 w-6 h-6" />
               <h2 className="text-xl font-serif font-normal text-primary tracking-wide">
                 Reject Payment
               </h2>
@@ -382,6 +371,8 @@ export default function PendingPaymentsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
+

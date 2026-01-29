@@ -6,6 +6,7 @@ import {
   StkPushResponse,
   TenantPaymentHistory,
 } from '../types/tenantPayment.types'
+import { StkPushStatusResponse } from '../types'
 
 export const tenantPaymentService = {
   /**
@@ -37,6 +38,16 @@ export const tenantPaymentService = {
    */
   async initiateStkPush(data: StkPushRequest): Promise<StkPushResponse> {
     const response = await apiClient.post('/TenantPayments/stk-push', data)
+    return response.data.data
+  },
+
+  /**
+   * Query M-Pesa STK Push status for the authenticated tenant
+   */
+  async getStkStatus(checkoutRequestId: string): Promise<StkPushStatusResponse> {
+    const response = await apiClient.get('/TenantPayments/stk-status', {
+      params: { checkoutRequestId },
+    })
     return response.data.data
   },
 }

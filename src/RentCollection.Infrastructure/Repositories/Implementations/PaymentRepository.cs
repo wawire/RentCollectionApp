@@ -105,6 +105,27 @@ public class PaymentRepository : Repository<Payment>, IPaymentRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Payment>> GetOverduePaymentsByPropertyIdsAsync(IEnumerable<int> propertyIds)
+    {
+        var today = DateTime.UtcNow.Date;
+        var propertyIdList = propertyIds.ToList();
+
+        if (propertyIdList.Count == 0)
+        {
+            return new List<Payment>();
+        }
+
+        return await _context.Payments
+            .Include(p => p.Tenant)
+                .ThenInclude(t => t.Unit)
+                    .ThenInclude(u => u.Property)
+            .Where(p => p.Status == PaymentStatus.Pending
+                     && p.DueDate.Date < today
+                     && propertyIdList.Contains(p.Tenant.Unit.PropertyId))
+            .OrderBy(p => p.DueDate)
+            .ToListAsync();
+    }
+
     public async Task<bool> HasConfirmedPaymentAsync(int tenantId, int month, int year)
     {
         // Check if there's a completed payment for this tenant in the specified month/year

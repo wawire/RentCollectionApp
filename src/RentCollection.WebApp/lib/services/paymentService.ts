@@ -1,5 +1,5 @@
 import { apiClient } from './api'
-import { Payment, CreatePaymentDto } from '../types/payment.types'
+import { Payment, CreatePaymentDto, StkPushStatusResponse } from '../types/payment.types'
 
 export const paymentService = {
   async getAll(): Promise<Payment[]> {
@@ -59,12 +59,19 @@ export const paymentService = {
   },
 
   async confirmPayment(id: number, notes?: string): Promise<Payment> {
-    const response = await apiClient.put(`/payments/${id}/confirm`, { notes })
+    const response = await apiClient.put(`/payments/${id}/confirm`)
     return response.data.data
   },
 
   async rejectPayment(id: number, reason: string): Promise<Payment> {
     const response = await apiClient.put(`/payments/${id}/reject`, { reason })
+    return response.data.data
+  },
+
+  async getStkStatus(checkoutRequestId: string): Promise<StkPushStatusResponse> {
+    const response = await apiClient.get('/payments/stk-status', {
+      params: { checkoutRequestId },
+    })
     return response.data.data
   },
 }

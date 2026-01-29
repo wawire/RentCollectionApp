@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
 import { tenantPaymentService } from '@/lib/services/tenantPaymentService'
 import { TenantPaymentHistory } from '@/lib/types/tenantPayment.types'
-import { FaArrowLeft, FaCheckCircle, FaClock, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, XCircle } from 'lucide-react'
 
 export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState<TenantPaymentHistory[]>([])
@@ -43,15 +43,15 @@ export default function PaymentHistoryPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Completed':
-        return <FaCheckCircle className="text-green-600 text-xl" />
+        return <CheckCircle2 className="text-green-600 text-xl" />
       case 'Pending':
-        return <FaClock className="text-yellow-600 text-xl" />
+        return <Clock className="text-yellow-600 text-xl" />
       case 'Rejected':
-        return <FaExclamationTriangle className="text-red-600 text-xl" />
+        return <AlertTriangle className="text-red-600 text-xl" />
       case 'Failed':
-        return <FaTimesCircle className="text-red-600 text-xl" />
+        return <XCircle className="text-red-600 text-xl" />
       default:
-        return <FaClock className="text-gray-600 text-xl" />
+        return <Clock className="text-gray-600 text-xl" />
     }
   }
 
@@ -105,7 +105,7 @@ export default function PaymentHistoryPage() {
           href="/tenant-portal"
           className="inline-flex items-center gap-2 text-primary/60 hover:text-primary transition-colors mb-4"
         >
-          <FaArrowLeft />
+          <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </Link>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">

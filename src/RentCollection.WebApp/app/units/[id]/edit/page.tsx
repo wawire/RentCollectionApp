@@ -6,7 +6,7 @@ import UnitForm from '@/components/units/UnitForm'
 import { useGetUnit, useUpdateUnit } from '@/lib/hooks'
 import { UpdateUnitDto } from '@/lib/types'
 import Link from 'next/link'
-import { FaArrowLeft } from 'react-icons/fa'
+import { ArrowLeft } from 'lucide-react'
 
 export default function EditUnitPage() {
   const params = useParams()
@@ -54,7 +54,7 @@ export default function EditUnitPage() {
           href={`/units/${unitId}`}
           className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2" />
           Back to Unit Details
         </Link>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">Edit Unit</h1>

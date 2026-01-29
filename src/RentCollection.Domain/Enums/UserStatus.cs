@@ -6,6 +6,11 @@ namespace RentCollection.Domain.Enums;
 public enum UserStatus
 {
     /// <summary>
+    /// Account is invited but not yet fully onboarded
+    /// </summary>
+    Invited = 0,
+
+    /// <summary>
     /// Account is active and can log in
     /// </summary>
     Active = 1,

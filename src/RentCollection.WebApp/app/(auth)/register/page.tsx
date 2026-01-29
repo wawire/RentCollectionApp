@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Lock, Mail, Phone, User } from 'lucide-react'
 import { authService } from '@/lib/services/authService'
 import { UserRole } from '@/lib/types/auth.types'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const inviteOnly = true
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     phoneNumber: '',
     password: '',
     confirmPassword: '',
-    role: UserRole.Tenant, // Public registration is for Tenants only
+    role: UserRole.Tenant,
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -33,7 +34,11 @@ export default function RegisterPage() {
     setError('')
     setSuccess(false)
 
-    // Validate passwords match
+    if (inviteOnly) {
+      setError('Hisa Rentals accounts are created by your organization owner. Please contact support or your admin.')
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
@@ -60,13 +65,12 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Full width image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-bg-dark via-primary-800 to-primary-900">
-        <div className="absolute inset-0 bg-black/20" />
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-brand-primary via-brand-secondary to-brand-primary">
+        <div className="absolute inset-0 bg-brand-primary/20" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
-            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Join RentPro</h1>
-            <p className="text-white/70 text-lg tracking-wide">Discover your next home with Kenya's trusted rental platform</p>
+            <h1 className="text-4xl font-serif font-normal mb-3 tracking-wide">Join Hisa Rentals</h1>
+            <p className="text-white/80 text-lg tracking-wide">A smarter tenant experience for Kenya's rental market.</p>
           </div>
 
           <div className="space-y-6">
@@ -78,22 +82,22 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Browse Verified Listings</h3>
-                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Search hundreds of verified properties across Nairobi with instant booking</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Verified Listings</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Search trusted properties with transparent rent details.</p>
                 </div>
               </div>
             </div>
 
             <div>
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center border border-accent/30">
-                  <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Secure M-Pesa Payments</h3>
-                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Pay rent safely via M-Pesa with automatic receipts and payment tracking</p>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Pay rent safely with instant receipts and history.</p>
                 </div>
               </div>
             </div>
@@ -106,36 +110,37 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Direct Landlord Communication</h3>
-                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Message landlords, schedule viewings, and submit maintenance requests instantly</p>
+                  <h3 className="text-lg font-serif font-normal mb-1 tracking-wide">Direct Support</h3>
+                  <p className="text-sm text-white/70 tracking-wide leading-relaxed">Message landlords and submit maintenance requests.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-secondary/60">
-            © 2024 RentPro. Designed for Kenyan property managers.
+          <div className="text-sm text-white/60">
+            (c) 2024 Hisa Rentals. Built for Kenyan property teams.
           </div>
         </div>
       </div>
 
-      {/* Right side - Registration form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-bg-light">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-brand-bg">
         <div className="w-full max-w-md space-y-8 py-12">
-          {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">RentPro</h1>
-            <p className="text-primary/60 mt-2 tracking-wide">Property Management Platform</p>
+            <h1 className="text-3xl font-serif font-normal text-brand-primary tracking-wide">Hisa Rentals</h1>
+            <p className="text-text-secondary mt-2 tracking-wide">Property Management Platform</p>
           </div>
 
           <div>
-            <h2 className="text-3xl font-serif font-normal text-primary mb-3 tracking-wide">Find Your Perfect Home</h2>
-            <p className="text-base text-primary/70 tracking-wide leading-relaxed mb-4">
-              Create your account to browse properties, book viewings, and manage your rental payments seamlessly.
+            <h2 className="text-3xl font-serif font-normal text-text-primary mb-3 tracking-wide">Find Your Next Home</h2>
+            <p className="text-base text-text-secondary tracking-wide leading-relaxed mb-4">
+              Create your account to browse properties, request viewings, and manage rent payments.
             </p>
-            <p className="text-sm text-primary/60 tracking-wide">
+            <p className="text-sm text-state-warning tracking-wide mb-2">
+              Invite-only: your organization owner will create your account.
+            </p>
+            <p className="text-sm text-text-secondary tracking-wide">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-accent hover:text-accent-600 transition-colors">
+              <Link href="/login" className="font-medium text-brand-secondary hover:text-brand-primary transition-colors">
                 Sign in
               </Link>
             </p>
@@ -143,21 +148,21 @@ export default function RegisterPage() {
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start space-x-3">
-                <FiAlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <div className="rounded-lg bg-state-error/10 border border-state-error/30 p-4 flex items-start space-x-3">
+                <AlertCircle className="h-5 w-5 text-state-error mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                  <h3 className="text-sm font-medium text-text-primary">Error</h3>
+                  <p className="text-sm text-text-secondary mt-1">{error}</p>
                 </div>
               </div>
             )}
 
             {success && (
-              <div className="rounded-lg bg-green-50 border border-green-200 p-4 flex items-start space-x-3">
-                <FiCheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <div className="rounded-lg bg-state-success/10 border border-state-success/30 p-4 flex items-start space-x-3">
+                <CheckCircle2 className="h-5 w-5 text-state-success mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-medium text-green-800">Success!</h3>
-                  <p className="text-sm text-green-700 mt-1">Account created successfully. Redirecting...</p>
+                  <h3 className="text-sm font-medium text-text-primary">Success!</h3>
+                  <p className="text-sm text-text-secondary mt-1">Account created successfully. Redirecting...</p>
                 </div>
               </div>
             )}
@@ -165,19 +170,19 @@ export default function RegisterPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-text-secondary mb-1">
                     First Name
                   </label>
                   <div className="relative">
-                    <div className="absolute left-0 bottom-2.5 pointer-events-none">
-                      <FiUser className="h-5 w-5 text-primary/40" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <User className="h-5 w-5 text-text-muted" />
                     </div>
                     <input
                       id="firstName"
                       name="firstName"
                       type="text"
                       required
-                      className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg text-sm"
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleChange}
@@ -186,19 +191,19 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-text-secondary mb-1">
                     Last Name
                   </label>
                   <div className="relative">
-                    <div className="absolute left-0 bottom-2.5 pointer-events-none">
-                      <FiUser className="h-5 w-5 text-primary/40" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <User className="h-5 w-5 text-text-muted" />
                     </div>
                     <input
                       id="lastName"
                       name="lastName"
                       type="text"
                       required
-                      className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg text-sm"
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleChange}
@@ -208,19 +213,19 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
-                    <FiMail className="h-5 w-5 text-primary/40" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Mail className="h-5 w-5 text-text-muted" />
                   </div>
                   <input
                     id="email"
                     name="email"
                     type="email"
                     required
-                    className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg text-sm"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
@@ -229,19 +234,19 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-secondary mb-1">
                   Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
-                    <FiPhone className="h-5 w-5 text-primary/40" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Phone className="h-5 w-5 text-text-muted" />
                   </div>
                   <input
                     id="phoneNumber"
                     name="phoneNumber"
                     type="tel"
                     required
-                    className="w-full pl-7 pr-2 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg text-sm"
                     placeholder="+254712345678"
                     value={formData.phoneNumber}
                     onChange={handleChange}
@@ -250,64 +255,64 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
-                    <FiLock className="h-5 w-5 text-primary/40" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Lock className="h-5 w-5 text-text-muted" />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="w-full pl-7 pr-10 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg text-sm"
                     placeholder="Enter password"
                     value={formData.password}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute right-0 bottom-2.5 flex items-center"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
+                      <EyeOff className="h-5 w-5 text-text-muted hover:text-text-secondary transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
+                      <Eye className="h-5 w-5 text-text-muted hover:text-text-secondary transition-colors" />
                     )}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-secondary mb-1">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <div className="absolute left-0 bottom-2.5 pointer-events-none">
-                    <FiLock className="h-5 w-5 text-primary/40" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Lock className="h-5 w-5 text-text-muted" />
                   </div>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
-                    className="w-full pl-7 pr-10 py-2.5 border-b-2 border-secondary/30 focus:border-accent outline-none transition-colors bg-transparent text-primary placeholder:text-primary/40 text-sm"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border-muted bg-surface text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg text-sm"
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute right-0 bottom-2.5 flex items-center"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <FiEyeOff className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
+                      <EyeOff className="h-5 w-5 text-text-muted hover:text-text-secondary transition-colors" />
                     ) : (
-                      <FiEye className="h-5 w-5 text-primary/40 hover:text-primary/60 transition-colors" />
+                      <Eye className="h-5 w-5 text-text-muted hover:text-text-secondary transition-colors" />
                     )}
                   </button>
                 </div>
@@ -316,8 +321,8 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={isLoading || success}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-primary bg-accent hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all disabled:bg-accent/50 disabled:cursor-not-allowed shadow-sm"
+              disabled={isLoading || success || inviteOnly}
+              className="group relative w-full flex justify-center py-3 px-4 text-sm font-semibold rounded-lg text-white bg-brand-primary hover:bg-brand-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-secondary/60 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-subtle"
             >
               {isLoading ? (
                 <span className="flex items-center">
@@ -332,7 +337,7 @@ export default function RegisterPage() {
               )}
             </button>
 
-            <p className="text-xs text-center text-gray-500">
+            <p className="text-xs text-center text-text-muted">
               By creating an account, you agree to our Terms of Service and Privacy Policy
             </p>
           </form>

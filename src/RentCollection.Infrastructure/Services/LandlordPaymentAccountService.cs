@@ -14,21 +14,29 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly ILogger<LandlordPaymentAccountService> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
     public LandlordPaymentAccountService(
         ApplicationDbContext context,
         IMapper mapper,
-        ILogger<LandlordPaymentAccountService> logger)
+        ILogger<LandlordPaymentAccountService> logger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _mapper = mapper;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ServiceResult<List<LandlordPaymentAccountDto>>> GetLandlordAccountsAsync(int landlordId)
     {
         try
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                return ServiceResult<List<LandlordPaymentAccountDto>>.Failure("You do not have permission to view these accounts");
+            }
+
             var accounts = await _context.LandlordPaymentAccounts
                 .Include(a => a.Property)
                 .Where(a => a.LandlordId == landlordId)
@@ -51,6 +59,11 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
     {
         try
         {
+            if (!await CanAccessPropertyAsync(propertyId))
+            {
+                return ServiceResult<List<LandlordPaymentAccountDto>>.Failure("You do not have permission to view accounts for this property");
+            }
+
             var accounts = await _context.LandlordPaymentAccounts
                 .Include(a => a.Property)
                 .Where(a => a.PropertyId == propertyId)
@@ -82,6 +95,11 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
                 return ServiceResult<LandlordPaymentAccountDto>.Failure($"Payment account with ID {accountId} not found");
             }
 
+            if (!CanAccessLandlord(account.LandlordId))
+            {
+                return ServiceResult<LandlordPaymentAccountDto>.Failure("You do not have permission to view this account");
+            }
+
             var accountDto = _mapper.Map<LandlordPaymentAccountDto>(account);
 
             return ServiceResult<LandlordPaymentAccountDto>.Success(accountDto);
@@ -97,6 +115,11 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
     {
         try
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                return ServiceResult<LandlordPaymentAccountDto>.Failure("You do not have permission to view these accounts");
+            }
+
             var query = _context.LandlordPaymentAccounts
                 .Include(a => a.Property)
                 .Where(a => a.LandlordId == landlordId && a.IsActive && a.IsDefault);
@@ -137,6 +160,16 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
     {
         try
         {
+            if (!CanAccessLandlord(landlordId))
+            {
+                return ServiceResult<LandlordPaymentAccountDto>.Failure("You do not have permission to create accounts for this landlord");
+            }
+
+            if (dto.PropertyId.HasValue && !await CanAccessPropertyAsync(dto.PropertyId.Value))
+            {
+                return ServiceResult<LandlordPaymentAccountDto>.Failure("You do not have permission to create accounts for this property");
+            }
+
             // If this is set as default, unset other defaults
             if (dto.IsDefault)
             {
@@ -178,6 +211,11 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
             if (account == null)
             {
                 return ServiceResult<LandlordPaymentAccountDto>.Failure($"Payment account with ID {accountId} not found");
+            }
+
+            if (!CanAccessLandlord(account.LandlordId))
+            {
+                return ServiceResult<LandlordPaymentAccountDto>.Failure("You do not have permission to update this account");
             }
 
             // If this is set as default, unset other defaults
@@ -223,6 +261,11 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
                 return ServiceResult<bool>.Failure($"Payment account with ID {accountId} not found");
             }
 
+            if (!CanAccessLandlord(account.LandlordId))
+            {
+                return ServiceResult<bool>.Failure("You do not have permission to delete this account");
+            }
+
             // Check if account is being used by any payments
             var hasPayments = await _context.Payments
                 .AnyAsync(p => p.LandlordAccountId == accountId);
@@ -256,6 +299,11 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
             if (account == null)
             {
                 return ServiceResult<bool>.Failure($"Payment account with ID {accountId} not found");
+            }
+
+            if (!CanAccessLandlord(account.LandlordId))
+            {
+                return ServiceResult<bool>.Failure("You do not have permission to update this account");
             }
 
             // Unset other defaults
@@ -297,4 +345,36 @@ public class LandlordPaymentAccountService : ILandlordPaymentAccountService
             _context.LandlordPaymentAccounts.UpdateRange(defaultAccounts);
         }
     }
+
+    private bool CanAccessLandlord(int landlordId)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
+        {
+            return _currentUserService.UserIdInt.Value == landlordId;
+        }
+
+        return false;
+    }
+
+    private async Task<bool> CanAccessPropertyAsync(int propertyId)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
+        {
+            var landlordId = _currentUserService.UserIdInt.Value;
+            return await _context.Properties.AnyAsync(p => p.Id == propertyId && p.LandlordId == landlordId);
+        }
+
+        return false;
+    }
 }
+

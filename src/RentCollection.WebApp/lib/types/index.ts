@@ -8,8 +8,16 @@ export type { Tenant, CreateTenantDto } from './tenant.types'
 export type { Unit, CreateUnitDto, UpdateUnitDto } from './unit.types'
 
 // Payments
-export type { Payment, CreatePaymentDto } from './payment.types'
+export type { Payment, CreatePaymentDto, StkPushStatusResponse } from './payment.types'
 export { PaymentMethod, PaymentStatus } from './payment.types'
+
+// Invoices
+export type { Invoice } from './invoice.types'
+export { InvoiceStatus } from './invoice.types'
+
+// Unmatched Payments
+export type { UnmatchedPayment } from './unmatchedPayment.types'
+export { UnmatchedPaymentStatus } from './unmatchedPayment.types'
 
 // Dashboard
 export type { DashboardStats, MonthlyReport } from './dashboard.types'
@@ -47,6 +55,31 @@ export type {
 } from './securityDeposit.types'
 export { SecurityDepositTransactionType } from './securityDeposit.types'
 
+// Move-Out Inspections
+export type {
+  MoveOutInspection,
+  InspectionItem,
+  InspectionPhoto,
+  CreateMoveOutInspectionDto,
+  RecordInspectionDto,
+  RecordInspectionItemDto,
+  SettleInspectionDto,
+  ProcessRefundDto,
+  UploadPhotoDto,
+} from './moveOutInspection.types'
+export { MoveOutInspectionStatus, InspectionCategory, PhotoType } from './moveOutInspection.types'
+
+// Utilities
+export type {
+  UtilityType,
+  UtilityConfig,
+  CreateUtilityTypeDto,
+  CreateUtilityConfigDto,
+  UpdateUtilityConfigDto,
+  MeterReading,
+  CreateMeterReadingDto,
+} from './utility.types'
+
 // Common
 export type {
   ApiResponse,
@@ -55,3 +88,10 @@ export type {
   ApiError,
   SelectOption,
 } from './common.types'
+
+// Organizations
+export type {
+  Organization,
+  CreateOrganizationRequest,
+  AssignUserToPropertyRequest,
+} from './organization.types'

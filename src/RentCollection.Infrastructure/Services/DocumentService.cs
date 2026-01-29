@@ -1,4 +1,6 @@
 using AutoMapper;
+using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -31,6 +33,14 @@ public class DocumentService : IDocumentService
     private static readonly string[] AllowedExtensions = new[]
     {
         ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"
+    };
+
+    private static readonly DocumentType[] AllowedTenantUploadTypes = new[]
+    {
+        DocumentType.LeaseAgreement,
+        DocumentType.IDCopy,
+        DocumentType.ProofOfIncome,
+        DocumentType.ReferenceLetter
     };
 
     // Max file size: 10MB
@@ -77,6 +87,11 @@ public class DocumentService : IDocumentService
                 return ServiceResult<DocumentDto>.Failure(errorMessage);
             }
 
+            if (_currentUserService.IsTenant && !AllowedTenantUploadTypes.Contains(dto.DocumentType))
+            {
+                return ServiceResult<DocumentDto>.Failure("Tenants can only upload approved document types (lease agreement, ID copy, proof of income, reference letter).");
+            }
+
             // RBAC: Validate access based on document associations
             if (dto.TenantId.HasValue)
             {
@@ -87,7 +102,7 @@ public class DocumentService : IDocumentService
                 }
 
                 // Only tenant themselves, their landlord, or admin can upload tenant documents
-                if (!_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsPlatformAdmin)
                 {
                     var landlordId = tenant.Unit?.Property?.LandlordId;
 
@@ -99,16 +114,23 @@ public class DocumentService : IDocumentService
                             return ServiceResult<DocumentDto>.Failure("You can only upload documents for yourself");
                         }
                     }
-                    else if (_currentUserService.IsLandlord || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                    else if (_currentUserService.IsLandlord || _currentUserService.IsCaretaker || _currentUserService.IsManager || _currentUserService.IsAccountant)
                     {
-                        // Verify they manage this tenant
-                        var userLandlordId = _currentUserService.IsLandlord
-                            ? _currentUserService.UserIdInt
-                            : _currentUserService.LandlordIdInt;
-
-                        if (landlordId != userLandlordId)
+                        // Verify they manage this tenant via ownership or assignment
+                        if (_currentUserService.IsLandlord)
                         {
-                            return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this tenant");
+                            if (!_currentUserService.UserIdInt.HasValue || landlordId != _currentUserService.UserIdInt)
+                            {
+                                return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this tenant");
+                            }
+                        }
+                        else
+                        {
+                            var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                            if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                            {
+                                return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this tenant");
+                            }
                         }
                     }
                 }
@@ -123,15 +145,22 @@ public class DocumentService : IDocumentService
                 }
 
                 // Only property owner or admin can upload property documents
-                if (!_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsPlatformAdmin)
                 {
-                    var userLandlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (property.LandlordId != userLandlordId)
+                    if (_currentUserService.IsLandlord)
                     {
-                        return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this property");
+                        if (!_currentUserService.UserIdInt.HasValue || property.LandlordId != _currentUserService.UserIdInt)
+                        {
+                            return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this property");
+                        }
+                    }
+                    else
+                    {
+                        var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                        if (!assignedPropertyIds.Contains(property.Id))
+                        {
+                            return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this property");
+                        }
                     }
                 }
             }
@@ -145,15 +174,22 @@ public class DocumentService : IDocumentService
                 }
 
                 // Only unit's landlord or admin can upload unit documents
-                if (!_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsPlatformAdmin)
                 {
-                    var userLandlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (unit.Property?.LandlordId != userLandlordId)
+                    if (_currentUserService.IsLandlord)
                     {
-                        return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this unit");
+                        if (!_currentUserService.UserIdInt.HasValue || unit.Property?.LandlordId != _currentUserService.UserIdInt)
+                        {
+                            return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this unit");
+                        }
+                    }
+                    else
+                    {
+                        var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                        if (!assignedPropertyIds.Contains(unit.PropertyId))
+                        {
+                            return ServiceResult<DocumentDto>.Failure("You don't have permission to upload documents for this unit");
+                        }
                     }
                 }
             }
@@ -209,7 +245,7 @@ public class DocumentService : IDocumentService
             var documents = await _documentRepository.GetAllAsync();
 
             // Apply RBAC filtering
-            documents = ApplyRbacFilter(documents).ToList();
+            documents = (await ApplyRbacFilterAsync(documents)).ToList();
 
             var documentDtos = documents.Select(MapToDto);
 
@@ -234,7 +270,7 @@ public class DocumentService : IDocumentService
             }
 
             // RBAC: Verify access
-            if (!CanAccessDocument(document))
+            if (!await CanAccessDocumentAsync(document))
             {
                 return Result<DocumentDto>.Failure("You don't have permission to view this document");
             }
@@ -261,7 +297,7 @@ public class DocumentService : IDocumentService
             }
 
             // RBAC: Verify access to tenant
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
                 var landlordId = tenant.Unit?.Property?.LandlordId;
 
@@ -274,13 +310,20 @@ public class DocumentService : IDocumentService
                 }
                 else
                 {
-                    var userLandlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId != userLandlordId)
+                    if (_currentUserService.IsLandlord)
                     {
-                        return ServiceResult<List<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
+                        if (!_currentUserService.UserIdInt.HasValue || landlordId != _currentUserService.UserIdInt)
+                        {
+                            return ServiceResult<List<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
+                        }
+                    }
+                    else
+                    {
+                        var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                        if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                        {
+                            return ServiceResult<List<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
+                        }
                     }
                 }
             }
@@ -301,6 +344,44 @@ public class DocumentService : IDocumentService
     {
         try
         {
+            var tenant = await _tenantRepository.GetTenantWithDetailsAsync(tenantId);
+            if (tenant == null)
+            {
+                return Result<IEnumerable<DocumentDto>>.Failure($"Tenant with ID {tenantId} not found");
+            }
+
+            // RBAC: Verify access to tenant
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                var landlordId = tenant.Unit?.Property?.LandlordId;
+
+                if (_currentUserService.IsTenant)
+                {
+                    if (_currentUserService.TenantId != tenantId)
+                    {
+                        return Result<IEnumerable<DocumentDto>>.Failure("You can only view your own documents");
+                    }
+                }
+                else
+                {
+                    if (_currentUserService.IsLandlord)
+                    {
+                        if (!_currentUserService.UserIdInt.HasValue || landlordId != _currentUserService.UserIdInt)
+                        {
+                            return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
+                        }
+                    }
+                    else
+                    {
+                        var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                        if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                        {
+                            return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this tenant");
+                        }
+                    }
+                }
+            }
+
             var documents = await _documentRepository.GetDocumentsByTenantIdAsync(tenantId);
             var documentDtos = documents.Select(MapToDto);
 
@@ -324,15 +405,22 @@ public class DocumentService : IDocumentService
             }
 
             // RBAC: Verify access to property
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var userLandlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (property.LandlordId != userLandlordId)
+                if (_currentUserService.IsLandlord)
                 {
-                    return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this property");
+                    if (!_currentUserService.UserIdInt.HasValue || property.LandlordId != _currentUserService.UserIdInt)
+                    {
+                        return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this property");
+                    }
+                }
+                else
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(property.Id))
+                    {
+                        return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this property");
+                    }
                 }
             }
 
@@ -359,15 +447,22 @@ public class DocumentService : IDocumentService
             }
 
             // RBAC: Verify access to unit
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var userLandlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (unit.Property?.LandlordId != userLandlordId)
+                if (_currentUserService.IsLandlord)
                 {
-                    return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this unit");
+                    if (!_currentUserService.UserIdInt.HasValue || unit.Property?.LandlordId != _currentUserService.UserIdInt)
+                    {
+                        return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this unit");
+                    }
+                }
+                else
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(unit.PropertyId))
+                    {
+                        return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view documents for this unit");
+                    }
                 }
             }
 
@@ -390,7 +485,7 @@ public class DocumentService : IDocumentService
             var documents = await _documentRepository.GetDocumentsByTypeAsync(documentType);
 
             // Apply RBAC filtering
-            documents = ApplyRbacFilter(documents).ToList();
+            documents = (await ApplyRbacFilterAsync(documents)).ToList();
 
             var documentDtos = documents.Select(MapToDto);
 
@@ -408,7 +503,7 @@ public class DocumentService : IDocumentService
         try
         {
             // Only landlords and admins can see unverified documents
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord && !_currentUserService.IsAccountant)
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord && !_currentUserService.IsAccountant)
             {
                 return Result<IEnumerable<DocumentDto>>.Failure("You don't have permission to view unverified documents");
             }
@@ -416,7 +511,7 @@ public class DocumentService : IDocumentService
             var documents = await _documentRepository.GetUnverifiedDocumentsAsync();
 
             // Apply RBAC filtering for landlords/accountants
-            documents = ApplyRbacFilter(documents).ToList();
+            documents = (await ApplyRbacFilterAsync(documents)).ToList();
 
             var documentDtos = documents.Select(MapToDto);
 
@@ -426,6 +521,121 @@ public class DocumentService : IDocumentService
         {
             _logger.LogError(ex, "Error retrieving unverified documents");
             return Result<IEnumerable<DocumentDto>>.Failure("An error occurred while retrieving unverified documents");
+        }
+    }
+
+    public async Task<Result<DocumentDto>> SaveGeneratedDocumentAsync(
+        DocumentType documentType,
+        byte[] content,
+        string fileName,
+        string contentType,
+        int uploadedByUserId,
+        int? landlordId = null,
+        int? propertyId = null,
+        int? unitId = null,
+        int? tenantId = null,
+        string? description = null)
+    {
+        try
+        {
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                if (_currentUserService.IsLandlord)
+                {
+                    var userLandlordId = _currentUserService.UserIdInt;
+                    if (!userLandlordId.HasValue || (landlordId.HasValue && landlordId != userLandlordId))
+                    {
+                        return Result<DocumentDto>.Failure("You don't have permission to save this document");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    if (!propertyId.HasValue)
+                    {
+                        return Result<DocumentDto>.Failure("PropertyId is required for this document");
+                    }
+
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(propertyId.Value))
+                    {
+                        return Result<DocumentDto>.Failure("You don't have permission to save this document");
+                    }
+                }
+                else
+                {
+                    return Result<DocumentDto>.Failure("You don't have permission to save this document");
+                }
+            }
+
+            if (propertyId.HasValue)
+            {
+                var property = await _propertyRepository.GetByIdAsync(propertyId.Value);
+                if (property == null)
+                {
+                    return Result<DocumentDto>.Failure($"Property with ID {propertyId} not found");
+                }
+
+                if (!_currentUserService.IsPlatformAdmin)
+                {
+                    if (_currentUserService.IsLandlord && landlordId.HasValue && property.LandlordId != landlordId)
+                    {
+                        return Result<DocumentDto>.Failure("You don't have permission to save documents for this property");
+                    }
+
+                    if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                    {
+                        var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                        if (!assignedPropertyIds.Contains(property.Id))
+                        {
+                            return Result<DocumentDto>.Failure("You don't have permission to save documents for this property");
+                        }
+                    }
+                }
+            }
+
+            using var stream = new MemoryStream(content);
+            var file = new FormFile(stream, 0, content.Length, "file", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = contentType
+            };
+
+            var fileUrl = await _fileStorageService.UploadFileAsync(file, "statements");
+
+            var document = new Document
+            {
+                DocumentType = documentType,
+                TenantId = tenantId,
+                PropertyId = propertyId,
+                UnitId = unitId,
+                LandlordId = landlordId,
+                FileName = fileName,
+                FileUrl = fileUrl,
+                FileSize = content.Length,
+                ContentType = contentType,
+                UploadedByUserId = uploadedByUserId,
+                Description = description
+            };
+
+            await _documentRepository.AddAsync(document);
+
+            var documentWithDetails = await _documentRepository.GetDocumentWithDetailsAsync(document.Id);
+            var documentDto = MapToDto(documentWithDetails!);
+
+            await _auditLogService.LogActionAsync(
+                "Generate",
+                "Document",
+                document.Id,
+                $"Generated {documentType} document: {fileName}");
+
+            _logger.LogInformation("Generated document {FileName} saved by user {UserId}", fileName, uploadedByUserId);
+
+            return Result<DocumentDto>.Success(documentDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving generated document {FileName}", fileName);
+            return Result<DocumentDto>.Failure("An error occurred while saving the document");
         }
     }
 
@@ -450,12 +660,51 @@ public class DocumentService : IDocumentService
         }
     }
 
+    public async Task<ServiceResult<DocumentFileDto>> GetDocumentFileAsync(int documentId)
+    {
+        try
+        {
+            var document = await _documentRepository.GetDocumentWithDetailsAsync(documentId);
+            if (document == null)
+            {
+                return ServiceResult<DocumentFileDto>.Failure($"Document with ID {documentId} not found");
+            }
+
+            if (!await CanAccessDocumentAsync(document))
+            {
+                return ServiceResult<DocumentFileDto>.Failure("You don't have permission to download this document");
+            }
+
+            await _auditLogService.LogActionAsync(
+                "Download",
+                "Document",
+                documentId,
+                $"Downloaded document {document.FileName} ({document.DocumentType})");
+
+            var content = await _fileStorageService.DownloadFileAsync(document.FileUrl);
+
+            return ServiceResult<DocumentFileDto>.Success(new DocumentFileDto
+            {
+                FileName = document.FileName,
+                ContentType = string.IsNullOrWhiteSpace(document.ContentType)
+                    ? "application/octet-stream"
+                    : document.ContentType,
+                Content = content
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading document {Id}", documentId);
+            return ServiceResult<DocumentFileDto>.Failure("An error occurred while downloading the document");
+        }
+    }
+
     public async Task<ServiceResult<DocumentDto>> VerifyDocumentAsync(int documentId, bool isVerified)
     {
         try
         {
             // Only landlords and admins can verify documents
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord && !_currentUserService.IsAccountant)
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord && !_currentUserService.IsAccountant)
             {
                 return ServiceResult<DocumentDto>.Failure("You don't have permission to verify documents");
             }
@@ -467,7 +716,7 @@ public class DocumentService : IDocumentService
             }
 
             // RBAC: Verify access
-            if (!CanAccessDocument(document))
+            if (!await CanAccessDocumentAsync(document))
             {
                 return ServiceResult<DocumentDto>.Failure("You don't have permission to verify this document");
             }
@@ -509,7 +758,7 @@ public class DocumentService : IDocumentService
             }
 
             // RBAC: Verify access
-            if (!CanAccessDocument(document))
+            if (!await CanAccessDocumentAsync(document))
             {
                 return ServiceResult<bool>.Failure("You don't have permission to delete this document");
             }
@@ -541,9 +790,9 @@ public class DocumentService : IDocumentService
 
     // Helper methods
 
-    private IEnumerable<Document> ApplyRbacFilter(IEnumerable<Document> documents)
+    private async Task<IEnumerable<Document>> ApplyRbacFilterAsync(IEnumerable<Document> documents)
     {
-        if (_currentUserService.IsSystemAdmin)
+        if (_currentUserService.IsPlatformAdmin)
         {
             return documents;
         }
@@ -558,25 +807,39 @@ public class DocumentService : IDocumentService
             return Enumerable.Empty<Document>();
         }
 
-        // Landlords, Caretakers, and Accountants can see documents for their properties
-        var landlordId = _currentUserService.IsLandlord
-            ? _currentUserService.UserIdInt
-            : _currentUserService.LandlordIdInt;
-
-        if (landlordId.HasValue)
+        // Landlords can see documents for their properties
+        if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
         {
+            var landlordId = _currentUserService.UserIdInt.Value;
             return documents.Where(d =>
-                d.Property?.LandlordId == landlordId.Value ||
-                d.Unit?.Property?.LandlordId == landlordId.Value ||
-                d.Tenant?.Unit?.Property?.LandlordId == landlordId.Value);
+                d.LandlordId == landlordId ||
+                d.Property?.LandlordId == landlordId ||
+                d.Unit?.Property?.LandlordId == landlordId ||
+                d.Tenant?.Unit?.Property?.LandlordId == landlordId);
+        }
+
+        // Managers, Caretakers, and Accountants see documents for assigned properties
+        if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+        {
+            var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+            if (assignedPropertyIds.Count == 0)
+            {
+                return Enumerable.Empty<Document>();
+            }
+
+            return documents.Where(d =>
+                (d.PropertyId.HasValue && assignedPropertyIds.Contains(d.PropertyId.Value)) ||
+                (d.Unit != null && assignedPropertyIds.Contains(d.Unit.PropertyId)) ||
+                (d.Tenant?.Unit != null && assignedPropertyIds.Contains(d.Tenant.Unit.PropertyId)) ||
+                (d.Property != null && assignedPropertyIds.Contains(d.Property.Id)));
         }
 
         return Enumerable.Empty<Document>();
     }
 
-    private bool CanAccessDocument(Document document)
+    private async Task<bool> CanAccessDocumentAsync(Document document)
     {
-        if (_currentUserService.IsSystemAdmin)
+        if (_currentUserService.IsPlatformAdmin)
         {
             return true;
         }
@@ -586,19 +849,40 @@ public class DocumentService : IDocumentService
             return _currentUserService.TenantId == document.TenantId;
         }
 
-        // Landlords, Caretakers, and Accountants
-        var landlordId = _currentUserService.IsLandlord
-            ? _currentUserService.UserIdInt
-            : _currentUserService.LandlordIdInt;
-
-        if (landlordId.HasValue)
+        // Landlords
+        if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
         {
-            return document.Property?.LandlordId == landlordId.Value ||
-                   document.Unit?.Property?.LandlordId == landlordId.Value ||
-                   document.Tenant?.Unit?.Property?.LandlordId == landlordId.Value;
+            var landlordId = _currentUserService.UserIdInt.Value;
+            return document.LandlordId == landlordId ||
+                   document.Property?.LandlordId == landlordId ||
+                   document.Unit?.Property?.LandlordId == landlordId ||
+                   document.Tenant?.Unit?.Property?.LandlordId == landlordId;
+        }
+
+        // Managers, Caretakers, and Accountants
+        if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+        {
+            var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+            if (assignedPropertyIds.Count == 0)
+            {
+                return false;
+            }
+
+            return (document.PropertyId.HasValue && assignedPropertyIds.Contains(document.PropertyId.Value)) ||
+                   (document.Unit != null && assignedPropertyIds.Contains(document.Unit.PropertyId)) ||
+                   (document.Tenant?.Unit != null && assignedPropertyIds.Contains(document.Tenant.Unit.PropertyId)) ||
+                   (document.Property != null && assignedPropertyIds.Contains(document.Property.Id));
         }
 
         return false;
+    }
+
+    private async Task<HashSet<int>> GetAssignedPropertyIdsAsync()
+    {
+        var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+        return assignedPropertyIds.Count == 0
+            ? new HashSet<int>()
+            : new HashSet<int>(assignedPropertyIds);
     }
 
     private static DocumentDto MapToDto(Document document)
@@ -617,6 +901,7 @@ public class DocumentService : IDocumentService
             FileUrl = document.FileUrl,
             FileSize = document.FileSize,
             FileSizeFormatted = FormatFileSize(document.FileSize),
+            ContentType = document.ContentType ?? string.Empty,
             UploadedByUserId = document.UploadedByUserId,
             UploadedByName = document.UploadedBy?.FullName ?? "Unknown",
             UploadedAt = document.UploadedAt,
@@ -641,3 +926,4 @@ public class DocumentService : IDocumentService
         return $"{len:0.##} {sizes[order]}";
     }
 }
+

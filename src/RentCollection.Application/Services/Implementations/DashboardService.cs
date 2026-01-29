@@ -3,6 +3,7 @@ using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Dashboard;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Interfaces;
+using RentCollection.Domain.Entities;
 using RentCollection.Domain.Enums;
 
 namespace RentCollection.Application.Services.Implementations;
@@ -47,19 +48,31 @@ public class DashboardService : IDashboardService
             var tenants = await _tenantRepository.GetAllAsync();
             var activeTenants = await _tenantRepository.GetActiveTenantsAsync();
 
-            // Filter data by LandlordId (unless SystemAdmin)
-            if (!_currentUserService.IsSystemAdmin)
+            // Filter data by scope (unless PlatformAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
                 {
-                    properties = properties.Where(p => p.LandlordId == landlordId.Value).ToList();
-                    units = units.Where(u => u.Property?.LandlordId == landlordId.Value).ToList();
-                    tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
-                    activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    var landlordId = _currentUserService.UserIdInt.Value;
+                    properties = properties.Where(p => p.LandlordId == landlordId).ToList();
+                    units = units.Where(u => u.Property?.LandlordId == landlordId).ToList();
+                    tenants = tenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                    activeTenants = activeTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    properties = properties.Where(p => assignedPropertyIds.Contains(p.Id)).ToList();
+                    units = units.Where(u => u.Property != null && assignedPropertyIds.Contains(u.Property.Id)).ToList();
+                    tenants = tenants.Where(t => t.Unit?.Property != null && assignedPropertyIds.Contains(t.Unit.Property.Id)).ToList();
+                    activeTenants = activeTenants.Where(t => t.Unit?.Property != null && assignedPropertyIds.Contains(t.Unit.Property.Id)).ToList();
+                }
+                else
+                {
+                    properties = new List<Property>();
+                    units = new List<Unit>();
+                    tenants = new List<Tenant>();
+                    activeTenants = new List<Tenant>();
                 }
             }
 
@@ -68,17 +81,23 @@ public class DashboardService : IDashboardService
             var currentMonthEnd = currentMonthStart.AddMonths(1).AddDays(-1);
             var allPayments = await _paymentRepository.GetPaymentsByDateRangeAsync(currentMonthStart, currentMonthEnd);
 
-            // Filter payments by LandlordId (unless SystemAdmin)
+            // Filter payments by scope (unless PlatformAdmin)
             var currentMonthPayments = allPayments;
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
                 {
-                    currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    var landlordId = _currentUserService.UserIdInt.Value;
+                    currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    currentMonthPayments = allPayments.Where(p => p.Tenant?.Unit?.Property != null && assignedPropertyIds.Contains(p.Tenant.Unit.Property.Id)).ToList();
+                }
+                else
+                {
+                    currentMonthPayments = new List<Payment>();
                 }
             }
 
@@ -161,34 +180,46 @@ public class DashboardService : IDashboardService
                 // Get payments for this month
                 var allMonthlyPayments = await _paymentRepository.GetPaymentsByDateRangeAsync(monthStart, monthEnd);
 
-                // Filter payments by LandlordId (unless SystemAdmin)
+                // Filter payments by scope (unless PlatformAdmin)
                 var monthlyPayments = allMonthlyPayments;
-                if (!_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsPlatformAdmin)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
                     {
-                        monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                        var landlordId = _currentUserService.UserIdInt.Value;
+                        monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId).ToList();
+                    }
+                    else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                    {
+                        var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                        monthlyPayments = allMonthlyPayments.Where(p => p.Tenant?.Unit?.Property != null && assignedPropertyIds.Contains(p.Tenant.Unit.Property.Id)).ToList();
+                    }
+                    else
+                    {
+                        monthlyPayments = new List<Payment>();
                     }
                 }
 
                 // Get expected rent (active tenants for that month)
                 var allActiveTenants = await _tenantRepository.GetActiveTenantsAsync();
 
-                // Filter tenants by LandlordId (unless SystemAdmin)
+                // Filter tenants by scope (unless PlatformAdmin)
                 var activeTenants = allActiveTenants;
-                if (!_currentUserService.IsSystemAdmin)
+                if (!_currentUserService.IsPlatformAdmin)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
                     {
-                        activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                        var landlordId = _currentUserService.UserIdInt.Value;
+                        activeTenants = allActiveTenants.Where(t => t.Unit?.Property?.LandlordId == landlordId).ToList();
+                    }
+                    else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                    {
+                        var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                        activeTenants = allActiveTenants.Where(t => t.Unit?.Property != null && assignedPropertyIds.Contains(t.Unit.Property.Id)).ToList();
+                    }
+                    else
+                    {
+                        activeTenants = new List<Tenant>();
                     }
                 }
 
@@ -227,3 +258,4 @@ public class DashboardService : IDashboardService
         }
     }
 }
+

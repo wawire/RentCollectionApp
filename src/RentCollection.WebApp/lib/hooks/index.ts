@@ -60,4 +60,5 @@ export {
 export {
   useDownloadMonthlyReport,
   useDownloadTenantList,
+  useDownloadRentRoll,
 } from './useReports'

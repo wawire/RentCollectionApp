@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { FaTimes } from 'react-icons/fa'
+import { X } from 'lucide-react'
 
 interface ModalProps {
   isOpen: boolean
@@ -48,23 +48,23 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
+      <div className="fixed inset-0 bg-brand-primary/40 transition-opacity" onClick={onClose}></div>
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl transform transition-all`}
+          className={`relative w-full ${sizeClasses[size]} bg-surface rounded-xl shadow-subtle border border-border-muted transform transition-all`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border-muted">
+              <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-text-muted hover:text-text-secondary transition-colors"
               >
-                <FaTimes className="w-5 h-5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
           )}
@@ -74,7 +74,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
 
           {/* Footer */}
           {footer && (
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-muted bg-brand-bg/40">
               {footer}
             </div>
           )}

@@ -31,7 +31,7 @@ public class NotificationsController : ControllerBase
     /// <param name="daysBeforeDue">Days before due date (default: 3)</param>
     /// <returns>Success message</returns>
     [HttpPost("payment-reminder/tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendPaymentReminderToTenant(int tenantId, [FromQuery] int daysBeforeDue = 3)
@@ -51,7 +51,7 @@ public class NotificationsController : ControllerBase
     /// <param name="landlordId">Optional: Filter by landlord ID</param>
     /// <returns>Count of reminders sent</returns>
     [HttpPost("payment-reminder/bulk")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendUpcomingPaymentReminders(
@@ -72,7 +72,7 @@ public class NotificationsController : ControllerBase
     /// <param name="tenantId">Tenant ID</param>
     /// <returns>Success message</returns>
     [HttpPost("overdue-notice/tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendOverdueNoticeToTenant(int tenantId)
@@ -91,7 +91,7 @@ public class NotificationsController : ControllerBase
     /// <param name="landlordId">Optional: Filter by landlord ID</param>
     /// <returns>Count of notices sent</returns>
     [HttpPost("overdue-notice/bulk")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendOverdueNotices([FromQuery] int? landlordId = null)
@@ -110,7 +110,7 @@ public class NotificationsController : ControllerBase
     /// <param name="paymentId">Payment ID</param>
     /// <returns>Success message</returns>
     [HttpPost("payment-receipt/{paymentId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendPaymentReceipt(int paymentId)
@@ -123,3 +123,4 @@ public class NotificationsController : ControllerBase
         return Ok(result);
     }
 }
+

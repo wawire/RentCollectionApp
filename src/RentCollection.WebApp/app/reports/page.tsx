@@ -5,7 +5,7 @@ import { Card } from '@/components/common'
 import MonthlyReport from '@/components/reports/MonthlyReport'
 import PropertyReport from '@/components/reports/PropertyReport'
 import TenantReport from '@/components/reports/TenantReport'
-import { FaChartBar, FaHome, FaUsers } from 'react-icons/fa'
+import { BarChart3, Home, Users } from 'lucide-react'
 
 type TabType = 'monthly' | 'property' | 'tenant'
 
@@ -13,9 +13,9 @@ export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('monthly')
 
   const tabs = [
-    { id: 'monthly' as TabType, label: 'Monthly Report', icon: FaChartBar },
-    { id: 'property' as TabType, label: 'Property Report', icon: FaHome },
-    { id: 'tenant' as TabType, label: 'Tenant Directory', icon: FaUsers },
+    { id: 'monthly' as TabType, label: 'Monthly Report', icon: BarChart3 },
+    { id: 'property' as TabType, label: 'Property Report', icon: Home },
+    { id: 'tenant' as TabType, label: 'Tenant Directory', icon: Users },
   ]
 
   return (

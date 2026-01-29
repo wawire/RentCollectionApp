@@ -2,7 +2,7 @@
 
 import { Component, ErrorInfo, ReactNode } from 'react'
 import { Card, Button } from '@/components/common'
-import { FaExclamationTriangle, FaRedo } from 'react-icons/fa'
+import { AlertTriangle, RotateCcw } from 'lucide-react'
 
 interface Props {
   children: ReactNode
@@ -39,29 +39,29 @@ export default class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-brand-bg">
           <Card padding="lg" className="max-w-md w-full text-center">
             <div className="flex justify-center mb-4">
-              <div className="bg-red-100 p-4 rounded-full">
-                <FaExclamationTriangle className="text-4xl text-red-600" />
+              <div className="bg-state-error/15 p-4 rounded-full">
+                <AlertTriangle className="w-10 h-10 text-state-error" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-text-primary mb-2">
               Oops! Something went wrong
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-text-secondary mb-6">
               We're sorry for the inconvenience. The application encountered an unexpected error.
             </p>
             {this.state.error && process.env.NODE_ENV === 'development' && (
-              <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left">
-                <p className="text-xs font-mono text-red-600 break-all">
+              <div className="mb-6 p-4 bg-brand-bg rounded-lg text-left">
+                <p className="text-xs font-mono text-state-error break-all">
                   {this.state.error.message}
                 </p>
               </div>
             )}
             <div className="flex gap-3 justify-center">
               <Button variant="primary" onClick={this.handleReset}>
-                <FaRedo className="mr-2" />
+                <RotateCcw className="mr-2 w-4 h-4" />
                 Try Again
               </Button>
               <Button variant="secondary" onClick={() => window.location.href = '/'}>

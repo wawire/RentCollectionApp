@@ -16,5 +16,10 @@ public interface IMPesaTransactionService
     /// <summary>
     /// Query STK Push transaction status and update database
     /// </summary>
-    Task<ServiceResult<StkPushCallbackDto>> QueryAndUpdateStkPushStatusAsync(string checkoutRequestId);
+    Task<ServiceResult<StkPushQueryResponseDto>> QueryAndUpdateStkPushStatusAsync(string checkoutRequestId);
+
+    /// <summary>
+    /// Get pending STK Push checkout request IDs older than a cutoff
+    /// </summary>
+    Task<List<string>> GetPendingStkPushCheckoutRequestIdsAsync(DateTime olderThanUtc, int batchSize);
 }

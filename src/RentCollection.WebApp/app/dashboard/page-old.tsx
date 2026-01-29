@@ -12,7 +12,7 @@ import RevenueChart from '@/components/dashboard/RevenueChart'
 import QuickActions from '@/components/dashboard/QuickActions'
 import PaymentStatusWidget from '@/components/dashboard/PaymentStatusWidget'
 import { LoadingSpinner } from '@/components/common'
-import { FaBuilding, FaDoorOpen, FaUsers, FaMoneyBillWave } from 'react-icons/fa'
+import { Banknote, Building2, DoorOpen, Users } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -73,27 +73,27 @@ export default function DashboardPage() {
         <StatsCard
           title="Total Properties"
           value={stats.totalProperties}
-          icon={FaBuilding}
+          icon={Building2}
           color="blue"
         />
         <StatsCard
           title="Total Units"
           value={stats.totalUnits}
           subtitle={`${stats.occupiedUnits} occupied, ${stats.vacantUnits} vacant`}
-          icon={FaDoorOpen}
+          icon={DoorOpen}
           color="purple"
         />
         <StatsCard
           title="Active Tenants"
           value={stats.activeTenants}
-          icon={FaUsers}
+          icon={Users}
           color="green"
         />
         <StatsCard
           title="Collection Rate"
           value={`${stats.collectionRate.toFixed(1)}%`}
           subtitle={`KSh ${stats.totalRentCollected.toLocaleString()} / ${stats.totalRentExpected.toLocaleString()}`}
-          icon={FaMoneyBillWave}
+          icon={Banknote}
           color="yellow"
         />
       </div>

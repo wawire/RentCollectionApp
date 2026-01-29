@@ -7,7 +7,7 @@ namespace RentCollection.API.Controllers;
 /// <summary>
 /// Bulk import operations for CSV data
 /// </summary>
-[Authorize(Roles = "SystemAdmin,Landlord")]
+[Authorize(Roles = "PlatformAdmin,Landlord")]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -122,3 +122,4 @@ public class BulkImportController : ControllerBase
         return Ok(result);
     }
 }
+

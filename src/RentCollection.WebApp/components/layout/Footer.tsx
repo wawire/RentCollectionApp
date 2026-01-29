@@ -1,29 +1,29 @@
 import Link from 'next/link'
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa'
+import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-brand-primary text-brand-bg">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-white font-bold text-xl mb-4">RentPro</h3>
-            <p className="text-sm">
-              Modern property management system for landlords and tenants in Kenya.
+            <h3 className="text-white font-semibold text-xl mb-4">Hisa Rentals</h3>
+            <p className="text-sm text-brand-bg/80">
+              Smart rent and property management for Kenyan landlords and agencies.
             </p>
             <div className="flex space-x-4 mt-4">
               <a href="#" className="hover:text-white transition-colors">
-                <FaFacebook size={20} />
+                <Facebook className="w-5 h-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors">
-                <FaTwitter size={20} />
+                <Twitter className="w-5 h-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors">
-                <FaInstagram size={20} />
+                <Instagram className="w-5 h-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors">
-                <FaLinkedin size={20} />
+                <Linkedin className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -31,7 +31,7 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-brand-bg/80">
               <li>
                 <Link href="/#properties" className="hover:text-white transition-colors">
                   Browse Properties
@@ -58,7 +58,7 @@ export default function Footer() {
           {/* For Landlords */}
           <div>
             <h4 className="text-white font-semibold mb-4">For Landlords</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-brand-bg/80">
               <li>
                 <Link href="/login" className="hover:text-white transition-colors">
                   List Your Property
@@ -85,7 +85,7 @@ export default function Footer() {
           {/* Support */}
           <div>
             <h4 className="text-white font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-brand-bg/80">
               <li>
                 <a href="#" className="hover:text-white transition-colors">
                   Help Center
@@ -110,8 +110,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} RentPro. All rights reserved.</p>
+        <div className="border-t border-brand-bg/20 mt-8 pt-8 text-center text-sm text-brand-bg/80">
+          <p>&copy; {new Date().getFullYear()} Hisa Rentals. All rights reserved.</p>
         </div>
       </div>
     </footer>

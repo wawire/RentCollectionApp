@@ -3,13 +3,16 @@ using RentCollection.Domain.Enums;
 namespace RentCollection.Domain.Entities;
 
 /// <summary>
-/// Tracks M-Pesa STK Push transactions for audit and reconciliation
+/// Tracks M-Pesa transactions (C2B payments and B2C disbursements) for audit and reconciliation
 /// </summary>
 public class MPesaTransaction
 {
     public int Id { get; set; }
 
-    // STK Push Request Details
+    // Transaction Type
+    public MPesaTransactionType TransactionType { get; set; }
+
+    // STK Push Request Details (C2B)
     public string MerchantRequestID { get; set; } = string.Empty;
     public string CheckoutRequestID { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
@@ -17,12 +20,21 @@ public class MPesaTransaction
     public string AccountReference { get; set; } = string.Empty;
     public string TransactionDesc { get; set; } = string.Empty;
 
+    // B2C Request Details
+    public string? OriginatorConversationID { get; set; }
+    public string? ConversationID { get; set; }
+    public string? InitiatorName { get; set; }
+    public string? CommandID { get; set; } // BusinessPayment, SalaryPayment, PromotionPayment
+
     // Related Entities
     public int? TenantId { get; set; }
     public Tenant? Tenant { get; set; }
 
     public int? PaymentId { get; set; }
     public Payment? Payment { get; set; }
+
+    public int? MoveOutInspectionId { get; set; }
+    public MoveOutInspection? MoveOutInspection { get; set; }
 
     // Transaction Status
     public MPesaTransactionStatus Status { get; set; }

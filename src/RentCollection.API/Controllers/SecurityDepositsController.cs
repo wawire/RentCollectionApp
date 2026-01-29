@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.DTOs.SecurityDeposits;
 using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Enums;
@@ -10,19 +11,24 @@ namespace RentCollection.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Authorize(Policy = Policies.RequireVerifiedUser)]
+[Authorize(Policy = Policies.RequireActiveOrganization)]
 public class SecurityDepositsController : ControllerBase
 {
     private readonly ISecurityDepositService _securityDepositService;
     private readonly IAuthorizationService _authorizationService;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<SecurityDepositsController> _logger;
 
     public SecurityDepositsController(
         ISecurityDepositService securityDepositService,
         IAuthorizationService authorizationService,
+        ICurrentUserService currentUserService,
         ILogger<SecurityDepositsController> logger)
     {
         _securityDepositService = securityDepositService;
         _authorizationService = authorizationService;
+        _currentUserService = currentUserService;
         _logger = logger;
     }
 
@@ -71,6 +77,25 @@ public class SecurityDepositsController : ControllerBase
     }
 
     /// <summary>
+    /// Get security deposit balance for the current tenant
+    /// </summary>
+    [HttpGet("me/balance")]
+    [Authorize(Roles = "Tenant")]
+    public async Task<IActionResult> GetMyDepositBalance()
+    {
+        var tenantId = _currentUserService.TenantId;
+        if (!tenantId.HasValue)
+            return BadRequest(new { error = "User is not a tenant" });
+
+        var result = await _securityDepositService.GetDepositBalanceAsync(tenantId.Value);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
     /// Get transaction history for tenant's security deposit
     /// </summary>
     [HttpGet("tenant/{tenantId}/transactions")]
@@ -95,6 +120,28 @@ public class SecurityDepositsController : ControllerBase
         }
 
         var result = await _securityDepositService.GetTransactionHistoryAsync(tenantId, startDate, endDate);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Get transaction history for the current tenant's security deposit
+    /// </summary>
+    [HttpGet("me/transactions")]
+    [Authorize(Roles = "Tenant")]
+    public async Task<IActionResult> GetMyTransactionHistory(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        var tenantId = _currentUserService.TenantId;
+        if (!tenantId.HasValue)
+            return BadRequest(new { error = "User is not a tenant" });
+
+        var result = await _securityDepositService.GetTransactionHistoryAsync(
+            tenantId.Value, startDate, endDate);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });

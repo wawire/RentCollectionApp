@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaUpload, FaFileAlt, FaCheckCircle, FaClock, FaDownload, FaTrash, FaSpinner } from 'react-icons/fa'
+import { ArrowLeft, CheckCircle2, Clock, Download, FileText, Loader2, Trash2, Upload } from 'lucide-react'
 import { documentService, DocumentDto } from '@/lib/services/documentService'
 
 const documentTypes = [
@@ -10,7 +10,6 @@ const documentTypes = [
   { value: 'IDCopy', label: 'ID Copy' },
   { value: 'ProofOfIncome', label: 'Proof of Income' },
   { value: 'ReferenceLetter', label: 'Reference Letter' },
-  { value: 'Other', label: 'Other' },
 ]
 
 export default function DocumentsPage() {
@@ -101,6 +100,22 @@ export default function DocumentsPage() {
     }
   }
 
+  const handleDownload = async (documentId: number, fileName: string) => {
+    try {
+      const blob = await documentService.downloadDocument(documentId)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      setError(err.message || 'Failed to download document')
+    }
+  }
+
   const getDocumentTypeLabel = (type: string) => {
     return documentTypes.find(dt => dt.value === type)?.label || type
   }
@@ -109,14 +124,14 @@ export default function DocumentsPage() {
     if (isVerified) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          <FaCheckCircle className="mr-1" />
+          <CheckCircle2 className="mr-1 w-3 h-3" />
           Verified
         </span>
       )
     }
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-        <FaClock className="mr-1" />
+        <Clock className="mr-1 w-3 h-3" />
         Pending Verification
       </span>
     )
@@ -131,7 +146,7 @@ export default function DocumentsPage() {
             href="/tenant-portal"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
-            <FaArrowLeft className="mr-2" />
+            <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
@@ -157,7 +172,7 @@ export default function DocumentsPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <FaUpload className="mr-2 text-blue-600" />
+                <Upload className="mr-2 text-blue-600 w-4 h-4" />
                 Upload Document
               </h2>
               <form onSubmit={handleUpload} className="space-y-4">
@@ -216,12 +231,12 @@ export default function DocumentsPage() {
                 >
                   {uploading ? (
                     <>
-                      <FaSpinner className="animate-spin mr-2" />
+                      <Loader2 className="animate-spin mr-2 w-4 h-4" />
                       Uploading...
                     </>
                   ) : (
                     <>
-                      <FaUpload className="mr-2" />
+                      <Upload className="mr-2 w-4 h-4" />
                       Upload Document
                     </>
                   )}
@@ -234,17 +249,17 @@ export default function DocumentsPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <FaFileAlt className="mr-2 text-blue-600" />
+                <FileText className="mr-2 text-blue-600 w-4 h-4" />
                 My Documents ({documents.length})
               </h2>
 
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <FaSpinner className="animate-spin text-4xl text-blue-600" />
+                  <Loader2 className="animate-spin text-4xl text-blue-600" />
                 </div>
               ) : documents.length === 0 ? (
                 <div className="text-center py-12">
-                  <FaFileAlt className="mx-auto text-6xl text-gray-300 mb-4" />
+                  <FileText className="mx-auto text-6xl text-gray-300 mb-4" />
                   <p className="text-gray-500 text-lg">No documents uploaded yet</p>
                   <p className="text-gray-400 text-sm mt-2">
                     Upload your first document using the form on the left
@@ -260,7 +275,7 @@ export default function DocumentsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <FaFileAlt className="text-blue-600 text-xl flex-shrink-0" />
+                            <FileText className="text-blue-600 text-xl flex-shrink-0" />
                             <div>
                               <h3 className="font-semibold text-gray-900">{doc.fileName}</h3>
                               <p className="text-sm text-gray-600">
@@ -291,21 +306,19 @@ export default function DocumentsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 ml-4">
-                          <a
-                            href={doc.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={() => handleDownload(doc.id, doc.fileName)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Download"
                           >
-                            <FaDownload />
-                          </a>
+                            <Download className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleDelete(doc.id, doc.fileName)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
                           >
-                            <FaTrash />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>

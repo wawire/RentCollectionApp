@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using RentCollection.Application.Common.Models;
 using RentCollection.Application.DTOs.Payments;
@@ -23,6 +24,7 @@ public class PaymentService : IPaymentService
     private readonly ILogger<PaymentService> _logger;
     private readonly ICurrentUserService _currentUserService;
     private readonly ApplicationDbContext _context;
+    private readonly IPaymentAllocationService _paymentAllocationService;
 
     public PaymentService(
         IPaymentRepository paymentRepository,
@@ -32,7 +34,8 @@ public class PaymentService : IPaymentService
         IMapper mapper,
         ILogger<PaymentService> logger,
         ICurrentUserService currentUserService,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        IPaymentAllocationService paymentAllocationService)
     {
         _paymentRepository = paymentRepository;
         _tenantRepository = tenantRepository;
@@ -42,6 +45,7 @@ public class PaymentService : IPaymentService
         _logger = logger;
         _currentUserService = currentUserService;
         _context = context;
+        _paymentAllocationService = paymentAllocationService;
     }
 
     public async Task<Result<IEnumerable<PaymentDto>>> GetAllPaymentsAsync()
@@ -50,9 +54,18 @@ public class PaymentService : IPaymentService
         {
             var payments = await _paymentRepository.GetAllAsync();
 
-            // Filter payments by tenant's unit's property's LandlordId (unless SystemAdmin)
-            if (!_currentUserService.IsSystemAdmin)
+            // Filter payments by tenant's unit's property's LandlordId (unless PlatformAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!_currentUserService.OrganizationId.HasValue)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Success(Array.Empty<PaymentDto>());
+                }
+
+                payments = payments
+                    .Where(p => p.Tenant?.Unit?.Property?.OrganizationId == _currentUserService.OrganizationId.Value)
+                    .ToList();
+
                 // Tenants can only see their own payments
                 if (_currentUserService.IsTenant)
                 {
@@ -66,16 +79,24 @@ public class PaymentService : IPaymentService
                         payments = new List<Payment>();
                     }
                 }
-                // Landlords, Caretakers, and Accountants filter by landlordId
-                else
+                // Landlords filter by landlordId, others by assigned properties
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue)
                     {
-                        payments = payments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                        payments = payments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == _currentUserService.UserIdInt.Value).ToList();
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (assignedPropertyIds.Count == 0)
+                    {
+                        payments = new List<Payment>();
+                    }
+                    else
+                    {
+                        payments = payments.Where(p => p.Tenant?.Unit?.PropertyId != null && assignedPropertyIds.Contains(p.Tenant!.Unit!.PropertyId)).ToList();
                     }
                 }
             }
@@ -102,8 +123,13 @@ public class PaymentService : IPaymentService
             }
 
             // Check access permission to the tenant's unit's property
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(tenant.Unit?.Property))
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
+                }
+
                 // Tenants can only access their own payments
                 if (_currentUserService.IsTenant)
                 {
@@ -112,19 +138,20 @@ public class PaymentService : IPaymentService
                         return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
                     }
                 }
-                // Landlords, Caretakers, and Accountants check by landlordId
-                else
+                // Landlords check by landlordId, others by assigned properties
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue && tenant.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
                     {
-                        if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
-                        {
-                            return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
-                        }
+                        return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                    {
+                        return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access payments for this tenant");
                     }
                 }
             }
@@ -153,8 +180,13 @@ public class PaymentService : IPaymentService
             }
 
             // Check access permission via tenant's unit's property's LandlordId
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(payment.Tenant?.Unit?.Property))
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                }
+
                 // Tenants can only access their own payments
                 if (_currentUserService.IsTenant)
                 {
@@ -163,19 +195,20 @@ public class PaymentService : IPaymentService
                         return Result<PaymentDto>.Failure("You do not have permission to access this payment");
                     }
                 }
-                // Landlords, Caretakers, and Accountants check by landlordId
-                else
+                // Landlords check by landlordId, others by assigned properties
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord
-                        ? _currentUserService.UserIdInt
-                        : _currentUserService.LandlordIdInt;
-
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue && payment.Tenant?.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
                     {
-                        if (payment.Tenant?.Unit?.Property?.LandlordId != landlordId.Value)
-                        {
-                            return Result<PaymentDto>.Failure("You do not have permission to access this payment");
-                        }
+                        return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (payment.Tenant?.Unit == null || !assignedPropertyIds.Contains(payment.Tenant.Unit.PropertyId))
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to access this payment");
                     }
                 }
             }
@@ -195,15 +228,24 @@ public class PaymentService : IPaymentService
         try
         {
             // Validate tenant exists
-            var tenant = await _tenantRepository.GetTenantWithDetailsAsync(createDto.TenantId);
+            var tenant = await _context.Tenants
+                .Include(t => t.Unit)
+                    .ThenInclude(u => u.Property)
+                        .ThenInclude(p => p.PaymentAccounts)
+                .FirstOrDefaultAsync(t => t.Id == createDto.TenantId);
             if (tenant == null)
             {
                 return Result<PaymentDto>.Failure($"Tenant with ID {createDto.TenantId} not found");
             }
 
             // Check access permission - user must have access to the tenant's unit's property
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(tenant.Unit?.Property))
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
+                }
+
                 // Tenants cannot create payments
                 if (_currentUserService.IsTenant)
                 {
@@ -216,17 +258,24 @@ public class PaymentService : IPaymentService
                     return Result<PaymentDto>.Failure("Accountants do not have permission to record payments");
                 }
 
-                // Landlords and Caretakers must own the property
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (_currentUserService.IsLandlord)
                 {
-                    if (tenant.Unit?.Property?.LandlordId != landlordId.Value)
+                    if (_currentUserService.UserIdInt.HasValue && tenant.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
                     {
                         return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
                     }
+                }
+                else if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
+                    }
+                }
+                else
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
                 }
             }
 
@@ -247,11 +296,73 @@ public class PaymentService : IPaymentService
                 return Result<PaymentDto>.Failure("Period end date must be after period start date");
             }
 
-            var payment = _mapper.Map<Payment>(createDto);
+            if (tenant.Unit == null)
+            {
+                return Result<PaymentDto>.Failure("Tenant does not have an assigned unit");
+            }
+
+            if (createDto.UnitId.HasValue && createDto.UnitId.Value != tenant.UnitId)
+            {
+                return Result<PaymentDto>.Failure("Unit ID does not match tenant's unit");
+            }
+
+            var paymentAccount = tenant.Unit.Property.PaymentAccounts
+                .FirstOrDefault(pa => pa.Id == createDto.LandlordAccountId) ??
+                tenant.Unit.Property.PaymentAccounts.FirstOrDefault(pa => pa.IsDefault && pa.IsActive) ??
+                tenant.Unit.Property.PaymentAccounts.FirstOrDefault(pa => pa.IsActive);
+
+            if (paymentAccount == null)
+            {
+                return Result<PaymentDto>.Failure("No active payment account configured for this property");
+            }
+
+            var dueDate = createDto.DueDate ??
+                          PaymentDueDateHelper.CalculateDueDateForMonth(
+                              createDto.PeriodStart.Year,
+                              createDto.PeriodStart.Month,
+                              tenant.RentDueDay);
+
+            IDbContextTransaction? transaction = null;
+            if (_context.Database.IsRelational())
+            {
+                transaction = await _context.Database.BeginTransactionAsync();
+            }
+
+            var payment = new Payment
+            {
+                TenantId = tenant.Id,
+                UnitId = tenant.UnitId,
+                LandlordAccountId = paymentAccount.Id,
+                Amount = createDto.Amount,
+                PaymentDate = createDto.PaymentDate,
+                DueDate = dueDate,
+                PaymentMethod = createDto.PaymentMethod,
+                Status = PaymentStatus.Completed,
+                UnallocatedAmount = createDto.Amount,
+                TransactionReference = createDto.TransactionReference,
+                Notes = createDto.Notes,
+                PeriodStart = createDto.PeriodStart,
+                PeriodEnd = createDto.PeriodEnd
+            };
             payment.CreatedAt = DateTime.UtcNow;
-            payment.Status = PaymentStatus.Completed; // Set as completed by default
 
             var createdPayment = await _paymentRepository.AddAsync(payment);
+
+            var allocationResult = await _paymentAllocationService.AllocatePaymentToOutstandingInvoicesAsync(createdPayment.Id);
+            if (!allocationResult.IsSuccess)
+            {
+                if (transaction != null)
+                {
+                    await transaction.RollbackAsync();
+                }
+
+                return Result<PaymentDto>.Failure(allocationResult.ErrorMessage);
+            }
+
+            if (transaction != null)
+            {
+                await transaction.CommitAsync();
+            }
 
             // Reload with details
             var paymentWithDetails = await _paymentRepository.GetPaymentWithDetailsAsync(createdPayment.Id);
@@ -279,14 +390,19 @@ public class PaymentService : IPaymentService
                 return Result.Failure($"Payment with ID {id} not found");
             }
 
-            // Check access permission - Only SystemAdmin and Landlords can delete
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            // Check access permission - Only PlatformAdmin and Landlords can delete
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
             {
                 return Result.Failure("You do not have permission to delete payments");
             }
 
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(payment.Tenant?.Unit?.Property))
+                {
+                    return Result.Failure("You do not have permission to delete this payment");
+                }
+
                 var landlordId = _currentUserService.UserIdInt; // Must be landlord at this point
 
                 if (landlordId.HasValue)
@@ -323,16 +439,33 @@ public class PaymentService : IPaymentService
 
             var allPayments = await _paymentRepository.GetAllAsync();
 
-            // Filter payments by tenant's unit's property's LandlordId (unless SystemAdmin)
-            if (!_currentUserService.IsSystemAdmin)
+            // Filter payments by tenant's unit's property's LandlordId (unless PlatformAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                var landlordId = _currentUserService.IsLandlord
-                    ? _currentUserService.UserIdInt
-                    : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (!_currentUserService.OrganizationId.HasValue)
                 {
-                    allPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == landlordId.Value).ToList();
+                    return Result<PaginatedList<PaymentDto>>.Success(new PaginatedList<PaymentDto>(new List<PaymentDto>(), 0, pageNumber, pageSize));
+                }
+
+                allPayments = allPayments
+                    .Where(p => p.Tenant?.Unit?.Property?.OrganizationId == _currentUserService.OrganizationId.Value)
+                    .ToList();
+
+                if (_currentUserService.IsLandlord && _currentUserService.UserIdInt.HasValue)
+                {
+                    allPayments = allPayments.Where(p => p.Tenant?.Unit?.Property?.LandlordId == _currentUserService.UserIdInt.Value).ToList();
+                }
+            else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (assignedPropertyIds.Count == 0)
+                    {
+                        allPayments = new List<Payment>();
+                    }
+                    else
+                    {
+                        allPayments = allPayments.Where(p => p.Tenant?.Unit?.PropertyId != null && assignedPropertyIds.Contains(p.Tenant!.Unit!.PropertyId)).ToList();
+                    }
                 }
             }
 
@@ -382,6 +515,11 @@ public class PaymentService : IPaymentService
             if (tenant.Unit.Property == null)
             {
                 return Result<PaymentInstructionsDto>.Failure("Unit does not belong to a property");
+            }
+
+            if (!_currentUserService.IsPlatformAdmin && !IsInOrganizationScope(tenant.Unit.Property))
+            {
+                return Result<PaymentInstructionsDto>.Failure("You do not have permission to access payment instructions for this tenant");
             }
 
             // Get default payment account for the property or landlord
@@ -458,6 +596,11 @@ public class PaymentService : IPaymentService
                 return Result<PaymentDto>.Failure("Tenant does not have an assigned unit");
             }
 
+            if (!_currentUserService.IsPlatformAdmin && !IsInOrganizationScope(tenant.Unit.Property))
+            {
+                return Result<PaymentDto>.Failure("You do not have permission to record payments for this tenant");
+            }
+
             // Get the payment account
             var paymentAccount = tenant.Unit.Property.PaymentAccounts
                 .FirstOrDefault(pa => pa.PropertyId == tenant.Unit.PropertyId && pa.IsDefault)
@@ -484,6 +627,11 @@ public class PaymentService : IPaymentService
             }
 
             // Create payment record
+            var dueDate = PaymentDueDateHelper.CalculateDueDateForMonth(
+                dto.PeriodStart.Year,
+                dto.PeriodStart.Month,
+                tenant.RentDueDay);
+
             var payment = new Payment
             {
                 TenantId = tenantId,
@@ -491,8 +639,10 @@ public class PaymentService : IPaymentService
                 LandlordAccountId = paymentAccount.Id,
                 Amount = dto.Amount,
                 PaymentDate = dto.PaymentDate,
+                DueDate = dueDate,
                 PaymentMethod = dto.PaymentMethod,
                 Status = PaymentStatus.Pending, // Pending until landlord confirms
+                UnallocatedAmount = dto.Amount,
                 TransactionReference = dto.TransactionReference,
                 MPesaPhoneNumber = dto.MPesaPhoneNumber,
                 PaybillAccountNumber = tenant.Unit.PaymentAccountNumber ?? tenant.Unit.UnitNumber,
@@ -527,23 +677,67 @@ public class PaymentService : IPaymentService
         }
     }
 
-    public async Task<Result<IEnumerable<PaymentDto>>> GetPendingPaymentsAsync(int landlordId, int? propertyId = null)
+    public async Task<Result<IEnumerable<PaymentDto>>> GetPendingPaymentsAsync(int? propertyId = null)
     {
         try
         {
             var query = _context.Payments
                 .Include(p => p.Tenant)
                 .Include(p => p.Unit)
+                .ThenInclude(u => u.Property)
                 .Include(p => p.LandlordAccount)
                 .Where(p => p.Status == PaymentStatus.Pending);
 
-            // Filter by landlord
-            query = query.Where(p => p.Unit.Property.LandlordId == landlordId);
-
-            // Filter by property if specified
-            if (propertyId.HasValue)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                query = query.Where(p => p.Unit.PropertyId == propertyId.Value);
+                if (!_currentUserService.OrganizationId.HasValue)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("Assigned organization scope not found");
+                }
+
+                query = query.Where(p => p.Unit.Property.OrganizationId == _currentUserService.OrganizationId.Value);
+            }
+
+            if (_currentUserService.IsPlatformAdmin)
+            {
+                if (propertyId.HasValue)
+                {
+                    query = query.Where(p => p.Unit.PropertyId == propertyId.Value);
+                }
+            }
+            else if (_currentUserService.IsLandlord)
+            {
+                var landlordId = _currentUserService.UserIdInt;
+                if (!landlordId.HasValue)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("Landlord ID not found");
+                }
+
+                query = query.Where(p => p.Unit.Property.LandlordId == landlordId.Value);
+
+                if (propertyId.HasValue)
+                {
+                    query = query.Where(p => p.Unit.PropertyId == propertyId.Value);
+                }
+            }
+            else if (_currentUserService.IsManager)
+            {
+                var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                if (assignedPropertyIds.Count == 0)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("Assigned property scope not found");
+                }
+
+                if (propertyId.HasValue && !assignedPropertyIds.Contains(propertyId.Value))
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("You do not have permission to access this property");
+                }
+
+                query = query.Where(p => assignedPropertyIds.Contains(p.Unit.PropertyId));
+            }
+            else
+            {
+                return Result<IEnumerable<PaymentDto>>.Failure("You don't have permission to view pending payments");
             }
 
             var payments = await query
@@ -556,7 +750,7 @@ public class PaymentService : IPaymentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving pending payments for landlord {LandlordId}", landlordId);
+            _logger.LogError(ex, "Error retrieving pending payments");
             return Result<IEnumerable<PaymentDto>>.Failure("An error occurred while retrieving pending payments");
         }
     }
@@ -568,7 +762,9 @@ public class PaymentService : IPaymentService
             var payment = await _context.Payments
                 .Include(p => p.Tenant)
                 .Include(p => p.Unit)
+                .ThenInclude(u => u.Property)
                 .Include(p => p.LandlordAccount)
+                .ThenInclude(a => a.Property)
                 .FirstOrDefaultAsync(p => p.Id == paymentId);
 
             if (payment == null)
@@ -581,7 +777,46 @@ public class PaymentService : IPaymentService
                 return Result<PaymentDto>.Failure($"Payment is already {payment.Status}. Only pending payments can be confirmed.");
             }
 
-            // Update payment status
+            if (_currentUserService.UserIdInt.HasValue && _currentUserService.UserIdInt.Value != confirmedByUserId)
+            {
+                return Result<PaymentDto>.Failure("ConfirmedByUserId must match the authenticated user");
+            }
+
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                if (!IsInOrganizationScope(payment.Unit?.Property))
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to confirm this payment");
+                }
+
+                if (_currentUserService.IsLandlord)
+                {
+                    var landlordId = _currentUserService.UserIdInt;
+                    if (!landlordId.HasValue || payment.Unit.Property.LandlordId != landlordId.Value)
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to confirm this payment");
+                    }
+                }
+                else if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (payment.Unit.PropertyId == 0 || !assignedPropertyIds.Contains(payment.Unit.PropertyId))
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to confirm this payment");
+                    }
+                }
+                else
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to confirm this payment");
+                }
+            }
+
+            IDbContextTransaction? transaction = null;
+            if (_context.Database.IsRelational())
+            {
+                transaction = await _context.Database.BeginTransactionAsync();
+            }
+
             payment.Status = PaymentStatus.Completed;
             payment.ConfirmedAt = DateTime.UtcNow;
             payment.ConfirmedByUserId = confirmedByUserId;
@@ -589,6 +824,21 @@ public class PaymentService : IPaymentService
 
             _context.Payments.Update(payment);
             await _context.SaveChangesAsync();
+
+            var allocationResult = await _paymentAllocationService.AllocatePaymentToOutstandingInvoicesAsync(payment.Id);
+            if (!allocationResult.IsSuccess)
+            {
+                if (transaction != null)
+                {
+                    await transaction.RollbackAsync();
+                }
+                return Result<PaymentDto>.Failure(allocationResult.ErrorMessage);
+            }
+
+            if (transaction != null)
+            {
+                await transaction.CommitAsync();
+            }
 
             var paymentDto = _mapper.Map<PaymentDto>(payment);
 
@@ -617,7 +867,9 @@ public class PaymentService : IPaymentService
             var payment = await _context.Payments
                 .Include(p => p.Tenant)
                 .Include(p => p.Unit)
+                .ThenInclude(u => u.Property)
                 .Include(p => p.LandlordAccount)
+                .ThenInclude(a => a.Property)
                 .FirstOrDefaultAsync(p => p.Id == paymentId);
 
             if (payment == null)
@@ -628,6 +880,35 @@ public class PaymentService : IPaymentService
             if (payment.Status != PaymentStatus.Pending)
             {
                 return Result<PaymentDto>.Failure($"Payment is already {payment.Status}. Only pending payments can be rejected.");
+            }
+
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                if (!IsInOrganizationScope(payment.Unit?.Property))
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to reject this payment");
+                }
+
+                if (_currentUserService.IsLandlord)
+                {
+                    var landlordId = _currentUserService.UserIdInt;
+                    if (!landlordId.HasValue || payment.Unit.Property.LandlordId != landlordId.Value)
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to reject this payment");
+                    }
+                }
+                else if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (payment.Unit.PropertyId == 0 || !assignedPropertyIds.Contains(payment.Unit.PropertyId))
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to reject this payment");
+                    }
+                }
+                else
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to reject this payment");
+                }
             }
 
             // Update payment status
@@ -728,8 +1009,8 @@ public class PaymentService : IPaymentService
         {
             IEnumerable<Payment> overduePayments;
 
-            // RBAC: SystemAdmin can see all overdue payments
-            if (_currentUserService.IsSystemAdmin)
+            // RBAC: PlatformAdmin can see all overdue payments
+            if (_currentUserService.IsPlatformAdmin)
             {
                 if (propertyId.HasValue)
                 {
@@ -768,22 +1049,18 @@ public class PaymentService : IPaymentService
                     overduePayments = await _paymentRepository.GetOverduePaymentsByLandlordIdAsync(landlordId.Value);
                 }
             }
-            // Accountant can see overdue payments for their landlord's properties
-            else if (_currentUserService.IsAccountant)
+            // Managers can see overdue payments for assigned properties
+            else if (_currentUserService.IsManager)
             {
-                var landlordId = _currentUserService.LandlordIdInt;
-                if (!landlordId.HasValue)
+                var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                if (assignedPropertyIds.Count == 0)
                 {
-                    return Result<IEnumerable<PaymentDto>>.Failure("Landlord ID not found for accountant");
+                    return Result<IEnumerable<PaymentDto>>.Failure("Assigned property scope not found");
                 }
 
                 if (propertyId.HasValue)
                 {
-                    // Verify property belongs to accountant's landlord
-                    var property = await _context.Properties
-                        .FirstOrDefaultAsync(p => p.Id == propertyId.Value && p.LandlordId == landlordId.Value);
-
-                    if (property == null)
+                    if (!assignedPropertyIds.Contains(propertyId.Value))
                     {
                         return Result<IEnumerable<PaymentDto>>.Failure("Property not found or you don't have permission to view it");
                     }
@@ -792,8 +1069,30 @@ public class PaymentService : IPaymentService
                 }
                 else
                 {
-                    // Get all overdue payments for accountant's landlord properties
-                    overduePayments = await _paymentRepository.GetOverduePaymentsByLandlordIdAsync(landlordId.Value);
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByPropertyIdsAsync(assignedPropertyIds);
+                }
+            }
+            // Accountant can see overdue payments for assigned properties
+            else if (_currentUserService.IsAccountant)
+            {
+                var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                if (assignedPropertyIds.Count == 0)
+                {
+                    return Result<IEnumerable<PaymentDto>>.Failure("Assigned property scope not found for accountant");
+                }
+
+                if (propertyId.HasValue)
+                {
+                    if (!assignedPropertyIds.Contains(propertyId.Value))
+                    {
+                        return Result<IEnumerable<PaymentDto>>.Failure("Property not found or you don't have permission to view it");
+                    }
+
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByPropertyIdAsync(propertyId.Value);
+                }
+                else
+                {
+                    overduePayments = await _paymentRepository.GetOverduePaymentsByPropertyIdsAsync(assignedPropertyIds);
                 }
             }
             else
@@ -820,11 +1119,50 @@ public class PaymentService : IPaymentService
         {
             var payment = await _context.Payments
                 .Include(p => p.Tenant)
+                    .ThenInclude(t => t.Unit)
+                        .ThenInclude(u => u.Property)
+                .Include(p => p.Unit)
+                    .ThenInclude(u => u.Property)
                 .FirstOrDefaultAsync(p => p.Id == paymentId);
 
             if (payment == null)
             {
                 return Result<PaymentDto>.Failure($"Payment with ID {paymentId} not found");
+            }
+
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                if (!IsInOrganizationScope(payment.Unit?.Property))
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                }
+
+                if (_currentUserService.IsTenant)
+                {
+                    if (!_currentUserService.TenantId.HasValue || payment.TenantId != _currentUserService.TenantId.Value)
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else if (_currentUserService.IsLandlord)
+                {
+                    if (!_currentUserService.UserIdInt.HasValue || payment.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (payment.Unit == null || !assignedPropertyIds.Contains(payment.Unit.PropertyId))
+                    {
+                        return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else
+                {
+                    return Result<PaymentDto>.Failure("You do not have permission to access this payment");
+                }
             }
 
             // Check if payment is pending
@@ -873,11 +1211,50 @@ public class PaymentService : IPaymentService
         {
             var payment = await _context.Payments
                 .Include(p => p.Tenant)
+                    .ThenInclude(t => t.Unit)
+                        .ThenInclude(u => u.Property)
+                .Include(p => p.Unit)
+                    .ThenInclude(u => u.Property)
                 .FirstOrDefaultAsync(p => p.Id == paymentId);
 
             if (payment == null)
             {
                 return Result<LateFeeCalculationDto>.Failure($"Payment with ID {paymentId} not found");
+            }
+
+            if (!_currentUserService.IsPlatformAdmin)
+            {
+                if (!IsInOrganizationScope(payment.Unit?.Property))
+                {
+                    return Result<LateFeeCalculationDto>.Failure("You do not have permission to access this payment");
+                }
+
+                if (_currentUserService.IsTenant)
+                {
+                    if (!_currentUserService.TenantId.HasValue || payment.TenantId != _currentUserService.TenantId.Value)
+                    {
+                        return Result<LateFeeCalculationDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else if (_currentUserService.IsLandlord)
+                {
+                    if (!_currentUserService.UserIdInt.HasValue || payment.Unit?.Property?.LandlordId != _currentUserService.UserIdInt.Value)
+                    {
+                        return Result<LateFeeCalculationDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else if (_currentUserService.IsManager || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await GetAssignedPropertyIdsAsync();
+                    if (payment.Unit == null || !assignedPropertyIds.Contains(payment.Unit.PropertyId))
+                    {
+                        return Result<LateFeeCalculationDto>.Failure("You do not have permission to access this payment");
+                    }
+                }
+                else
+                {
+                    return Result<LateFeeCalculationDto>.Failure("You do not have permission to access this payment");
+                }
             }
 
             var currentDate = DateTime.UtcNow;
@@ -912,4 +1289,25 @@ public class PaymentService : IPaymentService
             return Result<LateFeeCalculationDto>.Failure("An error occurred while calculating the late fee");
         }
     }
+
+    private async Task<HashSet<int>> GetAssignedPropertyIdsAsync()
+    {
+        var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+        return assignedPropertyIds.Count == 0
+            ? new HashSet<int>()
+            : new HashSet<int>(assignedPropertyIds);
+    }
+
+    private bool IsInOrganizationScope(Property? property)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        return property != null &&
+               _currentUserService.OrganizationId.HasValue &&
+               property.OrganizationId == _currentUserService.OrganizationId.Value;
+    }
 }
+

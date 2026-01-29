@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Card, Select, LoadingSpinner } from '@/components/common'
-import { useGetProperties, useGetPayments } from '@/lib/hooks'
-import { FaHome, FaDoorOpen, FaDoorClosed, FaMoneyBillWave, FaPercentage } from 'react-icons/fa'
+import { Card, Select, LoadingSpinner, Button, Alert } from '@/components/common'
+import { useGetProperties, useGetPayments, useDownloadRentRoll } from '@/lib/hooks'
+import { Banknote, DoorClosed, DoorOpen, Home, Percent } from 'lucide-react'
 import { PaymentStatus } from '@/lib/types'
 
 export default function PropertyReport() {
   const { data: properties, loading: loadingProperties } = useGetProperties()
   const { data: payments, loading: loadingPayments } = useGetPayments()
+  const { downloadRentRoll, loading: downloading } = useDownloadRentRoll()
 
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | 'all'>('all')
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const propertyOptions = [
     { value: 'all', label: 'All Properties' },
@@ -88,6 +90,17 @@ export default function PropertyReport() {
 
   const loading = loadingProperties || loadingPayments
 
+  const handleDownloadRentRoll = async () => {
+    const propertyId = selectedPropertyId === 'all' ? undefined : selectedPropertyId
+    const success = await downloadRentRoll(propertyId)
+    if (success) {
+      setAlert({ type: 'success', message: 'Rent roll downloaded successfully!' })
+    } else {
+      setAlert({ type: 'error', message: 'Failed to download rent roll' })
+    }
+    setTimeout(() => setAlert(null), 3000)
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -100,7 +113,18 @@ export default function PropertyReport() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">Property Performance Report</h2>
+        <Button variant="primary" onClick={handleDownloadRentRoll} loading={downloading}>
+          Download Rent Roll
+        </Button>
       </div>
+
+      {alert && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
       {/* Property Selector */}
       <Card padding="md">
@@ -121,7 +145,7 @@ export default function PropertyReport() {
               <p className="text-sm text-blue-600 font-medium mb-1">Total Units</p>
               <p className="text-2xl font-bold text-blue-900">{totals.totalUnits}</p>
             </div>
-            <FaHome className="text-3xl text-blue-600" />
+            <Home className="text-3xl text-blue-600" />
           </div>
         </Card>
 
@@ -131,7 +155,7 @@ export default function PropertyReport() {
               <p className="text-sm text-green-600 font-medium mb-1">Occupied</p>
               <p className="text-2xl font-bold text-green-900">{totals.occupiedUnits}</p>
             </div>
-            <FaDoorClosed className="text-3xl text-green-600" />
+            <DoorClosed className="text-3xl text-green-600" />
           </div>
         </Card>
 
@@ -141,7 +165,7 @@ export default function PropertyReport() {
               <p className="text-sm text-orange-600 font-medium mb-1">Vacant</p>
               <p className="text-2xl font-bold text-orange-900">{totals.vacantUnits}</p>
             </div>
-            <FaDoorOpen className="text-3xl text-orange-600" />
+            <DoorOpen className="text-3xl text-orange-600" />
           </div>
         </Card>
 
@@ -151,7 +175,7 @@ export default function PropertyReport() {
               <p className="text-sm text-purple-600 font-medium mb-1">Occupancy Rate</p>
               <p className="text-2xl font-bold text-purple-900">{totals.overallOccupancyRate.toFixed(1)}%</p>
             </div>
-            <FaPercentage className="text-3xl text-purple-600" />
+            <Percent className="text-3xl text-purple-600" />
           </div>
         </Card>
 
@@ -163,7 +187,7 @@ export default function PropertyReport() {
                 KSh {(totals.totalRevenue / 1000).toFixed(0)}K
               </p>
             </div>
-            <FaMoneyBillWave className="text-3xl text-indigo-600" />
+            <Banknote className="text-3xl text-indigo-600" />
           </div>
         </Card>
       </div>

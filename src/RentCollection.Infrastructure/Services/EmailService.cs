@@ -22,7 +22,7 @@ public class EmailService : IEmailService
     {
         var resetUrl = $"{_configuration["App:BaseUrl"]}/reset-password?token={resetToken}";
 
-        var subject = "Password Reset Request - RentCollection";
+        var subject = "Password Reset Request - Hisa Rentals";
         var body = $@"
 <!DOCTYPE html>
 <html>
@@ -30,9 +30,9 @@ public class EmailService : IEmailService
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .header {{ background-color: #1E3A5F; color: white; padding: 20px; text-align: center; }}
         .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .button {{ display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
+        .button {{ display: inline-block; padding: 12px 24px; background-color: #3A6EA5; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
         .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
     </style>
 </head>
@@ -43,7 +43,7 @@ public class EmailService : IEmailService
         </div>
         <div class=""content"">
             <p>Hello {userName},</p>
-            <p>We received a request to reset your password for your RentCollection account.</p>
+            <p>We received a request to reset your password for your Hisa Rentals account.</p>
             <p>Click the button below to reset your password:</p>
             <p style=""text-align: center;"">
                 <a href=""{resetUrl}"" class=""button"">Reset Password</a>
@@ -54,7 +54,7 @@ public class EmailService : IEmailService
             <p>If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
         </div>
         <div class=""footer"">
-            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
             <p>This is an automated email. Please do not reply.</p>
         </div>
     </div>
@@ -68,7 +68,7 @@ public class EmailService : IEmailService
     {
         var loginUrl = $"{_configuration["App:BaseUrl"]}/login";
 
-        var subject = "Welcome to RentCollection";
+        var subject = "Welcome to Hisa Rentals";
         var body = $@"
 <!DOCTYPE html>
 <html>
@@ -76,17 +76,17 @@ public class EmailService : IEmailService
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .header {{ background-color: #1E3A5F; color: white; padding: 20px; text-align: center; }}
         .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .credentials {{ background-color: #fff; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0; }}
-        .button {{ display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
+        .credentials {{ background-color: #fff; padding: 15px; border-left: 4px solid #3A6EA5; margin: 20px 0; }}
+        .button {{ display: inline-block; padding: 12px 24px; background-color: #3A6EA5; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
         .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
     </style>
 </head>
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>Welcome to RentCollection!</h1>
+            <h1>Welcome to Hisa Rentals!</h1>
         </div>
         <div class=""content"">
             <p>Hello {userName},</p>
@@ -101,7 +101,7 @@ public class EmailService : IEmailService
             </p>
         </div>
         <div class=""footer"">
-            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -114,7 +114,7 @@ public class EmailService : IEmailService
     {
         var verifyUrl = $"{_configuration["App:BaseUrl"]}/verify-email?token={verificationToken}";
 
-        var subject = "Verify Your Email - RentCollection";
+        var subject = "Verify Your Email - Hisa Rentals";
         var body = $@"
 <!DOCTYPE html>
 <html>
@@ -122,9 +122,9 @@ public class EmailService : IEmailService
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .header {{ background-color: #1E3A5F; color: white; padding: 20px; text-align: center; }}
         .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .button {{ display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
+        .button {{ display: inline-block; padding: 12px 24px; background-color: #3A6EA5; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
         .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
     </style>
 </head>
@@ -135,7 +135,7 @@ public class EmailService : IEmailService
         </div>
         <div class=""content"">
             <p>Hello {userName},</p>
-            <p>Thank you for registering with RentCollection. Please verify your email address by clicking the button below:</p>
+            <p>Thank you for registering with Hisa Rentals. Please verify your email address by clicking the button below:</p>
             <p style=""text-align: center;"">
                 <a href=""{verifyUrl}"" class=""button"">Verify Email</a>
             </p>
@@ -144,7 +144,44 @@ public class EmailService : IEmailService
             <p><strong>This link will expire in 24 hours.</strong></p>
         </div>
         <div class=""footer"">
-            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        await SendEmailAsync(toEmail, subject, body);
+    }
+
+    public async Task SendVerificationOtpEmailAsync(string toEmail, string userName, string otpCode)
+    {
+        var subject = "Your Verification Code - Hisa Rentals";
+        var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #1E3A5F; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .code {{ font-size: 28px; letter-spacing: 6px; font-weight: bold; color: #1E3A5F; padding: 16px; background: #fff; text-align: center; border-radius: 8px; border: 1px solid #e5e7eb; }}
+        .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <div class=""header"">
+            <h1>Verify Your Account</h1>
+        </div>
+        <div class=""content"">
+            <p>Hello {userName},</p>
+            <p>Use the verification code below to complete your sign-in:</p>
+            <div class=""code"">{otpCode}</div>
+            <p><strong>This code expires shortly.</strong> If you did not request this, please ignore this email.</p>
+        </div>
+        <div class=""footer"">
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -166,11 +203,11 @@ public class EmailService : IEmailService
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #2196F3; color: white; padding: 20px; text-align: center; }}
+        .header {{ background-color: #1E3A5F; color: white; padding: 20px; text-align: center; }}
         .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .info-box {{ background-color: #fff; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0; }}
+        .info-box {{ background-color: #fff; padding: 15px; border-left: 4px solid #3A6EA5; margin: 20px 0; }}
         .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
-        .highlight {{ color: #2196F3; font-weight: bold; }}
+        .highlight {{ color: #3A6EA5; font-weight: bold; }}
     </style>
 </head>
 <body>
@@ -193,7 +230,7 @@ public class EmailService : IEmailService
             <p>Thank you for your prompt attention to this matter.</p>
         </div>
         <div class=""footer"">
-            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
             <p>Property Management Services</p>
         </div>
     </div>
@@ -213,17 +250,17 @@ public class EmailService : IEmailService
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #f44336; color: white; padding: 20px; text-align: center; }}
+        .header {{ background-color: #B91C1C; color: white; padding: 20px; text-align: center; }}
         .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .urgent-box {{ background-color: #ffebee; padding: 15px; border-left: 4px solid #f44336; margin: 20px 0; }}
+        .urgent-box {{ background-color: #fef2f2; padding: 15px; border-left: 4px solid #B91C1C; margin: 20px 0; }}
         .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
-        .highlight {{ color: #f44336; font-weight: bold; }}
+        .highlight {{ color: #B91C1C; font-weight: bold; }}
     </style>
 </head>
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>⚠️ OVERDUE PAYMENT NOTICE</h1>
+            <h1>OVERDUE PAYMENT NOTICE</h1>
         </div>
         <div class=""content"">
             <p>Dear {tenantName},</p>
@@ -244,7 +281,7 @@ public class EmailService : IEmailService
             <p><strong>This matter requires your immediate attention.</strong></p>
         </div>
         <div class=""footer"">
-            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
             <p>Property Management Services</p>
         </div>
     </div>
@@ -264,23 +301,23 @@ public class EmailService : IEmailService
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
+        .header {{ background-color: #1E3A5F; color: white; padding: 20px; text-align: center; }}
         .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .receipt-box {{ background-color: #fff; padding: 20px; border: 2px solid #4CAF50; margin: 20px 0; }}
+        .receipt-box {{ background-color: #fff; padding: 20px; border: 2px solid #3A6EA5; margin: 20px 0; }}
         .footer {{ padding: 20px; text-align: center; font-size: 12px; color: #666; }}
-        .success {{ color: #4CAF50; font-weight: bold; }}
+        .success {{ color: #3A6EA5; font-weight: bold; }}
     </style>
 </head>
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>✓ Payment Received</h1>
+            <h1>Payment Received</h1>
         </div>
         <div class=""content"">
             <p>Dear {tenantName},</p>
             <p>Thank you! We have successfully received your rent payment.</p>
             <div class=""receipt-box"">
-                <h2 style=""color: #4CAF50; text-align: center;"">PAYMENT RECEIPT</h2>
+                <h2 style=""color: #1E3A5F; text-align: center;"">PAYMENT RECEIPT</h2>
                 <hr>
                 <p><strong>Property:</strong> {propertyName}</p>
                 <p><strong>Unit:</strong> {unitNumber}</p>
@@ -294,7 +331,7 @@ public class EmailService : IEmailService
             <p>If you have any questions about this payment, please don't hesitate to contact us.</p>
         </div>
         <div class=""footer"">
-            <p>&copy; {DateTime.UtcNow.Year} RentCollection. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} Hisa Rentals. All rights reserved.</p>
             <p>Property Management Services</p>
         </div>
     </div>
@@ -310,8 +347,8 @@ public class EmailService : IEmailService
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(
-                _configuration["Email:FromName"] ?? "RentCollection",
-                _configuration["Email:FromAddress"] ?? "noreply@rentcollection.com"));
+                _configuration["Email:FromName"] ?? "Hisa Rentals",
+                _configuration["Email:FromAddress"] ?? "noreply@hisarentals.com"));
             message.To.Add(MailboxAddress.Parse(toEmail));
             message.Subject = subject;
 

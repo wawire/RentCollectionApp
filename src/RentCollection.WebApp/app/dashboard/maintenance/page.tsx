@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { maintenanceRequestService } from '@/lib/services/maintenanceRequestService'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import {
   MaintenanceRequest,
   MaintenancePriority,
@@ -10,6 +11,18 @@ import {
   AssignMaintenanceRequestDto,
   CompleteMaintenanceRequestDto,
 } from '@/lib/types/maintenanceRequest.types'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Input,
+  Modal,
+  PageHeader,
+  SkeletonCard,
+  TextArea,
+} from '@/components/common'
 
 export default function MaintenanceRequestsDashboardPage() {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([])
@@ -31,6 +44,7 @@ export default function MaintenanceRequestsDashboardPage() {
       setLoading(true)
       const data = await maintenanceRequestService.getAll()
       setRequests(data)
+      setError('')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch maintenance requests')
     } finally {
@@ -94,35 +108,35 @@ export default function MaintenanceRequestsDashboardPage() {
     }
   }
 
-  const getStatusColor = (status: MaintenanceRequestStatus) => {
+  const statusVariant = (status: MaintenanceRequestStatus) => {
     switch (status) {
       case MaintenanceRequestStatus.Pending:
-        return 'bg-yellow-100 text-yellow-800'
+        return 'warning'
       case MaintenanceRequestStatus.Assigned:
-        return 'bg-blue-100 text-blue-800'
+        return 'info'
       case MaintenanceRequestStatus.InProgress:
-        return 'bg-purple-100 text-purple-800'
+        return 'default'
       case MaintenanceRequestStatus.Completed:
-        return 'bg-green-100 text-green-800'
+        return 'success'
       case MaintenanceRequestStatus.Cancelled:
-        return 'bg-gray-100 text-gray-800'
+        return 'default'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'default'
     }
   }
 
-  const getPriorityColor = (priority: MaintenancePriority) => {
+  const priorityVariant = (priority: MaintenancePriority) => {
     switch (priority) {
       case MaintenancePriority.Emergency:
-        return 'bg-red-100 text-red-800'
+        return 'danger'
       case MaintenancePriority.High:
-        return 'bg-orange-100 text-orange-800'
+        return 'warning'
       case MaintenancePriority.Medium:
-        return 'bg-yellow-100 text-yellow-800'
+        return 'default'
       case MaintenancePriority.Low:
-        return 'bg-green-100 text-green-800'
+        return 'success'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'default'
     }
   }
 
@@ -137,316 +151,299 @@ export default function MaintenanceRequestsDashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Maintenance Requests</h1>
-        <p className="mt-2 text-gray-600">Manage and track all maintenance requests</p>
-      </div>
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord', 'Manager', 'Caretaker']}>
+      <div className="max-w-7xl mx-auto space-y-6">
+        <PageHeader
+          title="Maintenance"
+          subtitle="Manage and track all maintenance requests."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Maintenance' },
+          ]}
+        />
 
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+        {error && (
+          <Alert type="error" message={error} />
+        )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-600">Total</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <Card padding="md">
+            <p className="text-sm text-text-muted">Total</p>
+            <p className="text-2xl font-semibold text-text-primary">{stats.total}</p>
+          </Card>
+          <Card padding="md" className="bg-state-warning/10 border-state-warning/30">
+            <p className="text-sm text-state-warning">Pending</p>
+            <p className="text-2xl font-semibold text-text-primary">{stats.pending}</p>
+          </Card>
+          <Card padding="md" className="bg-brand-bg/60">
+            <p className="text-sm text-text-secondary">In Progress</p>
+            <p className="text-2xl font-semibold text-text-primary">{stats.inProgress}</p>
+          </Card>
+          <Card padding="md" className="bg-state-success/10 border-state-success/30">
+            <p className="text-sm text-state-success">Completed</p>
+            <p className="text-2xl font-semibold text-text-primary">{stats.completed}</p>
+          </Card>
+          <Card padding="md" className="bg-state-error/10 border-state-error/30">
+            <p className="text-sm text-state-error">Overdue</p>
+            <p className="text-2xl font-semibold text-text-primary">{stats.overdue}</p>
+          </Card>
         </div>
-        <div className="bg-yellow-50 rounded-lg shadow p-4">
-          <p className="text-sm text-yellow-600">Pending</p>
-          <p className="text-2xl font-bold text-yellow-900">{stats.pending}</p>
-        </div>
-        <div className="bg-purple-50 rounded-lg shadow p-4">
-          <p className="text-sm text-purple-600">In Progress</p>
-          <p className="text-2xl font-bold text-purple-900">{stats.inProgress}</p>
-        </div>
-        <div className="bg-green-50 rounded-lg shadow p-4">
-          <p className="text-sm text-green-600">Completed</p>
-          <p className="text-2xl font-bold text-green-900">{stats.completed}</p>
-        </div>
-        <div className="bg-red-50 rounded-lg shadow p-4">
-          <p className="text-sm text-red-600">Overdue</p>
-          <p className="text-2xl font-bold text-red-900">{stats.overdue}</p>
-        </div>
-      </div>
 
-      {/* Filters */}
-      <div className="mb-6 bg-white shadow rounded-lg p-4">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-md ${
-              filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter(MaintenanceRequestStatus.Pending)}
-            className={`px-4 py-2 rounded-md ${
-              filter === MaintenanceRequestStatus.Pending
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => setFilter(MaintenanceRequestStatus.Assigned)}
-            className={`px-4 py-2 rounded-md ${
-              filter === MaintenanceRequestStatus.Assigned
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Assigned
-          </button>
-          <button
-            onClick={() => setFilter(MaintenanceRequestStatus.InProgress)}
-            className={`px-4 py-2 rounded-md ${
-              filter === MaintenanceRequestStatus.InProgress
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            In Progress
-          </button>
-          <button
-            onClick={() => setFilter(MaintenanceRequestStatus.Completed)}
-            className={`px-4 py-2 rounded-md ${
-              filter === MaintenanceRequestStatus.Completed
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Completed
-          </button>
-        </div>
-      </div>
+        <Card padding="md">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={filter === 'all' ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setFilter('all')}
+            >
+              All
+            </Button>
+            <Button
+              variant={filter === MaintenanceRequestStatus.Pending ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setFilter(MaintenanceRequestStatus.Pending)}
+            >
+              Pending
+            </Button>
+            <Button
+              variant={filter === MaintenanceRequestStatus.Assigned ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setFilter(MaintenanceRequestStatus.Assigned)}
+            >
+              Assigned
+            </Button>
+            <Button
+              variant={filter === MaintenanceRequestStatus.InProgress ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setFilter(MaintenanceRequestStatus.InProgress)}
+            >
+              In Progress
+            </Button>
+            <Button
+              variant={filter === MaintenanceRequestStatus.Completed ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setFilter(MaintenanceRequestStatus.Completed)}
+            >
+              Completed
+            </Button>
+          </div>
+        </Card>
 
-      {/* Requests List */}
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading requests...</p>
-        </div>
-      ) : filteredRequests.length === 0 ? (
-        <div className="bg-white shadow rounded-lg p-12 text-center">
-          <p className="text-gray-600">No maintenance requests found</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredRequests.map((request) => (
-            <div key={request.id} className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{request.title}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                      {request.statusName}
-                    </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(request.priority)}`}>
-                      {request.priorityName}
-                    </span>
-                    {request.isOverdue && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Overdue</span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 mb-3">{request.description}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Tenant:</span>{' '}
-                      <span className="font-medium">{request.tenantName}</span>
+        {loading ? (
+          <div className="space-y-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : filteredRequests.length === 0 ? (
+          <Card padding="md">
+            <EmptyState title="No maintenance requests found" />
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredRequests.map((request) => (
+              <Card key={request.id} padding="md" hover>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center flex-wrap gap-2 mb-2">
+                      <h3 className="text-lg font-semibold text-text-primary">{request.title}</h3>
+                      <Badge variant={statusVariant(request.status)}>{request.statusName}</Badge>
+                      <Badge variant={priorityVariant(request.priority)}>{request.priorityName}</Badge>
+                      {request.isOverdue && (
+                        <Badge variant="danger">Overdue</Badge>
+                      )}
                     </div>
-                    <div>
-                      <span className="text-gray-500">Phone:</span>{' '}
-                      <span className="font-medium">{request.tenantPhone}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Unit:</span>{' '}
-                      <span className="font-medium">{request.unitNumber}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Property:</span>{' '}
-                      <span className="font-medium">{request.propertyName}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Created:</span>{' '}
-                      <span className="font-medium">
-                        {new Date(request.createdAt).toLocaleDateString()} ({request.daysSinceCreated}d ago)
-                      </span>
-                    </div>
-                    {request.assignedToName && (
+                    <p className="text-text-secondary mb-3">{request.description}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-500">Assigned to:</span>{' '}
-                        <span className="font-medium">{request.assignedToName}</span>
+                        <span className="text-text-muted">Tenant:</span>{' '}
+                        <span className="font-medium text-text-primary">{request.tenantName}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-muted">Phone:</span>{' '}
+                        <span className="font-medium text-text-primary">{request.tenantPhone}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-muted">Unit:</span>{' '}
+                        <span className="font-medium text-text-primary">{request.unitNumber}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-muted">Property:</span>{' '}
+                        <span className="font-medium text-text-primary">{request.propertyName}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-muted">Created:</span>{' '}
+                        <span className="font-medium text-text-primary">
+                          {new Date(request.createdAt).toLocaleDateString()} ({request.daysSinceCreated}d ago)
+                        </span>
+                      </div>
+                      {request.assignedToName && (
+                        <div>
+                          <span className="text-text-muted">Assigned to:</span>{' '}
+                          <span className="font-medium text-text-primary">{request.assignedToName}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {request.photoUrls.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-sm text-text-muted mb-2">Photos:</p>
+                        <div className="flex space-x-2">
+                          {request.photoUrls.map((url, index) => (
+                            <img
+                              key={index}
+                              src={url}
+                              alt={`Photo ${index + 1}`}
+                              className="h-20 w-20 object-cover rounded-md cursor-pointer hover:opacity-75"
+                              onClick={() => window.open(url, '_blank')}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
-
-                  {request.photoUrls.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-500 mb-2">Photos:</p>
-                      <div className="flex space-x-2">
-                        {request.photoUrls.map((url, index) => (
-                          <img
-                            key={index}
-                            src={url}
-                            alt={`Photo ${index + 1}`}
-                            className="h-20 w-20 object-cover rounded-md cursor-pointer hover:opacity-75"
-                            onClick={() => window.open(url, '_blank')}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                {request.status === MaintenanceRequestStatus.Pending && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setSelectedRequest(request)
-                        setShowAssignModal(true)
-                      }}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-                    >
-                      Assign
-                    </button>
-                    <button
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {request.status === MaintenanceRequestStatus.Pending && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRequest(request)
+                          setShowAssignModal(true)
+                        }}
+                      >
+                        Assign
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleUpdateStatus(request.id, MaintenanceRequestStatus.InProgress)}
+                      >
+                        Start Work
+                      </Button>
+                    </>
+                  )}
+                  {request.status === MaintenanceRequestStatus.Assigned && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       onClick={() => handleUpdateStatus(request.id, MaintenanceRequestStatus.InProgress)}
-                      className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
                     >
                       Start Work
-                    </button>
-                  </>
-                )}
-                {request.status === MaintenanceRequestStatus.Assigned && (
-                  <button
-                    onClick={() => handleUpdateStatus(request.id, MaintenanceRequestStatus.InProgress)}
-                    className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
+                    </Button>
+                  )}
+                  {(request.status === MaintenanceRequestStatus.InProgress ||
+                    request.status === MaintenanceRequestStatus.Assigned) && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        setSelectedRequest(request)
+                        setShowCompleteModal(true)
+                      }}
+                    >
+                      Mark Complete
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(request.id)}
                   >
-                    Start Work
-                  </button>
-                )}
-                {(request.status === MaintenanceRequestStatus.InProgress ||
-                  request.status === MaintenanceRequestStatus.Assigned) && (
-                  <button
-                    onClick={() => {
-                      setSelectedRequest(request)
-                      setShowCompleteModal(true)
-                    }}
-                    className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                  >
-                    Mark Complete
-                  </button>
-                )}
-                <button
-                  onClick={() => handleDelete(request.id)}
-                  className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                    Delete
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {/* Assign Modal */}
-      {showAssignModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">Assign Maintenance Request</h3>
-            <p className="text-gray-600 mb-4">Assign "{selectedRequest.title}" to a caretaker</p>
-            <input
-              type="number"
-              placeholder="Caretaker User ID"
-              value={assignCaretakerId}
-              onChange={(e) => setAssignCaretakerId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md mb-4"
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => {
-                  setShowAssignModal(false)
-                  setSelectedRequest(null)
-                  setAssignCaretakerId('')
-                }}
-                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-              >
+        <Modal
+          isOpen={showAssignModal && !!selectedRequest}
+          onClose={() => {
+            setShowAssignModal(false)
+            setSelectedRequest(null)
+            setAssignCaretakerId('')
+          }}
+          title="Assign Maintenance Request"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => {
+                setShowAssignModal(false)
+                setSelectedRequest(null)
+                setAssignCaretakerId('')
+              }}>
                 Cancel
-              </button>
-              <button
-                onClick={handleAssign}
-                disabled={!assignCaretakerId}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-              >
+              </Button>
+              <Button onClick={handleAssign} disabled={!assignCaretakerId}>
                 Assign
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+            </>
+          }
+        >
+          <p className="text-text-secondary mb-4">
+            Assign "{selectedRequest?.title}" to a caretaker.
+          </p>
+          <Input
+            type="number"
+            label="Caretaker User ID"
+            value={assignCaretakerId}
+            onChange={(e) => setAssignCaretakerId(e.target.value)}
+            placeholder="Caretaker User ID"
+            fullWidth
+          />
+        </Modal>
 
-      {/* Complete Modal */}
-      {showCompleteModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">Complete Maintenance Request</h3>
-            <p className="text-gray-600 mb-4">Complete "{selectedRequest.title}"</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Actual Cost (KES) *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={completionData.actualCost}
-                  onChange={(e) => setCompletionData({ ...completionData, actualCost: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
-                <textarea
-                  placeholder="Completion notes..."
-                  value={completionData.notes}
-                  onChange={(e) => setCompletionData({ ...completionData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  rows={3}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <button
-                onClick={() => {
-                  setShowCompleteModal(false)
-                  setSelectedRequest(null)
-                  setCompletionData({ actualCost: '', notes: '' })
-                }}
-                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-              >
+        <Modal
+          isOpen={showCompleteModal && !!selectedRequest}
+          onClose={() => {
+            setShowCompleteModal(false)
+            setSelectedRequest(null)
+            setCompletionData({ actualCost: '', notes: '' })
+          }}
+          title="Complete Maintenance Request"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => {
+                setShowCompleteModal(false)
+                setSelectedRequest(null)
+                setCompletionData({ actualCost: '', notes: '' })
+              }}>
                 Cancel
-              </button>
-              <button
-                onClick={handleComplete}
-                disabled={!completionData.actualCost}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
-              >
+              </Button>
+              <Button onClick={handleComplete} disabled={!completionData.actualCost}>
                 Complete
-              </button>
-            </div>
+              </Button>
+            </>
+          }
+        >
+          <p className="text-text-secondary mb-4">
+            Complete "{selectedRequest?.title}".
+          </p>
+          <div className="space-y-4">
+            <Input
+              type="number"
+              step="0.01"
+              label="Actual Cost (KES)"
+              value={completionData.actualCost}
+              onChange={(e) => setCompletionData({ ...completionData, actualCost: e.target.value })}
+              placeholder="0.00"
+              required
+              fullWidth
+            />
+            <TextArea
+              label="Notes (Optional)"
+              value={completionData.notes}
+              onChange={(e) => setCompletionData({ ...completionData, notes: e.target.value })}
+              rows={3}
+              placeholder="Completion notes..."
+            />
           </div>
-        </div>
-      )}
-    </div>
+        </Modal>
+      </div>
+    </ProtectedRoute>
   )
 }
+

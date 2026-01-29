@@ -31,8 +31,8 @@ public class PropertyOwnerHandler : AuthorizationHandler<PropertyOwnerRequiremen
 
         var role = roleClaim.Value;
 
-        // SystemAdmin can access all properties
-        if (role == UserRole.SystemAdmin.ToString())
+        // PlatformAdmin can access all properties
+        if (role == UserRole.PlatformAdmin.ToString())
         {
             context.Succeed(requirement);
             return Task.CompletedTask;
@@ -69,8 +69,8 @@ public class PropertyOwnerHandler : AuthorizationHandler<PropertyOwnerRequiremen
                 return Task.CompletedTask;
             }
 
-            // SystemAdmin without PropertyId can access all
-            if (role == UserRole.SystemAdmin.ToString())
+            // PlatformAdmin without PropertyId can access all
+            if (role == UserRole.PlatformAdmin.ToString())
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
@@ -87,3 +87,4 @@ public class PropertyOwnerHandler : AuthorizationHandler<PropertyOwnerRequiremen
         return Task.CompletedTask;
     }
 }
+

@@ -14,6 +14,7 @@ namespace RentCollection.Application.DTOs.Documents
         public string FileUrl { get; set; } = string.Empty;
         public long FileSize { get; set; }
         public string FileSizeFormatted { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int UploadedByUserId { get; set; }
         public string UploadedByName { get; set; } = string.Empty;

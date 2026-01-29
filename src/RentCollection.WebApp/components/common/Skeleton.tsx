@@ -49,7 +49,7 @@ export default function Skeleton({
         {Array.from({ length: count }).map((_, index) => (
           <div
             key={index}
-            className={`bg-gray-200 animate-pulse ${getVariantClasses()} ${className}`}
+            className={`bg-brand-bg animate-pulse ${getVariantClasses()} ${className}`}
             style={style}
             role="status"
             aria-label="Loading..."
@@ -61,7 +61,7 @@ export default function Skeleton({
 
   return (
     <div
-      className={`bg-gray-200 animate-pulse ${getVariantClasses()} ${className}`}
+      className={`bg-brand-bg animate-pulse ${getVariantClasses()} ${className}`}
       style={style}
       role="status"
       aria-label="Loading..."
@@ -72,7 +72,7 @@ export default function Skeleton({
 // Preset skeleton components
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`border border-gray-200 rounded-lg p-4 space-y-3 ${className}`}>
+    <div className={`border border-border-muted rounded-xl p-4 space-y-3 ${className}`}>
       <Skeleton height="24px" width="60%" />
       <Skeleton count={3} height="16px" />
       <div className="flex gap-2 pt-2">
@@ -87,14 +87,14 @@ export function SkeletonTable({ rows = 5, columns = 4 }: { rows?: number; column
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="flex gap-4 p-4 border-b border-gray-200">
+      <div className="flex gap-4 p-4 border-b border-border-muted">
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={`header-${i}`} width="120px" height="20px" />
         ))}
       </div>
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={`row-${rowIndex}`} className="flex gap-4 p-4 border-b border-gray-200">
+        <div key={`row-${rowIndex}`} className="flex gap-4 p-4 border-b border-border-muted">
           {Array.from({ length: columns }).map((_, colIndex) => (
             <Skeleton key={`cell-${rowIndex}-${colIndex}`} width="120px" height="20px" />
           ))}

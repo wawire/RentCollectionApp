@@ -2,20 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import {
-  FaArrowLeft,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaStar,
-  FaRegStar,
-  FaMobileAlt,
-  FaUniversity,
-  FaMoneyBillWave,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaSpinner,
-} from 'react-icons/fa'
+import { Banknote, CheckCircle2, Landmark, Loader2, Pencil, Plus, Smartphone, Star, StarOff, Trash2 } from 'lucide-react'
 import { landlordPaymentAccountService } from '@/lib/services/landlordPaymentAccountService'
 import {
   LandlordPaymentAccount,
@@ -24,6 +11,7 @@ import {
   PaymentAccountType,
 } from '@/lib/types/landlordPaymentAccount.types'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function PaymentAccountsPage() {
   const [accounts, setAccounts] = useState<LandlordPaymentAccount[]>([])
@@ -187,13 +175,13 @@ export default function PaymentAccountsPage() {
       case PaymentAccountType.MPesaPaybill:
       case PaymentAccountType.MPesaTillNumber:
       case PaymentAccountType.MPesaPhone:
-        return <FaMobileAlt className="text-green-600" />
+        return <Smartphone className="text-green-600 w-5 h-5" />
       case PaymentAccountType.BankAccount:
-        return <FaUniversity className="text-blue-600" />
+        return <Landmark className="text-blue-600 w-5 h-5" />
       case PaymentAccountType.Cash:
-        return <FaMoneyBillWave className="text-yellow-600" />
+        return <Banknote className="text-yellow-600 w-5 h-5" />
       default:
-        return <FaMobileAlt className="text-gray-600" />
+        return <Smartphone className="text-gray-600 w-5 h-5" />
     }
   }
 
@@ -214,15 +202,11 @@ export default function PaymentAccountsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <LoadingSpinner size="lg" text="Loading payment accounts..." />
-      </div>
-    )
-  }
-
-  return (
+  const content = loading ? (
+    <div className="flex items-center justify-center h-96">
+      <LoadingSpinner size="lg" text="Loading payment accounts..." />
+    </div>
+  ) : (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -241,7 +225,7 @@ export default function PaymentAccountsPage() {
           }}
           className="flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-600 text-primary font-medium rounded-lg transition-all shadow-sm tracking-wide"
         >
-          <FaPlus />
+          <Plus className="w-4 h-4" />
           Add Payment Account
         </button>
       </div>
@@ -300,9 +284,9 @@ export default function PaymentAccountsPage() {
                     title={account.isDefault ? 'Default Account' : 'Set as Default'}
                   >
                     {account.isDefault ? (
-                      <FaStar className="text-accent" />
+                      <Star className="text-accent w-5 h-5" />
                     ) : (
-                      <FaRegStar className="text-primary/30 hover:text-accent transition-colors" />
+                      <StarOff className="text-primary/30 hover:text-accent transition-colors w-5 h-5" />
                     )}
                   </button>
                 </div>
@@ -380,14 +364,14 @@ export default function PaymentAccountsPage() {
                     onClick={() => handleEditClick(account)}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-primary/20 text-primary rounded-lg hover:bg-primary/5 transition-colors"
                   >
-                    <FaEdit />
+                    <Pencil className="w-4 h-4" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(account.id, account.accountName)}
                     className="flex items-center justify-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                   >
-                    <FaTrash />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -423,6 +407,12 @@ export default function PaymentAccountsPage() {
         loading={actionLoading}
       />}
     </div>
+  )
+
+  return (
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord']}>
+      {content}
+    </ProtectedRoute>
   )
 }
 
@@ -670,12 +660,12 @@ function AccountFormModal({ title, formData, setFormData, onSubmit, onCancel, lo
             >
               {loading ? (
                 <>
-                  <FaSpinner className="animate-spin" />
+                  <Loader2 className="animate-spin w-4 h-4" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <FaCheckCircle />
+                  <CheckCircle2 className="w-4 h-4" />
                   Save Account
                 </>
               )}
@@ -686,3 +676,4 @@ function AccountFormModal({ title, formData, setFormData, onSubmit, onCancel, lo
     </div>
   )
 }
+

@@ -65,3 +65,35 @@ export function useDownloadTenantList() {
 
   return { downloadList, loading, error }
 }
+
+export function useDownloadRentRoll() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
+
+  const downloadRentRoll = useCallback(async (propertyId?: number): Promise<boolean> => {
+    try {
+      setLoading(true)
+      setError(null)
+      const blob = await reportService.downloadRentRoll(propertyId)
+
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      const suffix = propertyId ? `Property-${propertyId}` : 'All'
+      link.download = `Rent-Roll-${suffix}-${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      return true
+    } catch (err) {
+      setError(err as ApiError)
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { downloadRentRoll, loading, error }
+}

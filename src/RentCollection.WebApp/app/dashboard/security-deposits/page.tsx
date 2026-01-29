@@ -10,7 +10,8 @@ import type {
   RefundSecurityDepositDto,
   SecurityDepositTransactionType
 } from '@/lib/types/securityDeposit.types'
-import { FaMoneyBillWave, FaArrowDown, FaArrowUp, FaSearch } from 'react-icons/fa'
+import { Banknote, Search } from 'lucide-react'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function SecurityDepositsPage() {
   const [deposits, setDeposits] = useState<SecurityDepositBalance[]>([])
@@ -135,15 +136,11 @@ export default function SecurityDepositsPage() {
   const totalDepositsHeld = deposits.reduce((sum, d) => sum + d.currentBalance, 0)
   const totalInitialDeposits = deposits.reduce((sum, d) => sum + d.initialDeposit, 0)
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading security deposits...</div>
-      </div>
-    )
-  }
-
-  return (
+  const content = loading ? (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-gray-500">Loading security deposits...</div>
+    </div>
+  ) : (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Security Deposits</h1>
 
@@ -157,7 +154,7 @@ export default function SecurityDepositsPage() {
                 KES {totalDepositsHeld.toLocaleString()}
               </p>
             </div>
-            <FaMoneyBillWave className="text-green-500 text-3xl" />
+            <Banknote className="text-green-500 w-7 h-7" />
           </div>
         </div>
 
@@ -169,7 +166,7 @@ export default function SecurityDepositsPage() {
                 KES {totalInitialDeposits.toLocaleString()}
               </p>
             </div>
-            <FaMoneyBillWave className="text-blue-500 text-3xl" />
+            <Banknote className="text-blue-500 w-7 h-7" />
           </div>
         </div>
 
@@ -179,7 +176,7 @@ export default function SecurityDepositsPage() {
               <p className="text-gray-600 text-sm">Active Tenants</p>
               <p className="text-2xl font-bold text-purple-600">{deposits.length}</p>
             </div>
-            <FaMoneyBillWave className="text-purple-500 text-3xl" />
+            <Banknote className="text-purple-500 w-7 h-7" />
           </div>
         </div>
       </div>
@@ -187,7 +184,7 @@ export default function SecurityDepositsPage() {
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow mb-6">
         <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
             placeholder="Search by tenant name or unit number..."
@@ -594,4 +591,11 @@ export default function SecurityDepositsPage() {
       )}
     </div>
   )
+
+  return (
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord']}>
+      {content}
+    </ProtectedRoute>
+  )
 }
+

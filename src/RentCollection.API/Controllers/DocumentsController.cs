@@ -35,7 +35,7 @@ public class DocumentsController : ControllerBase
     /// <param name="description">Optional: Document description</param>
     /// <returns>Uploaded document information</returns>
     [HttpPost("upload")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Tenant")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,7 +81,7 @@ public class DocumentsController : ControllerBase
     /// </summary>
     /// <returns>List of documents</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -100,7 +100,7 @@ public class DocumentsController : ControllerBase
     /// <param name="id">Document ID</param>
     /// <returns>Document information</returns>
     [HttpGet("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -114,12 +114,31 @@ public class DocumentsController : ControllerBase
     }
 
     /// <summary>
+    /// Download a document file
+    /// </summary>
+    /// <param name="id">Document ID</param>
+    /// <returns>Document file</returns>
+    [HttpGet("{id}/download")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Download(int id)
+    {
+        var result = await _documentService.GetDocumentFileAsync(id);
+
+        if (!result.IsSuccess || result.Data == null)
+            return BadRequest(result);
+
+        return File(result.Data.Content, result.Data.ContentType, result.Data.FileName);
+    }
+
+    /// <summary>
     /// Get all documents for a specific tenant
     /// </summary>
     /// <param name="tenantId">Tenant ID</param>
     /// <returns>List of tenant documents</returns>
     [HttpGet("tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByTenantId(int tenantId)
@@ -138,7 +157,7 @@ public class DocumentsController : ControllerBase
     /// <param name="propertyId">Property ID</param>
     /// <returns>List of property documents</returns>
     [HttpGet("property/{propertyId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByPropertyId(int propertyId)
@@ -157,7 +176,7 @@ public class DocumentsController : ControllerBase
     /// <param name="unitId">Unit ID</param>
     /// <returns>List of unit documents</returns>
     [HttpGet("unit/{unitId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByUnitId(int unitId)
@@ -176,7 +195,7 @@ public class DocumentsController : ControllerBase
     /// <param name="documentType">Document type</param>
     /// <returns>List of documents of the specified type</returns>
     [HttpGet("type/{documentType}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByType(DocumentType documentType)
@@ -194,7 +213,7 @@ public class DocumentsController : ControllerBase
     /// </summary>
     /// <returns>List of unverified documents</returns>
     [HttpGet("unverified")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetUnverified()
@@ -232,7 +251,7 @@ public class DocumentsController : ControllerBase
     /// <param name="verifyDto">Verification data</param>
     /// <returns>Updated document</returns>
     [HttpPatch("{id}/verify")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -252,7 +271,7 @@ public class DocumentsController : ControllerBase
     /// <param name="id">Document ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Accountant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -266,3 +285,4 @@ public class DocumentsController : ControllerBase
         return Ok(result);
     }
 }
+

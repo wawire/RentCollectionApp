@@ -1,4 +1,4 @@
-import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimes, FaExclamationTriangle } from 'react-icons/fa'
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react'
 
 interface AlertProps {
   type: 'success' | 'error' | 'warning' | 'info'
@@ -11,36 +11,36 @@ interface AlertProps {
 export default function Alert({ type, title, message, onClose, className = '' }: AlertProps) {
   const config = {
     success: {
-      icon: FaCheckCircle,
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-      iconColor: 'text-green-500',
-      textColor: 'text-green-800',
-      titleColor: 'text-green-900',
+      icon: CheckCircle2,
+      bgColor: 'bg-state-success/10',
+      borderColor: 'border-state-success/30',
+      iconColor: 'text-state-success',
+      textColor: 'text-text-secondary',
+      titleColor: 'text-text-primary',
     },
     error: {
-      icon: FaExclamationCircle,
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      iconColor: 'text-red-500',
-      textColor: 'text-red-800',
-      titleColor: 'text-red-900',
+      icon: AlertCircle,
+      bgColor: 'bg-state-error/10',
+      borderColor: 'border-state-error/30',
+      iconColor: 'text-state-error',
+      textColor: 'text-text-secondary',
+      titleColor: 'text-text-primary',
     },
     warning: {
-      icon: FaExclamationTriangle,
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200',
-      iconColor: 'text-yellow-500',
-      textColor: 'text-yellow-800',
-      titleColor: 'text-yellow-900',
+      icon: AlertTriangle,
+      bgColor: 'bg-state-warning/10',
+      borderColor: 'border-state-warning/30',
+      iconColor: 'text-state-warning',
+      textColor: 'text-text-secondary',
+      titleColor: 'text-text-primary',
     },
     info: {
-      icon: FaInfoCircle,
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      iconColor: 'text-blue-500',
-      textColor: 'text-blue-800',
-      titleColor: 'text-blue-900',
+      icon: Info,
+      bgColor: 'bg-state-info/10',
+      borderColor: 'border-state-info/30',
+      iconColor: 'text-state-info',
+      textColor: 'text-text-secondary',
+      titleColor: 'text-text-primary',
     },
   }
 
@@ -57,9 +57,9 @@ export default function Alert({ type, title, message, onClose, className = '' }:
         {onClose && (
           <button
             onClick={onClose}
-            className={`${textColor} hover:opacity-75 transition-opacity ml-3 flex-shrink-0`}
+            className={`${textColor} hover:text-text-primary transition-colors ml-3 flex-shrink-0`}
           >
-            <FaTimes className="w-4 h-4" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>

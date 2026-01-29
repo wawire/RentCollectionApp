@@ -12,7 +12,7 @@ namespace RentCollection.Application.Interfaces
         Task<List<ExpenseDto>> GetExpensesByLandlordAsync(int landlordId, DateTime? startDate = null, DateTime? endDate = null);
         Task<List<ExpenseDto>> GetExpensesByCategoryAsync(int landlordId, ExpenseCategory category, DateTime? startDate = null, DateTime? endDate = null);
         Task<List<ExpenseDto>> GetRecurringExpensesAsync(int landlordId);
-        Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto, int landlordId);
+        Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto);
         Task<ExpenseDto> UpdateExpenseAsync(int id, UpdateExpenseDto dto);
         Task<bool> DeleteExpenseAsync(int id);
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaShieldAlt, FaQrcode, FaKey, FaCheckCircle, FaTimesCircle, FaSpinner, FaLock } from 'react-icons/fa'
+import { ArrowLeft, CheckCircle2, KeyRound, Loader2, Lock, QrCode, Shield, XCircle } from 'lucide-react'
 import { twoFactorAuthService, Setup2FAResponse } from '@/lib/services/twoFactorAuthService'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -90,7 +90,7 @@ export default function SettingsPage() {
             href="/tenant-portal"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
-            <FaArrowLeft className="mr-2" />
+            <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
@@ -116,7 +116,7 @@ export default function SettingsPage() {
           <div className="flex items-start justify-between mb-6">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                <FaShieldAlt className="mr-2 text-blue-600" />
+                <Shield className="mr-2 text-blue-600 w-5 h-5" />
                 Two-Factor Authentication
               </h2>
               <p className="mt-2 text-gray-600">
@@ -126,12 +126,12 @@ export default function SettingsPage() {
             <div>
               {is2FAEnabled ? (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                  <FaCheckCircle className="mr-1" />
+                  <CheckCircle2 className="mr-1 w-4 h-4" />
                   Enabled
                 </span>
               ) : (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                  <FaTimesCircle className="mr-1" />
+                  <XCircle className="mr-1 w-4 h-4" />
                   Disabled
                 </span>
               )}
@@ -157,12 +157,12 @@ export default function SettingsPage() {
               >
                 {loading ? (
                   <>
-                    <FaSpinner className="animate-spin mr-2" />
+                    <Loader2 className="animate-spin mr-2 w-4 h-4" />
                     Setting up...
                   </>
                 ) : (
                   <>
-                    <FaShieldAlt className="mr-2" />
+                    <Shield className="mr-2 w-4 h-4" />
                     Enable Two-Factor Authentication
                   </>
                 )}
@@ -199,12 +199,12 @@ export default function SettingsPage() {
                 >
                   {loading ? (
                     <>
-                      <FaSpinner className="animate-spin mr-2" />
+                      <Loader2 className="animate-spin mr-2 w-4 h-4" />
                       Disabling...
                     </>
                   ) : (
                     <>
-                      <FaTimesCircle className="mr-2" />
+                      <XCircle className="mr-2 w-4 h-4" />
                       Disable Two-Factor Authentication
                     </>
                   )}
@@ -217,7 +217,7 @@ export default function SettingsPage() {
         {/* Other Settings Sections Can Be Added Here */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-4">
-            <FaLock className="mr-2 text-blue-600" />
+            <Lock className="mr-2 text-blue-600 w-5 h-5" />
             Password & Security
           </h2>
           <p className="text-gray-600 mb-4">
@@ -231,7 +231,7 @@ export default function SettingsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-              <FaQrcode className="mr-2 text-blue-600" />
+              <QrCode className="mr-2 text-blue-600 w-5 h-5" />
               Setup Two-Factor Authentication
             </h3>
 
@@ -293,12 +293,12 @@ export default function SettingsPage() {
                   >
                     {loading ? (
                       <>
-                        <FaSpinner className="animate-spin mr-2" />
+                        <Loader2 className="animate-spin mr-2 w-4 h-4" />
                         Verifying...
                       </>
                     ) : (
                       <>
-                        <FaKey className="mr-2" />
+                        <KeyRound className="mr-2 w-4 h-4" />
                         Verify & Enable
                       </>
                     )}

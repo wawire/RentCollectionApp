@@ -6,7 +6,7 @@ import PropertyForm from '@/components/properties/PropertyForm'
 import { useCreateProperty } from '@/lib/hooks'
 import { CreatePropertyDto } from '@/lib/types'
 import Link from 'next/link'
-import { FaArrowLeft } from 'react-icons/fa'
+import { ArrowLeft } from 'lucide-react'
 
 export default function NewPropertyPage() {
   const router = useRouter()
@@ -27,7 +27,7 @@ export default function NewPropertyPage() {
           href="/properties"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2" />
           Back to Properties
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">Add New Property</h1>

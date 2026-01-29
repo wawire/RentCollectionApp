@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, Button, Select, LoadingSpinner, Alert } from '@/components/common'
 import { useGetYearlyReports } from '@/lib/hooks'
 import { useDownloadMonthlyReport } from '@/lib/hooks/useReports'
-import { FaDownload, FaChartLine, FaMoneyBillWave, FaCheckCircle } from 'react-icons/fa'
+import { Banknote, CheckCircle2, Download, LineChart } from 'lucide-react'
 
 export default function MonthlyReport() {
   const currentYear = new Date().getFullYear()
@@ -91,7 +91,7 @@ export default function MonthlyReport() {
               loading={downloading}
               fullWidth
             >
-              <FaDownload className="mr-2" />
+              <Download className="mr-2 w-4 h-4" />
               Download PDF
             </Button>
           </div>
@@ -113,7 +113,7 @@ export default function MonthlyReport() {
                   KSh {selectedMonthReport.totalRentCollected.toLocaleString()}
                 </p>
               </div>
-              <FaMoneyBillWave className="text-3xl text-blue-600" />
+              <Banknote className="text-3xl text-blue-600" />
             </div>
           </Card>
 
@@ -125,7 +125,7 @@ export default function MonthlyReport() {
                   KSh {selectedMonthReport.totalRentExpected.toLocaleString()}
                 </p>
               </div>
-              <FaChartLine className="text-3xl text-green-600" />
+              <LineChart className="text-3xl text-green-600" />
             </div>
           </Card>
 
@@ -137,7 +137,7 @@ export default function MonthlyReport() {
                   {selectedMonthReport.collectionRate.toFixed(1)}%
                 </p>
               </div>
-              <FaCheckCircle className="text-3xl text-purple-600" />
+              <CheckCircle2 className="text-3xl text-purple-600" />
             </div>
           </Card>
 
@@ -149,7 +149,7 @@ export default function MonthlyReport() {
                   {selectedMonthReport.numberOfPayments}
                 </p>
               </div>
-              <FaCheckCircle className="text-3xl text-orange-600" />
+              <CheckCircle2 className="text-3xl text-orange-600" />
             </div>
           </Card>
         </div>

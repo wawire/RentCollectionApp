@@ -86,6 +86,37 @@ export const authService = {
     await apiClient.post('/auth/change-password', passwords)
   },
 
+  async completePasswordChange(newPassword: string, confirmPassword: string): Promise<AuthResponse> {
+    const response = await apiClient.post<AuthResponse>('/auth/complete-password-change', {
+      newPassword,
+      confirmPassword,
+    })
+    const authData = response.data
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(AUTH_TOKEN_KEY, authData.token)
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authData))
+    }
+
+    return authData
+  },
+
+  async sendVerificationOtp(channel: 'Email' | 'Phone'): Promise<void> {
+    await apiClient.post('/auth/verification/send', { channel })
+  },
+
+  async verifyOtp(code: string): Promise<AuthResponse> {
+    const response = await apiClient.post<AuthResponse>('/auth/verification/verify', { code })
+    const authData = response.data
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(AUTH_TOKEN_KEY, authData.token)
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authData))
+    }
+
+    return authData
+  },
+
   // Check if token is expired
   isTokenExpired(): boolean {
     const user = this.getCurrentUser()

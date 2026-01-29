@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link'
-import { FaBuilding, FaUsers, FaMoneyBillWave, FaChartLine, FaDoorOpen, FaFileInvoice } from 'react-icons/fa'
+import {
+  Banknote,
+  Building2,
+  DoorOpen,
+  FileText,
+  LineChart,
+  Users,
+} from 'lucide-react'
 import Card from '@/components/common/Card'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
@@ -10,7 +17,7 @@ export default function Home() {
     {
       title: 'Dashboard',
       description: 'View real-time statistics, occupancy rates, and revenue metrics',
-      icon: FaChartLine,
+      icon: LineChart,
       href: '/dashboard',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -18,7 +25,7 @@ export default function Home() {
     {
       title: 'Properties',
       description: 'Manage your rental properties and track their performance',
-      icon: FaBuilding,
+      icon: Building2,
       href: '/properties',
       color: 'text-primary-600',
       bgColor: 'bg-primary-50',
@@ -26,7 +33,7 @@ export default function Home() {
     {
       title: 'Units',
       description: 'Add and manage individual units within your properties',
-      icon: FaDoorOpen,
+      icon: DoorOpen,
       href: '/units',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -34,7 +41,7 @@ export default function Home() {
     {
       title: 'Tenants',
       description: 'Manage tenant information, leases, and contact details',
-      icon: FaUsers,
+      icon: Users,
       href: '/tenants',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -42,7 +49,7 @@ export default function Home() {
     {
       title: 'Payments',
       description: 'Record and track rent payments with automated reminders',
-      icon: FaMoneyBillWave,
+      icon: Banknote,
       href: '/payments',
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
@@ -50,7 +57,7 @@ export default function Home() {
     {
       title: 'Reports',
       description: 'Generate PDF receipts, monthly reports, and financial summaries',
-      icon: FaFileInvoice,
+      icon: FileText,
       href: '/reports',
       color: 'text-red-600',
       bgColor: 'bg-red-50',

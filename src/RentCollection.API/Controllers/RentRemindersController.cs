@@ -37,7 +37,7 @@ public class RentRemindersController : ControllerBase
     /// </summary>
     /// <returns>Reminder settings including enabled status, schedule, and message templates</returns>
     [HttpGet("settings")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetSettings()
@@ -62,7 +62,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="dto">Updated reminder settings</param>
     /// <returns>Updated settings</returns>
     [HttpPut("settings")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateSettings([FromBody] UpdateReminderSettingsDto dto)
@@ -92,7 +92,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>List of reminders</returns>
     [HttpGet("history")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetHistory([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -118,7 +118,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="endDate">Optional end date filter</param>
     /// <returns>Reminder statistics including success rate and breakdowns</returns>
     [HttpGet("statistics")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetStatistics([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
@@ -143,17 +143,20 @@ public class RentRemindersController : ControllerBase
     /// <param name="tenantId">Tenant ID</param>
     /// <returns>List of reminders for the tenant</returns>
     [HttpGet("tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTenantReminders(int tenantId)
     {
         try
         {
-            // TODO: Add authorization check to ensure user can only view their own reminders if they're a tenant
             var reminders = await _reminderService.GetRemindersForTenantAsync(tenantId);
 
             return Ok(new { success = true, data = reminders, count = reminders.Count });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
         }
         catch (Exception ex)
         {
@@ -172,7 +175,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="id">Reminder ID</param>
     /// <returns>Success message</returns>
     [HttpPost("{id}/send")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -201,7 +204,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="id">Reminder ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -230,7 +233,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="tenantId">Tenant ID</param>
     /// <returns>Success message</returns>
     [HttpPost("schedule/tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ScheduleTenantReminders(int tenantId)
@@ -248,11 +251,11 @@ public class RentRemindersController : ControllerBase
     }
 
     /// <summary>
-    /// Schedule reminders for all tenants (manual trigger - SystemAdmin only)
+    /// Schedule reminders for all tenants (manual trigger - PlatformAdmin only)
     /// </summary>
     /// <returns>Success message</returns>
     [HttpPost("schedule/all")]
-    [Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "PlatformAdmin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ScheduleAllReminders()
@@ -281,7 +284,7 @@ public class RentRemindersController : ControllerBase
     /// <param name="preferredChannel">Preferred notification channel (SMS, Email, Both)</param>
     /// <returns>Success message</returns>
     [HttpPut("preferences/tenant/{tenantId}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateTenantPreferences(
@@ -291,9 +294,12 @@ public class RentRemindersController : ControllerBase
     {
         try
         {
-            // TODO: Add authorization check to ensure user can only update their own preferences if they're a tenant
             await _reminderService.UpdateTenantPreferencesAsync(tenantId, remindersEnabled, preferredChannel);
             return Ok(new { success = true, message = "Tenant preferences updated successfully" });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
         }
         catch (Exception ex)
         {
@@ -304,3 +310,4 @@ public class RentRemindersController : ControllerBase
 
     #endregion
 }
+

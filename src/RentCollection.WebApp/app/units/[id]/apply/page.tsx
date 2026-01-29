@@ -478,7 +478,7 @@ export default function TenantApplicationPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <Shield size={20} className="text-blue-600" />
-                  Why Apply Through RentPro?
+                  Why Apply Through Hisa Rentals?
                 </h3>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-start gap-2">

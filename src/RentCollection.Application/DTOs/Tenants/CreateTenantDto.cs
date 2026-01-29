@@ -13,4 +13,5 @@ public class CreateTenantDto
     public decimal MonthlyRent { get; set; }
     public decimal? SecurityDeposit { get; set; }
     public string? Notes { get; set; }
+    public bool CreatePortalUser { get; set; } = true;
 }

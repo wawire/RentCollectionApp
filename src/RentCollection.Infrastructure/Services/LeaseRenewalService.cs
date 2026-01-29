@@ -37,8 +37,8 @@ namespace RentCollection.Infrastructure.Services
         {
             try
             {
-                // Only landlords and admins can create lease renewal requests
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                // Only landlords, managers, and admins can create lease renewal requests
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsManager && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can initiate lease renewals");
                 }
@@ -47,6 +47,15 @@ namespace RentCollection.Infrastructure.Services
                 if (tenant == null)
                 {
                     return ServiceResult<LeaseRenewalDto>.Failure("Tenant not found");
+                }
+
+                if (!_currentUserService.IsPlatformAdmin && _currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (tenant.Unit == null || !assignedPropertyIds.Contains(tenant.Unit.PropertyId))
+                    {
+                        return ServiceResult<LeaseRenewalDto>.Failure("You don't have permission to create renewals for this tenant");
+                    }
                 }
 
                 // Check if tenant has an active lease
@@ -126,10 +135,12 @@ namespace RentCollection.Infrastructure.Services
                     var landlordId = _currentUserService.UserIdInt!.Value;
                     renewals = renewals.Where(r => r.Property.LandlordId == landlordId).ToList();
                 }
-                else if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
                 {
-                    var landlordId = _currentUserService.LandlordIdInt!.Value;
-                    renewals = renewals.Where(r => r.Property.LandlordId == landlordId).ToList();
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    renewals = assignedPropertyIds.Count == 0
+                        ? new List<LeaseRenewal>()
+                        : renewals.Where(r => assignedPropertyIds.Contains(r.PropertyId)).ToList();
                 }
 
                 var dtos = renewals.Select(MapToDto).ToList();
@@ -200,6 +211,13 @@ namespace RentCollection.Infrastructure.Services
                     var landlordId = _currentUserService.UserIdInt!.Value;
                     renewals = renewals.Where(r => r.Property.LandlordId == landlordId).ToList();
                 }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    renewals = assignedPropertyIds.Count == 0
+                        ? new List<LeaseRenewal>()
+                        : renewals.Where(r => assignedPropertyIds.Contains(r.PropertyId)).ToList();
+                }
 
                 var dtos = renewals.Select(MapToDto).ToList();
                 return ServiceResult<List<LeaseRenewalDto>>.Success(dtos);
@@ -227,6 +245,13 @@ namespace RentCollection.Infrastructure.Services
                     var landlordId = _currentUserService.UserIdInt!.Value;
                     renewals = renewals.Where(r => r.Property.LandlordId == landlordId).ToList();
                 }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    renewals = assignedPropertyIds.Count == 0
+                        ? new List<LeaseRenewal>()
+                        : renewals.Where(r => assignedPropertyIds.Contains(r.PropertyId)).ToList();
+                }
 
                 var dtos = renewals.Select(MapToDto).ToList();
                 return ServiceResult<List<LeaseRenewalDto>>.Success(dtos);
@@ -250,6 +275,13 @@ namespace RentCollection.Infrastructure.Services
                     var landlordId = _currentUserService.UserIdInt!.Value;
                     renewals = renewals.Where(r => r.Property.LandlordId == landlordId).ToList();
                 }
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    renewals = assignedPropertyIds.Count == 0
+                        ? new List<LeaseRenewal>()
+                        : renewals.Where(r => assignedPropertyIds.Contains(r.PropertyId)).ToList();
+                }
 
                 var dtos = renewals.Select(MapToDto).ToList();
                 return ServiceResult<List<LeaseRenewalDto>>.Success(dtos);
@@ -271,10 +303,19 @@ namespace RentCollection.Infrastructure.Services
                     return ServiceResult<LeaseRenewalDto>.Failure("Lease renewal not found");
                 }
 
-                // Only landlords can update lease renewal details
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                // Only landlords, managers, and admins can update lease renewal details
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsManager && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<LeaseRenewalDto>.Failure("You don't have permission to update this lease renewal");
+                }
+
+                if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(renewal.PropertyId))
+                    {
+                        return ServiceResult<LeaseRenewalDto>.Failure("You don't have permission to update this lease renewal");
+                    }
                 }
 
                 if (dto.ProposedLeaseEndDate.HasValue)
@@ -385,10 +426,19 @@ namespace RentCollection.Infrastructure.Services
                     return ServiceResult<LeaseRenewalDto>.Failure("Lease renewal not found");
                 }
 
-                // Only landlords can approve
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                // Only landlords, managers, and admins can approve
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsManager && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can approve lease renewals");
+                }
+
+                if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(renewal.PropertyId))
+                    {
+                        return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can approve lease renewals");
+                    }
                 }
 
                 // Can only approve if tenant has accepted
@@ -430,10 +480,19 @@ namespace RentCollection.Infrastructure.Services
                     return ServiceResult<LeaseRenewalDto>.Failure("Lease renewal not found");
                 }
 
-                // Only landlords can reject
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                // Only landlords, managers, and admins can reject
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsManager && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can reject lease renewals");
+                }
+
+                if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(renewal.PropertyId))
+                    {
+                        return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can reject lease renewals");
+                    }
                 }
 
                 renewal.Status = LeaseRenewalStatus.LandlordRejected;
@@ -470,10 +529,19 @@ namespace RentCollection.Infrastructure.Services
                     return ServiceResult<LeaseRenewalDto>.Failure("Lease renewal not found");
                 }
 
-                // Only landlords can mark as completed
-                if (!_currentUserService.IsLandlord && !_currentUserService.IsSystemAdmin)
+                // Only landlords, managers, and admins can mark as completed
+                if (!_currentUserService.IsLandlord && !_currentUserService.IsManager && !_currentUserService.IsPlatformAdmin)
                 {
                     return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can complete lease renewals");
+                }
+
+                if (_currentUserService.IsManager)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(renewal.PropertyId))
+                    {
+                        return ServiceResult<LeaseRenewalDto>.Failure("Only landlords can complete lease renewals");
+                    }
                 }
 
                 // Can only complete if landlord has approved
@@ -527,7 +595,7 @@ namespace RentCollection.Infrastructure.Services
                 }
 
                 // Only landlords and admins can delete
-                if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+                if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
                 {
                     return ServiceResult<bool>.Failure("You don't have permission to delete this lease renewal");
                 }
@@ -557,7 +625,7 @@ namespace RentCollection.Infrastructure.Services
 
         private bool CanAccessRenewal(LeaseRenewal renewal)
         {
-            if (_currentUserService.IsSystemAdmin) return true;
+            if (_currentUserService.IsPlatformAdmin) return true;
 
             if (_currentUserService.IsTenant)
             {
@@ -569,9 +637,10 @@ namespace RentCollection.Infrastructure.Services
                 return renewal.Property.LandlordId == _currentUserService.UserIdInt;
             }
 
-            if (_currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
             {
-                return renewal.Property.LandlordId == _currentUserService.LandlordIdInt;
+                var assignedPropertyIds = _currentUserService.GetAssignedPropertyIdsAsync().GetAwaiter().GetResult();
+                return assignedPropertyIds.Contains(renewal.PropertyId);
             }
 
             return false;
@@ -608,3 +677,4 @@ namespace RentCollection.Infrastructure.Services
         }
     }
 }
+

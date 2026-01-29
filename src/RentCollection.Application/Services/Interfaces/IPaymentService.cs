@@ -32,10 +32,9 @@ public interface IPaymentService
     /// <summary>
     /// Get pending payments awaiting landlord confirmation
     /// </summary>
-    /// <param name="landlordId">Landlord ID</param>
     /// <param name="propertyId">Optional property filter</param>
     /// <returns>List of pending payments</returns>
-    Task<Result<IEnumerable<PaymentDto>>> GetPendingPaymentsAsync(int landlordId, int? propertyId = null);
+    Task<Result<IEnumerable<PaymentDto>>> GetPendingPaymentsAsync(int? propertyId = null);
 
     /// <summary>
     /// Confirm a payment (landlord action)

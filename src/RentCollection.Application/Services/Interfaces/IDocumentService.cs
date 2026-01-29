@@ -10,6 +10,7 @@ namespace RentCollection.Application.Services.Interfaces
         Task<ServiceResult<DocumentDto>> UploadDocumentAsync(UploadDocumentDto dto, int uploadedByUserId);
         Task<ServiceResult<List<DocumentDto>>> GetMyDocumentsAsync();
         Task<ServiceResult<List<DocumentDto>>> GetTenantDocumentsAsync(int tenantId);
+        Task<ServiceResult<DocumentFileDto>> GetDocumentFileAsync(int documentId);
         Task<Result<IEnumerable<DocumentDto>>> GetAllDocumentsAsync();
         Task<Result<DocumentDto>> GetDocumentByIdAsync(int id);
         Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByTenantIdAsync(int tenantId);
@@ -17,6 +18,17 @@ namespace RentCollection.Application.Services.Interfaces
         Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByUnitIdAsync(int unitId);
         Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByTypeAsync(DocumentType documentType);
         Task<Result<IEnumerable<DocumentDto>>> GetUnverifiedDocumentsAsync();
+        Task<Result<DocumentDto>> SaveGeneratedDocumentAsync(
+            DocumentType documentType,
+            byte[] content,
+            string fileName,
+            string contentType,
+            int uploadedByUserId,
+            int? landlordId = null,
+            int? propertyId = null,
+            int? unitId = null,
+            int? tenantId = null,
+            string? description = null);
         Task<ServiceResult<DocumentDto>> VerifyDocumentAsync(int documentId, bool isVerified);
         Task<ServiceResult<bool>> DeleteDocumentAsync(int documentId);
     }

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { useGetTenant, useGetTenantPayments, useSendRentReminder } from '@/lib/hooks'
 import { Card, Button, Badge, LoadingSpinner, Alert } from '@/components/common'
 import Link from 'next/link'
-import { FaArrowLeft, FaEdit, FaEnvelope, FaPhone, FaHome, FaSms, FaMoneyBillWave } from 'react-icons/fa'
+import { ArrowLeft, Banknote, Home, Mail, MessageSquare, Pencil, Phone } from 'lucide-react'
 
 export default function TenantDetailPage() {
   const params = useParams()
@@ -55,7 +55,7 @@ export default function TenantDetailPage() {
           href="/tenants"
           className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2 w-4 h-4" />
           Back to Tenants
         </Link>
         <div className="flex items-start justify-between">
@@ -70,12 +70,12 @@ export default function TenantDetailPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={handleSendReminder} loading={sendingReminder}>
-              <FaSms className="mr-2" />
+              <MessageSquare className="mr-2 w-4 h-4" />
               Send Reminder
             </Button>
             <Link href={`/tenants/${tenant.id}/edit`}>
               <Button variant="secondary">
-                <FaEdit className="mr-2" />
+                <Pencil className="mr-2 w-4 h-4" />
                 Edit
               </Button>
             </Link>
@@ -95,14 +95,14 @@ export default function TenantDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
-              <FaEnvelope className="text-gray-400" />
+              <Mail className="text-gray-400 w-4 h-4" />
               <div>
                 <p className="text-sm text-gray-500">Email</p>
                 <p className="text-gray-900">{tenant.email}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <FaPhone className="text-gray-400" />
+              <Phone className="text-gray-400 w-4 h-4" />
               <div>
                 <p className="text-sm text-gray-500">Phone</p>
                 <p className="text-gray-900">{tenant.phoneNumber}</p>
@@ -115,7 +115,7 @@ export default function TenantDetailPage() {
         <Card padding="md">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Unit Information</h2>
           <div className="flex items-center space-x-3 mb-4">
-            <FaHome className="text-primary-600 text-xl" />
+            <Home className="text-primary-600 w-5 h-5" />
             <div>
               <p className="font-semibold text-gray-900">{tenant.unitNumber}</p>
               <p className="text-sm text-gray-600">{tenant.propertyName}</p>
@@ -170,7 +170,7 @@ export default function TenantDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900">Payment History</h2>
           <Link href={`/payments/new?tenantId=${tenant.id}`}>
             <Button variant="primary" size="sm">
-              <FaMoneyBillWave className="mr-2" />
+              <Banknote className="mr-2 w-4 h-4" />
               Record Payment
             </Button>
           </Link>

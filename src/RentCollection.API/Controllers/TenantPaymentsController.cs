@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.DTOs.Payments;
 using RentCollection.Application.Services.Interfaces;
 
@@ -9,6 +10,9 @@ namespace RentCollection.API.Controllers;
 /// Tenant-specific payment endpoints
 /// </summary>
 [Authorize(Roles = "Tenant")]
+[Authorize(Policy = Policies.RequireVerifiedUser)]
+[Authorize(Policy = Policies.RequirePasswordChangeComplete)]
+[Authorize(Policy = Policies.RequireActiveOrganization)]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -115,6 +119,31 @@ public class TenantPaymentsController : ControllerBase
 
         if (!result.IsSuccess)
             return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Query M-Pesa STK Push status for the current tenant
+    /// </summary>
+    /// <param name="checkoutRequestId">CheckoutRequestID from STK Push</param>
+    /// <returns>STK Push query response</returns>
+    [HttpGet("stk-status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetStkStatus([FromQuery] string checkoutRequestId)
+    {
+        if (string.IsNullOrWhiteSpace(checkoutRequestId))
+        {
+            return BadRequest(new { message = "CheckoutRequestID is required" });
+        }
+
+        var result = await _mpesaService.QueryStkPushStatusAsync(checkoutRequestId);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
 
         return Ok(result);
     }

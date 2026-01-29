@@ -323,6 +323,111 @@ Authorization: Bearer {landlord_token}
 
 ---
 
+## Invoices APIs
+
+### Get Invoices
+```http
+GET /api/Invoices?propertyId=1&startDate=2025-01-01&endDate=2025-01-31
+Authorization: Bearer {token}
+```
+
+### Get Invoice by ID
+```http
+GET /api/Invoices/{id}
+Authorization: Bearer {token}
+```
+
+### Get Invoices by Tenant
+```http
+GET /api/Invoices/tenant/{tenantId}
+Authorization: Bearer {token}
+```
+
+### Generate Monthly Invoices
+```http
+POST /api/Invoices/generate?year=2025&month=1
+Authorization: Bearer {landlord_token}
+```
+
+---
+
+## Reconciliation APIs
+
+### Allocate Payment (FIFO default)
+```http
+POST /api/Reconciliation/payments/{paymentId}/allocate
+Authorization: Bearer {admin_or_accountant_token}
+
+{
+  "invoiceId": 123,
+  "amount": 5000
+}
+```
+
+If `invoiceId` or `amount` is omitted, the service allocates using FIFO against outstanding invoices.
+
+---
+
+## Unmatched Payments APIs
+
+### Get Unmatched Payments
+```http
+GET /api/UnmatchedPayments?status=Pending
+Authorization: Bearer {admin_or_accountant_token}
+```
+
+### Update Unmatched Payment Status
+```http
+PATCH /api/UnmatchedPayments/{id}/status
+Authorization: Bearer {admin_or_accountant_token}
+
+{
+  "status": "Resolved"
+}
+```
+
+---
+
+## Owner Statements APIs
+
+### Generate Owner Statement (PDF)
+```http
+GET /api/OwnerStatements?year=2025&month=1&propertyId=12
+Authorization: Bearer {landlord_or_accountant_token}
+```
+
+Returns a PDF file. The statement is stored as a document of type `OwnerStatement`.
+
+---
+
+## CSV Export APIs
+
+### Export Payments
+```http
+GET /api/Exports/payments?propertyId=12&startDate=2025-01-01&endDate=2025-01-31
+Authorization: Bearer {landlord_or_accountant_token}
+```
+
+### Export Invoices
+```http
+GET /api/Exports/invoices?propertyId=12&startDate=2025-01-01&endDate=2025-01-31
+Authorization: Bearer {landlord_or_accountant_token}
+```
+
+### Export Expenses
+```http
+GET /api/Exports/expenses?propertyId=12&startDate=2025-01-01&endDate=2025-01-31
+Authorization: Bearer {landlord_or_accountant_token}
+```
+
+### Export Arrears
+```http
+GET /api/Exports/arrears?propertyId=12
+Authorization: Bearer {landlord_or_accountant_token}
+```
+
+---
+
 ## Property APIs
 
 ### Get All Properties

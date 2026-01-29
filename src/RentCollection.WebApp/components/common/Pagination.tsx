@@ -1,4 +1,4 @@
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PaginationProps {
   currentPage: number
@@ -55,10 +55,10 @@ export default function Pagination({
   const endItem = Math.min(currentPage * (itemsPerPage || 0), totalItems || 0)
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white border-t border-gray-200">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-surface border-t border-border-muted">
       {/* Info */}
       {showInfo && totalItems && itemsPerPage && (
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-text-secondary">
           Showing <span className="font-medium">{startItem}</span> to <span className="font-medium">{endItem}</span> of{' '}
           <span className="font-medium">{totalItems}</span> results
         </div>
@@ -70,16 +70,16 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-lg border border-border-muted text-text-secondary hover:bg-brand-bg/60 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FaChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
         {/* Page Numbers */}
         {getPageNumbers().map((page, idx) => {
           if (page === '...') {
             return (
-              <span key={`ellipsis-${idx}`} className="px-3 py-2 text-gray-500">
+              <span key={`ellipsis-${idx}`} className="px-3 py-2 text-text-muted">
                 ...
               </span>
             )
@@ -91,8 +91,8 @@ export default function Pagination({
               onClick={() => onPageChange(page as number)}
               className={`min-w-[40px] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 currentPage === page
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
+                  ? 'bg-brand-primary text-white'
+                  : 'text-text-secondary hover:bg-brand-bg/60 border border-border-muted'
               }`}
             >
               {page}
@@ -104,9 +104,9 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-lg border border-border-muted text-text-secondary hover:bg-brand-bg/60 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FaChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>

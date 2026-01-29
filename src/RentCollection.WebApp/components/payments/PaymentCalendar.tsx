@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Payment } from '@/lib/types'
 import { Card, Badge, Button } from '@/components/common'
-import { FaChevronLeft, FaChevronRight, FaCheckCircle, FaClock, FaExclamationTriangle } from 'react-icons/fa'
+import { CheckCircle2, ChevronLeft, ChevronRight, Clock } from 'lucide-react'
 
 interface PaymentCalendarProps {
   payments: Payment[]
@@ -99,13 +99,13 @@ export default function PaymentCalendar({ payments }: PaymentCalendarProps) {
             <div className="flex-1 space-y-1">
               {summary.completed > 0 && (
                 <div className="flex items-center gap-1 text-xs text-green-600">
-                  <FaCheckCircle className="text-[10px]" />
+                  <CheckCircle2 className="w-3 h-3" />
                   <span>{summary.completed}</span>
                 </div>
               )}
               {summary.pending > 0 && (
                 <div className="flex items-center gap-1 text-xs text-yellow-600">
-                  <FaClock className="text-[10px]" />
+                  <Clock className="w-3 h-3" />
                   <span>{summary.pending}</span>
                 </div>
               )}
@@ -162,13 +162,13 @@ export default function PaymentCalendar({ payments }: PaymentCalendarProps) {
 
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={goToPreviousMonth}>
-              <FaChevronLeft />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
             <Button variant="secondary" size="sm" onClick={goToToday}>
               Today
             </Button>
             <Button variant="secondary" size="sm" onClick={goToNextMonth}>
-              <FaChevronRight />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -198,11 +198,11 @@ export default function PaymentCalendar({ payments }: PaymentCalendarProps) {
         {/* Legend */}
         <div className="flex items-center gap-4 text-xs text-gray-600">
           <div className="flex items-center gap-1">
-            <FaCheckCircle className="text-green-600" />
+            <CheckCircle2 className="text-green-600 w-4 h-4" />
             <span>Completed</span>
           </div>
           <div className="flex items-center gap-1">
-            <FaClock className="text-yellow-600" />
+            <Clock className="text-yellow-600 w-4 h-4" />
             <span>Pending</span>
           </div>
         </div>

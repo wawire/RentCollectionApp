@@ -6,13 +6,14 @@ namespace RentCollection.Domain.Enums;
 public static class UserRoleExtensions
 {
     // String constants for role names (used in claims and comparisons)
-    public const string SystemAdmin = "SystemAdmin";
+    public const string PlatformAdmin = "PlatformAdmin";
     public const string Landlord = "Landlord";
     public const string Caretaker = "Caretaker";
+    public const string Manager = "Manager";
     public const string Accountant = "Accountant";
     public const string Tenant = "Tenant";
 
-    public static readonly string[] All = { SystemAdmin, Landlord, Caretaker, Accountant, Tenant };
+    public static readonly string[] All = { PlatformAdmin, Landlord, Caretaker, Manager, Accountant, Tenant };
 
     /// <summary>
     /// Convert UserRole enum to string
@@ -21,9 +22,10 @@ public static class UserRoleExtensions
     {
         return role switch
         {
-            UserRole.SystemAdmin => SystemAdmin,
+            UserRole.PlatformAdmin => PlatformAdmin,
             UserRole.Landlord => Landlord,
             UserRole.Caretaker => Caretaker,
+            UserRole.Manager => Manager,
             UserRole.Accountant => Accountant,
             UserRole.Tenant => Tenant,
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
@@ -37,9 +39,10 @@ public static class UserRoleExtensions
     {
         return role switch
         {
-            SystemAdmin => UserRole.SystemAdmin,
+            PlatformAdmin => UserRole.PlatformAdmin,
             Landlord => UserRole.Landlord,
             Caretaker => UserRole.Caretaker,
+            Manager => UserRole.Manager,
             Accountant => UserRole.Accountant,
             Tenant => UserRole.Tenant,
             _ => throw new ArgumentException($"Invalid role: {role}", nameof(role))
@@ -53,14 +56,15 @@ public static class UserRoleExtensions
     {
         userRole = role switch
         {
-            SystemAdmin => UserRole.SystemAdmin,
+            PlatformAdmin => UserRole.PlatformAdmin,
             Landlord => UserRole.Landlord,
             Caretaker => UserRole.Caretaker,
+            Manager => UserRole.Manager,
             Accountant => UserRole.Accountant,
             Tenant => UserRole.Tenant,
             _ => default
         };
 
-        return role is SystemAdmin or Landlord or Caretaker or Accountant or Tenant;
+        return role is PlatformAdmin or Landlord or Caretaker or Manager or Accountant or Tenant;
     }
 }

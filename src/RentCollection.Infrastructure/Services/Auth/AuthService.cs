@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RentCollection.Application.Common.Exceptions;
 using RentCollection.Application.DTOs.Auth;
+using RentCollection.Application.Helpers;
 using RentCollection.Application.Interfaces;
 using RentCollection.Application.Services.Auth;
 using RentCollection.Application.Services.Interfaces;
@@ -29,6 +30,7 @@ public class AuthService : IAuthService
     private readonly IPropertyRepository _propertyRepository;
     private readonly IAuditLogService _auditLogService;
     private readonly IEmailService _emailService;
+    private readonly IVerificationService _verificationService;
     private readonly ApplicationDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IMapper _mapper;
@@ -41,6 +43,7 @@ public class AuthService : IAuthService
         IPropertyRepository propertyRepository,
         IAuditLogService auditLogService,
         IEmailService emailService,
+        IVerificationService verificationService,
         ApplicationDbContext context,
         IHttpContextAccessor httpContextAccessor,
         IMapper mapper,
@@ -52,6 +55,7 @@ public class AuthService : IAuthService
         _propertyRepository = propertyRepository;
         _auditLogService = auditLogService;
         _emailService = emailService;
+        _verificationService = verificationService;
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _mapper = mapper;
@@ -72,24 +76,54 @@ public class AuthService : IAuthService
                 throw new BadRequestException("Invalid email/phone or password");
             }
 
+            var now = DateTime.UtcNow;
+            if (user.LoginLockoutUntil.HasValue && user.LoginLockoutUntil.Value > now)
+            {
+                throw new BadRequestException("Too many login attempts. Please try again later.");
+            }
+
             // Verify password
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
             {
+                user.LoginAttempts += 1;
+                user.LastFailedLoginAt = now;
+
+                var maxAttempts = int.TryParse(_configuration["Authentication:LoginMaxAttempts"], out var attempts)
+                    ? attempts
+                    : 5;
+                if (user.LoginAttempts >= maxAttempts)
+                {
+                    var lockoutMinutes = int.TryParse(_configuration["Authentication:LoginLockoutMinutes"], out var minutes)
+                        ? minutes
+                        : 15;
+                    user.LoginLockoutUntil = now.AddMinutes(lockoutMinutes);
+                }
+
+                await _userRepository.UpdateAsync(user);
                 throw new BadRequestException("Invalid email/phone or password");
             }
 
-            // Check if user is active
-            if (user.Status != UserStatus.Active)
+            // Check if user status allows login
+            if (user.Status == UserStatus.Suspended || user.Status == UserStatus.Inactive)
             {
                 throw new BadRequestException($"Account is {user.Status.ToString().ToLower()}. Please contact administrator.");
             }
 
+            // Check organization status
+            var organization = await _context.Organizations.FindAsync(user.OrganizationId);
+            if (organization != null && organization.Status == OrganizationStatus.Suspended)
+            {
+                throw new BadRequestException("Organization is suspended. Please contact support.");
+            }
+
             // Update last login
             user.LastLoginAt = DateTime.UtcNow;
+            user.LoginAttempts = 0;
+            user.LoginLockoutUntil = null;
             await _userRepository.UpdateAsync(user);
 
             // Generate JWT token
-            var token = GenerateJwtToken(user);
+            var token = GenerateJwtToken(user, organization?.Status);
 
             var response = new AuthResponseDto
             {
@@ -98,10 +132,17 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
                 Role = user.Role,
+                Status = user.Status,
+                IsVerified = user.IsVerified,
+                VerifiedAt = user.VerifiedAt,
+                MustChangePassword = user.MustChangePassword,
+                VerificationChannel = user.VerificationChannel,
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddHours(24),
                 PropertyId = user.PropertyId,
-                TenantId = user.TenantId
+                TenantId = user.TenantId,
+                OrganizationId = user.OrganizationId,
+                OrganizationStatus = organization?.Status
             };
 
             _logger.LogInformation("User {UserId} ({Email}) logged in successfully", user.Id, user.Email);
@@ -124,15 +165,15 @@ public class AuthService : IAuthService
         try
         {
             // CRITICAL RBAC VALIDATION: Enforce role creation hierarchy
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
-                // Only SystemAdmin can create other SystemAdmins or Landlords
-                if (registerDto.Role == UserRole.SystemAdmin || registerDto.Role == UserRole.Landlord)
+                // Only PlatformAdmin can create other PlatformAdmins or Landlords
+                if (registerDto.Role == UserRole.PlatformAdmin || registerDto.Role == UserRole.Landlord)
                 {
                     throw new BadRequestException("You do not have permission to create users with this role");
                 }
 
-                // Landlords can only create Caretakers, Accountants, and Tenants for their own properties
+                // Landlords can only create Caretakers, Managers, Accountants, and Tenants for their own properties
                 if (_currentUserService.IsLandlord)
                 {
                     // Validate that the user being created is assigned to the landlord's properties
@@ -150,11 +191,17 @@ public class AuthService : IAuthService
                         {
                             throw new BadRequestException("You can only assign users to your own properties");
                         }
+
+                        if (_currentUserService.OrganizationId.HasValue &&
+                            property.OrganizationId != _currentUserService.OrganizationId.Value)
+                        {
+                            throw new BadRequestException("You can only assign users within your organization");
+                        }
                     }
                 }
                 else
                 {
-                    // Other roles (Caretaker, Accountant, Tenant) cannot create users
+                    // Other roles (Caretaker, Manager, Accountant, Tenant) cannot create users
                     throw new BadRequestException("You do not have permission to create users");
                 }
             }
@@ -163,6 +210,11 @@ public class AuthService : IAuthService
             if (registerDto.Password != registerDto.ConfirmPassword)
             {
                 throw new BadRequestException("Passwords do not match");
+            }
+
+            if (!PasswordPolicy.IsValid(registerDto.Password, out var passwordError))
+            {
+                throw new BadRequestException(passwordError ?? "Password does not meet policy requirements");
             }
 
             // Check if email already exists
@@ -181,6 +233,7 @@ public class AuthService : IAuthService
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
 
             // Create user entity
+            var organizationId = await ResolveOrganizationIdAsync(registerDto, cancellationToken);
             var user = new User
             {
                 FirstName = registerDto.FirstName,
@@ -189,14 +242,40 @@ public class AuthService : IAuthService
                 PhoneNumber = registerDto.PhoneNumber,
                 PasswordHash = passwordHash,
                 Role = registerDto.Role,
-                Status = UserStatus.Active,
+                Status = registerDto.Role == UserRole.Tenant ? UserStatus.Invited : UserStatus.Active,
                 PropertyId = registerDto.PropertyId,
                 TenantId = registerDto.TenantId,
+                OrganizationId = organizationId,
+                IsVerified = false,
+                MustChangePassword = registerDto.Role == UserRole.Tenant,
                 CreatedAt = DateTime.UtcNow
             };
 
             // Save user
             await _userRepository.AddAsync(user);
+
+            if (registerDto.PropertyId.HasValue &&
+                (registerDto.Role == UserRole.Manager ||
+                 registerDto.Role == UserRole.Caretaker ||
+                 registerDto.Role == UserRole.Accountant))
+            {
+                var property = await _propertyRepository.GetByIdAsync(registerDto.PropertyId.Value);
+                if (property == null || property.OrganizationId != organizationId)
+                {
+                    throw new BadRequestException("You can only assign users to properties within the same organization");
+                }
+
+                var assignment = new UserPropertyAssignment
+                {
+                    UserId = user.Id,
+                    PropertyId = registerDto.PropertyId.Value,
+                    AssignmentRole = registerDto.Role,
+                    IsActive = true
+                };
+
+                _context.UserPropertyAssignments.Add(assignment);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
 
             _logger.LogInformation("New user registered: {UserId} ({Email}), Role: {Role}",
                 user.Id, user.Email, user.Role);
@@ -204,36 +283,22 @@ public class AuthService : IAuthService
             // Audit log: User created
             await _auditLogService.LogUserCreatedAsync(user.Id, user.Email, user.Role.ToString());
 
-            // Send email verification token (non-blocking, silent failure)
+            // Send verification OTP (non-blocking, silent failure)
             try
             {
-                var verificationToken = GenerateSecureToken();
-                var ipAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-
-                var emailVerificationToken = new EmailVerificationToken
-                {
-                    UserId = user.Id,
-                    Token = verificationToken,
-                    CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddDays(1), // Token valid for 24 hours
-                    IsUsed = false,
-                    IpAddress = ipAddress
-                };
-
-                await _context.EmailVerificationTokens.AddAsync(emailVerificationToken, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                await _emailService.SendEmailVerificationAsync(user.Email, verificationToken, user.FullName);
-                _logger.LogInformation("Email verification sent to: {Email}", user.Email);
+                await _verificationService.SendVerificationOtpAsync(user.Id, VerificationChannel.Email, cancellationToken);
+                _logger.LogInformation("Verification OTP sent to: {Email}", user.Email);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to send email verification to: {Email}", user.Email);
-                // Don't fail registration if email fails
+                _logger.LogWarning(ex, "Failed to send verification OTP to: {Email}", user.Email);
+                // Don't fail registration if OTP fails
             }
 
+            var organization = await _context.Organizations.FindAsync(user.OrganizationId);
+
             // Generate JWT token
-            var token = GenerateJwtToken(user);
+            var token = GenerateJwtToken(user, organization?.Status);
 
             var response = new AuthResponseDto
             {
@@ -242,10 +307,17 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
                 Role = user.Role,
+                Status = user.Status,
+                IsVerified = user.IsVerified,
+                VerifiedAt = user.VerifiedAt,
+                MustChangePassword = user.MustChangePassword,
+                VerificationChannel = user.VerificationChannel,
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddHours(24),
                 PropertyId = user.PropertyId,
-                TenantId = user.TenantId
+                TenantId = user.TenantId,
+                OrganizationId = user.OrganizationId,
+                OrganizationStatus = organization?.Status
             };
 
             return response;
@@ -269,8 +341,14 @@ public class AuthService : IAuthService
             return null;
 
         // Check access permission
-        if (!_currentUserService.IsSystemAdmin)
+        if (!_currentUserService.IsPlatformAdmin)
         {
+            if (_currentUserService.OrganizationId.HasValue &&
+                user.OrganizationId != _currentUserService.OrganizationId.Value)
+            {
+                throw new BadRequestException("You do not have permission to view this user");
+            }
+
             // Landlords can only view users associated with their properties
             if (_currentUserService.IsLandlord)
             {
@@ -304,8 +382,13 @@ public class AuthService : IAuthService
         var users = await _userRepository.GetAllWithRelatedDataAsync(cancellationToken);
 
         // Filter users based on current user role
-        if (!_currentUserService.IsSystemAdmin)
+        if (!_currentUserService.IsPlatformAdmin)
         {
+            if (_currentUserService.OrganizationId.HasValue)
+            {
+                users = users.Where(u => u.OrganizationId == _currentUserService.OrganizationId.Value).ToList();
+            }
+
             // Landlords can only see users associated with their properties
             if (_currentUserService.IsLandlord)
             {
@@ -361,12 +444,76 @@ public class AuthService : IAuthService
             throw new BadRequestException("New passwords do not match");
         }
 
+        if (!PasswordPolicy.IsValid(changePasswordDto.NewPassword, out var passwordError))
+        {
+            throw new BadRequestException(passwordError ?? "Password does not meet policy requirements");
+        }
+
         // Hash new password
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
 
         await _userRepository.UpdateAsync(user);
 
         _logger.LogInformation("Password changed for user {UserId}", userId);
+    }
+
+    public async Task<AuthResponseDto> CompletePasswordChangeAsync(int userId, CompletePasswordChangeDto dto, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException("User", userId);
+        }
+
+        if (!user.MustChangePassword)
+        {
+            throw new BadRequestException("Password change is not required for this account");
+        }
+
+        if (dto.NewPassword != dto.ConfirmPassword)
+        {
+            throw new BadRequestException("New passwords do not match");
+        }
+
+        if (!PasswordPolicy.IsValid(dto.NewPassword, out var passwordError))
+        {
+            throw new BadRequestException(passwordError ?? "Password does not meet policy requirements");
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.MustChangePassword = false;
+
+        if (user.Status == UserStatus.Invited && user.IsVerified)
+        {
+            user.Status = UserStatus.Active;
+        }
+
+        await _userRepository.UpdateAsync(user);
+
+        var organization = await _context.Organizations.FindAsync(user.OrganizationId);
+        var token = GenerateJwtToken(user, organization?.Status);
+
+        _logger.LogInformation("Forced password change completed for user {UserId}", userId);
+
+        return new AuthResponseDto
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role,
+            Status = user.Status,
+            IsVerified = user.IsVerified,
+            VerifiedAt = user.VerifiedAt,
+            VerificationChannel = user.VerificationChannel,
+            MustChangePassword = user.MustChangePassword,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
+            PropertyId = user.PropertyId,
+            TenantId = user.TenantId,
+            OrganizationId = user.OrganizationId,
+            OrganizationStatus = organization?.Status
+        };
     }
 
     public async Task UpdateUserStatusAsync(int userId, UserStatus status, CancellationToken cancellationToken = default)
@@ -379,7 +526,7 @@ public class AuthService : IAuthService
         }
 
         // Check access permission
-        if (!_currentUserService.IsSystemAdmin)
+        if (!_currentUserService.IsPlatformAdmin)
         {
             // Landlords can only update status for users in their properties
             if (_currentUserService.IsLandlord)
@@ -399,7 +546,7 @@ public class AuthService : IAuthService
                     }
 
                     // Landlords cannot update other landlords or system admins
-                    if (user.Role == UserRole.SystemAdmin || user.Role == UserRole.Landlord)
+                    if (user.Role == UserRole.PlatformAdmin || user.Role == UserRole.Landlord)
                     {
                         throw new BadRequestException("You do not have permission to update this user's status");
                     }
@@ -440,11 +587,16 @@ public class AuthService : IAuthService
         await _auditLogService.LogUserDeletedAsync(userId, userEmail);
     }
 
-    private string GenerateJwtToken(User user)
+    private string GenerateJwtToken(User user, OrganizationStatus? organizationStatus)
     {
-        var jwtSecret = _configuration["Jwt:Secret"] ?? "your-256-bit-secret-key-here-change-in-production-minimum-32-characters";
-        var jwtIssuer = _configuration["Jwt:Issuer"] ?? "RentCollectionAPI";
-        var jwtAudience = _configuration["Jwt:Audience"] ?? "RentCollectionApp";
+        var jwtSecret = _configuration["Jwt:Secret"];
+        var jwtIssuer = _configuration["Jwt:Issuer"] ?? "HisaRentalsAPI";
+        var jwtAudience = _configuration["Jwt:Audience"] ?? "HisaRentals";
+
+        if (string.IsNullOrWhiteSpace(jwtSecret))
+        {
+            throw new InvalidOperationException("JWT secret is not configured.");
+        }
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -464,6 +616,10 @@ public class AuthService : IAuthService
             new Claim("PropertyId", user.PropertyId?.ToString() ?? ""),
             new Claim("TenantId", user.TenantId?.ToString() ?? ""),
             new Claim("LandlordId", landlordId),
+            new Claim("OrganizationId", user.OrganizationId.ToString()),
+            new Claim("IsVerified", user.IsVerified.ToString()),
+            new Claim("MustChangePassword", user.MustChangePassword.ToString()),
+            new Claim("OrganizationStatus", organizationStatus?.ToString() ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -558,6 +714,11 @@ public class AuthService : IAuthService
                 }
             }
 
+            if (!PasswordPolicy.IsValid(resetPasswordDto.NewPassword, out var passwordError))
+            {
+                throw new BadRequestException(passwordError ?? "Password does not meet policy requirements");
+            }
+
             // Hash new password
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
 
@@ -611,15 +772,16 @@ public class AuthService : IAuthService
                 }
             }
 
-            // Check if email is already verified
-            if (verificationToken.User.IsEmailVerified)
+            // Check if already verified
+            if (verificationToken.User.IsVerified)
             {
-                throw new BadRequestException("Email address is already verified");
+                throw new BadRequestException("Account is already verified");
             }
 
-            // Mark email as verified
-            verificationToken.User.IsEmailVerified = true;
-            verificationToken.User.EmailVerifiedAt = DateTime.UtcNow;
+            // Mark as verified
+            verificationToken.User.IsVerified = true;
+            verificationToken.User.VerifiedAt = DateTime.UtcNow;
+            verificationToken.User.VerificationChannel = VerificationChannel.Email;
             await _userRepository.UpdateAsync(verificationToken.User);
 
             // Mark token as used
@@ -655,8 +817,8 @@ public class AuthService : IAuthService
                 return; // Silently return without error
             }
 
-            // Check if email is already verified
-            if (user.IsEmailVerified)
+            // Check if already verified
+            if (user.IsVerified)
             {
                 _logger.LogWarning("Email verification resend requested for already verified email: {Email}", email);
                 return; // Silently return without error
@@ -717,7 +879,7 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
 
         // Generate QR code URI
-        var qrCodeUri = Application.Helpers.TotpHelper.GenerateQrCodeUri(secret, user.Email, "RentCollection");
+        var qrCodeUri = Application.Helpers.TotpHelper.GenerateQrCodeUri(secret, user.Email, "Hisa Rentals");
 
         _logger.LogInformation("2FA setup initiated for user {UserId}", userId);
 
@@ -725,7 +887,7 @@ public class AuthService : IAuthService
         {
             SecretKey = secret,
             QrCodeUri = qrCodeUri,
-            Issuer = "RentCollection",
+            Issuer = "Hisa Rentals",
             AccountName = user.Email
         };
     }
@@ -808,8 +970,10 @@ public class AuthService : IAuthService
         user.LastLoginAt = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user);
 
+        var organization = await _context.Organizations.FindAsync(user.OrganizationId);
+
         // Generate JWT token
-        var token = GenerateJwtToken(user);
+        var token = GenerateJwtToken(user, organization?.Status);
 
         _logger.LogInformation("User {UserId} logged in successfully with 2FA", user.Id);
 
@@ -820,11 +984,104 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             PhoneNumber = user.PhoneNumber,
             Role = user.Role,
+            Status = user.Status,
+            IsVerified = user.IsVerified,
+            VerifiedAt = user.VerifiedAt,
+            MustChangePassword = user.MustChangePassword,
+            VerificationChannel = user.VerificationChannel,
             Token = token,
             ExpiresAt = DateTime.UtcNow.AddHours(24),
             PropertyId = user.PropertyId,
-            TenantId = user.TenantId
+            TenantId = user.TenantId,
+            OrganizationId = user.OrganizationId,
+            OrganizationStatus = organization?.Status
         };
+    }
+
+    public async Task<AuthResponseDto> RefreshAuthAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException("User", userId);
+        }
+
+        var organization = await _context.Organizations.FindAsync(user.OrganizationId);
+        var token = GenerateJwtToken(user, organization?.Status);
+
+        return new AuthResponseDto
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role,
+            Status = user.Status,
+            IsVerified = user.IsVerified,
+            VerifiedAt = user.VerifiedAt,
+            VerificationChannel = user.VerificationChannel,
+            MustChangePassword = user.MustChangePassword,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
+            PropertyId = user.PropertyId,
+            TenantId = user.TenantId,
+            OrganizationId = user.OrganizationId,
+            OrganizationStatus = organization?.Status
+        };
+    }
+
+    private async Task<int> ResolveOrganizationIdAsync(RegisterDto registerDto, CancellationToken cancellationToken)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            if (!registerDto.OrganizationId.HasValue)
+            {
+                throw new BadRequestException("Organization is required for user creation");
+            }
+
+            return registerDto.OrganizationId.Value;
+        }
+
+        if (!_currentUserService.OrganizationId.HasValue)
+        {
+            throw new BadRequestException("Organization is required for user creation");
+        }
+
+        var organizationId = _currentUserService.OrganizationId.Value;
+
+        if (registerDto.PropertyId.HasValue)
+        {
+            var property = await _propertyRepository.GetByIdAsync(registerDto.PropertyId.Value);
+            if (property == null)
+            {
+                throw new BadRequestException($"Property with ID {registerDto.PropertyId.Value} not found");
+            }
+
+            if (property.OrganizationId != organizationId)
+            {
+                throw new BadRequestException("You can only assign users to properties within your organization");
+            }
+        }
+
+        if (registerDto.TenantId.HasValue)
+        {
+            var tenant = await _context.Tenants
+                .Include(t => t.Unit)
+                .ThenInclude(u => u.Property)
+                .FirstOrDefaultAsync(t => t.Id == registerDto.TenantId.Value, cancellationToken);
+
+            if (tenant == null)
+            {
+                throw new BadRequestException($"Tenant with ID {registerDto.TenantId.Value} not found");
+            }
+
+            if (tenant.Unit?.Property?.OrganizationId != organizationId)
+            {
+                throw new BadRequestException("You can only assign users to tenants within your organization");
+            }
+        }
+
+        return organizationId;
     }
 
     private string GenerateSecureToken()
@@ -852,11 +1109,17 @@ public class AuthService : IAuthService
             RoleName = user.Role.ToString(),
             Status = user.Status,
             StatusName = user.Status.ToString(),
+            IsVerified = user.IsVerified,
+            VerifiedAt = user.VerifiedAt,
+            VerificationChannel = user.VerificationChannel,
+            MustChangePassword = user.MustChangePassword,
             PropertyId = user.PropertyId,
             PropertyName = user.Property?.Name,
             TenantId = user.TenantId,
+            OrganizationId = user.OrganizationId,
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt
         };
     }
 }
+

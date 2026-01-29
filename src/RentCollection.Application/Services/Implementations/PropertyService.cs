@@ -39,8 +39,17 @@ public class PropertyService : IPropertyService
             var properties = await _propertyRepository.GetPropertiesWithUnitsAsync();
 
             // Filter based on user role
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!_currentUserService.OrganizationId.HasValue)
+                {
+                    return Result<IEnumerable<PropertyDto>>.Success(Array.Empty<PropertyDto>());
+                }
+
+                properties = properties
+                    .Where(p => p.OrganizationId == _currentUserService.OrganizationId.Value)
+                    .ToList();
+
                 // Tenants only see their own property
                 if (_currentUserService.IsTenant)
                 {
@@ -54,13 +63,25 @@ public class PropertyService : IPropertyService
                         properties = new List<Property>();
                     }
                 }
-                // Landlords, Caretakers, and Accountants only see properties they have access to
-                else
+                // Landlords only see their own properties
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue)
                     {
-                        properties = properties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                        properties = properties.Where(p => p.LandlordId == _currentUserService.UserIdInt.Value).ToList();
+                    }
+                }
+                // Managers, Caretakers, and Accountants see assigned properties only
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (assignedPropertyIds.Count == 0)
+                    {
+                        properties = new List<Property>();
+                    }
+                    else
+                    {
+                        properties = properties.Where(p => assignedPropertyIds.Contains(p.Id)).ToList();
                     }
                 }
             }
@@ -88,8 +109,13 @@ public class PropertyService : IPropertyService
             }
 
             // Check access permission
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(property))
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                }
+
                 // Tenants can only access their own property
                 if (_currentUserService.IsTenant)
                 {
@@ -98,16 +124,21 @@ public class PropertyService : IPropertyService
                         return Result<PropertyDto>.Failure("You do not have permission to access this property");
                     }
                 }
-                // Landlords, Caretakers, and Accountants check by landlordId
-                else
+                // Landlords can access their own properties
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue && property.LandlordId != _currentUserService.UserIdInt.Value)
                     {
-                        if (property.LandlordId != landlordId.Value)
-                        {
-                            return Result<PropertyDto>.Failure("You do not have permission to access this property");
-                        }
+                        return Result<PropertyDto>.Failure("You do not have permission to access this property");
+                    }
+                }
+                // Managers, Caretakers, and Accountants can only access assigned properties
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (!assignedPropertyIds.Contains(property.Id))
+                    {
+                        return Result<PropertyDto>.Failure("You do not have permission to access this property");
                     }
                 }
             }
@@ -126,8 +157,8 @@ public class PropertyService : IPropertyService
     {
         try
         {
-            // Only SystemAdmin and Landlords can create properties
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            // Only PlatformAdmin and Landlords can create properties
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
             {
                 return Result<PropertyDto>.Failure("Only landlords can create properties");
             }
@@ -139,8 +170,30 @@ public class PropertyService : IPropertyService
             if (_currentUserService.IsLandlord)
             {
                 property.LandlordId = _currentUserService.UserIdInt;
+                if (!_currentUserService.OrganizationId.HasValue)
+                {
+                    return Result<PropertyDto>.Failure("Organization is required to create properties");
+                }
+
+                property.OrganizationId = _currentUserService.OrganizationId.Value;
             }
-            // SystemAdmin must specify LandlordId in the DTO (additional validation needed)
+            // PlatformAdmin must specify LandlordId in the DTO (additional validation needed)
+            else if (_currentUserService.IsPlatformAdmin)
+            {
+                if (!createDto.OrganizationId.HasValue)
+                {
+                    if (!_currentUserService.OrganizationId.HasValue)
+                    {
+                        return Result<PropertyDto>.Failure("Organization is required to create properties");
+                    }
+
+                    property.OrganizationId = _currentUserService.OrganizationId.Value;
+                }
+                else
+                {
+                    property.OrganizationId = createDto.OrganizationId.Value;
+                }
+            }
 
             var createdProperty = await _propertyRepository.AddAsync(property);
             var propertyDto = _mapper.Map<PropertyDto>(property);
@@ -167,28 +220,29 @@ public class PropertyService : IPropertyService
             }
 
             // Check access permission
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(existingProperty))
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to update this property");
+                }
+
                 // Tenants cannot update properties
                 if (_currentUserService.IsTenant)
                 {
                     return Result<PropertyDto>.Failure("Tenants do not have permission to modify properties");
                 }
 
-                var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-
-                if (landlordId.HasValue)
+                if (_currentUserService.IsLandlord)
                 {
-                    if (existingProperty.LandlordId != landlordId.Value)
+                    if (_currentUserService.UserIdInt.HasValue && existingProperty.LandlordId != _currentUserService.UserIdInt.Value)
                     {
                         return Result<PropertyDto>.Failure("You do not have permission to update this property");
                     }
                 }
-
-                // Accountants have read-only access
-                if (_currentUserService.IsAccountant)
+                else
                 {
-                    return Result<PropertyDto>.Failure("Accountants do not have permission to modify properties");
+                    return Result<PropertyDto>.Failure("You do not have permission to update this property");
                 }
             }
 
@@ -220,18 +274,18 @@ public class PropertyService : IPropertyService
                 return Result.Failure($"Property with ID {id} not found");
             }
 
-            // Check access permission - Only SystemAdmin and Landlords can delete
-            if (_currentUserService.IsTenant || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+            // Check access permission - Only PlatformAdmin and Landlords can delete
+            if (_currentUserService.IsTenant || _currentUserService.IsCaretaker || _currentUserService.IsAccountant || _currentUserService.IsManager)
             {
                 return Result.Failure("You do not have permission to delete properties");
             }
 
-            if (!_currentUserService.IsSystemAdmin && !_currentUserService.IsLandlord)
+            if (!_currentUserService.IsPlatformAdmin && !_currentUserService.IsLandlord)
             {
                 return Result.Failure("You do not have permission to delete properties");
             }
 
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
                 var landlordId = _currentUserService.UserIdInt; // Must be landlord at this point
 
@@ -242,6 +296,10 @@ public class PropertyService : IPropertyService
                         return Result.Failure("You do not have permission to delete this property");
                     }
                 }
+            }
+            else if (!IsInOrganizationScope(property))
+            {
+                return Result.Failure("You do not have permission to delete this property");
             }
 
             // Check if property has units
@@ -273,8 +331,17 @@ public class PropertyService : IPropertyService
             var allProperties = await _propertyRepository.GetPropertiesWithUnitsAsync();
 
             // Filter based on user role
-            if (!_currentUserService.IsSystemAdmin)
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!_currentUserService.OrganizationId.HasValue)
+                {
+                    return Result<PaginatedList<PropertyDto>>.Success(new PaginatedList<PropertyDto>(new List<PropertyDto>(), 0, pageNumber, pageSize));
+                }
+
+                allProperties = allProperties
+                    .Where(p => p.OrganizationId == _currentUserService.OrganizationId.Value)
+                    .ToList();
+
                 // Tenants only see their own property
                 if (_currentUserService.IsTenant)
                 {
@@ -288,13 +355,25 @@ public class PropertyService : IPropertyService
                         allProperties = new List<Property>();
                     }
                 }
-                // Landlords, Caretakers, and Accountants filter by landlordId
-                else
+                // Landlords filter by landlordId
+                else if (_currentUserService.IsLandlord)
                 {
-                    var landlordId = _currentUserService.IsLandlord ? _currentUserService.UserIdInt : _currentUserService.LandlordIdInt;
-                    if (landlordId.HasValue)
+                    if (_currentUserService.UserIdInt.HasValue)
                     {
-                        allProperties = allProperties.Where(p => p.LandlordId == landlordId.Value).ToList();
+                        allProperties = allProperties.Where(p => p.LandlordId == _currentUserService.UserIdInt.Value).ToList();
+                    }
+                }
+                // Managers, Caretakers, and Accountants filter by assignments
+                else if (_currentUserService.IsManager || _currentUserService.IsCaretaker || _currentUserService.IsAccountant)
+                {
+                    var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+                    if (assignedPropertyIds.Count == 0)
+                    {
+                        allProperties = new List<Property>();
+                    }
+                    else
+                    {
+                        allProperties = allProperties.Where(p => assignedPropertyIds.Contains(p.Id)).ToList();
                     }
                 }
             }
@@ -329,9 +408,14 @@ public class PropertyService : IPropertyService
                 return Result<PropertyDto>.Failure($"Property with ID {propertyId} not found");
             }
 
-            // RBAC: Only SystemAdmin or property owner can upload images
-            if (!_currentUserService.IsSystemAdmin)
+            // RBAC: Only PlatformAdmin or property owner can upload images
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(property))
+                {
+                    return Result<PropertyDto>.Failure("You do not have permission to upload images for this property");
+                }
+
                 if (!_currentUserService.IsLandlord)
                 {
                     return Result<PropertyDto>.Failure("Only landlords can upload property images");
@@ -395,9 +479,14 @@ public class PropertyService : IPropertyService
                 return Result.Failure($"Property with ID {propertyId} not found");
             }
 
-            // RBAC: Only SystemAdmin or property owner can delete images
-            if (!_currentUserService.IsSystemAdmin)
+            // RBAC: Only PlatformAdmin or property owner can delete images
+            if (!_currentUserService.IsPlatformAdmin)
             {
+                if (!IsInOrganizationScope(property))
+                {
+                    return Result.Failure("You do not have permission to delete images for this property");
+                }
+
                 if (!_currentUserService.IsLandlord)
                 {
                     return Result.Failure("Only landlords can delete property images");
@@ -433,4 +522,16 @@ public class PropertyService : IPropertyService
             return Result.Failure("An error occurred while deleting the property image");
         }
     }
+
+    private bool IsInOrganizationScope(Property property)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        return _currentUserService.OrganizationId.HasValue &&
+               property.OrganizationId == _currentUserService.OrganizationId.Value;
+    }
 }
+

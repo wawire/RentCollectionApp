@@ -26,4 +26,14 @@ public class MPesaConfiguration
     /// Enable request/response logging for debugging
     /// </summary>
     public bool EnableDetailedLogging { get; set; } = false;
+
+    /// <summary>
+    /// Shared token required for webhook callbacks (header: X-MPesa-Token)
+    /// </summary>
+    public string WebhookToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional IP allowlist for webhook callbacks
+    /// </summary>
+    public List<string> AllowedCallbackIPs { get; set; } = new();
 }

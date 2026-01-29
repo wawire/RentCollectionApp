@@ -9,6 +9,7 @@ interface AuthContextType {
   user: AuthResponse | null
   login: (credentials: LoginRequest) => Promise<void>
   logout: () => void
+  refreshUser: () => void
   isAuthenticated: boolean
   isLoading: boolean
 }
@@ -20,15 +21,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    // Check if user is already logged in
+  const refreshUser = () => {
     const currentUser = authService.getCurrentUser()
 
     if (currentUser && !authService.isTokenExpired()) {
       setUser(currentUser)
     } else {
       authService.logout()
+      setUser(null)
     }
+  }
+
+  useEffect(() => {
+    refreshUser()
 
     setIsLoading(false)
   }, [])
@@ -38,6 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authData)
 
     // Redirect based on role
+    if (!authData.isVerified) {
+      router.push('/verify')
+      return
+    }
+
+    if (authData.mustChangePassword && authData.role === UserRole.Tenant) {
+      router.push('/tenant-portal/setup-password')
+      return
+    }
+
     if (authData.role === UserRole.Tenant) {
       router.push('/tenant-portal')
     } else {
@@ -57,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         login,
         logout,
+        refreshUser,
         isAuthenticated: !!user && !authService.isTokenExpired(),
         isLoading,
       }}

@@ -66,6 +66,22 @@ export const reportService = {
     return response.data
   },
 
+  async downloadRentRoll(propertyId?: number): Promise<Blob> {
+    const response = await apiClient.get('/reports/rent-roll', {
+      responseType: 'blob',
+      params: propertyId ? { propertyId } : undefined,
+    })
+    return response.data
+  },
+
+  async previewRentRoll(propertyId?: number): Promise<Blob> {
+    const response = await apiClient.get('/reports/rent-roll/preview', {
+      responseType: 'blob',
+      params: propertyId ? { propertyId } : undefined,
+    })
+    return response.data
+  },
+
   async getProfitLossReport(startDate: string, endDate: string): Promise<ProfitLossReport> {
     const response = await apiClient.get<{ data: ProfitLossReport }>(
       '/reports/profit-loss',

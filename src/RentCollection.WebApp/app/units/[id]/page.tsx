@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useGetUnit } from '@/lib/hooks'
 import { Card, Button, Badge, LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
-import { FaArrowLeft, FaEdit, FaBed, FaBath, FaRuler, FaBuilding, FaDoorOpen, FaUser } from 'react-icons/fa'
+import { ArrowLeft, Bath, Bed, Building2, Pencil, Ruler, User } from 'lucide-react'
 
 export default function UnitDetailPage() {
   const params = useParams()
@@ -40,7 +40,7 @@ export default function UnitDetailPage() {
           href="/units"
           className="inline-flex items-center text-sm text-primary/60 hover:text-primary mb-4 tracking-wide"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2" />
           Back to Units
         </Link>
         <div className="flex items-start justify-between">
@@ -58,7 +58,7 @@ export default function UnitDetailPage() {
           </div>
           <Link href={`/units/${unit.id}/edit`}>
             <Button variant="secondary">
-              <FaEdit className="mr-2" />
+              <Pencil className="mr-2" />
               Edit Unit
             </Button>
           </Link>
@@ -77,14 +77,14 @@ export default function UnitDetailPage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-gray-600">
-                <FaBed />
+                <Bed />
                 <span>Bedrooms</span>
               </div>
               <span className="font-semibold text-gray-900">{unit.bedrooms}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-gray-600">
-                <FaBath />
+                <Bath />
                 <span>Bathrooms</span>
               </div>
               <span className="font-semibold text-gray-900">{unit.bathrooms}</span>
@@ -92,7 +92,7 @@ export default function UnitDetailPage() {
             {unit.squareFeet && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2 text-gray-600">
-                  <FaRuler />
+                  <Ruler />
                   <span>Square Feet</span>
                 </div>
                 <span className="font-semibold text-gray-900">{unit.squareFeet}</span>
@@ -107,7 +107,7 @@ export default function UnitDetailPage() {
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                <FaBuilding className="text-primary-600" />
+                <Building2 className="text-primary-600" />
               </div>
               <div>
                 <p className="font-semibold text-gray-900">{unit.propertyName}</p>
@@ -126,7 +126,7 @@ export default function UnitDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Current Tenant</h2>
           <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg">
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <FaUser className="text-green-600 text-xl" />
+              <User className="text-green-600 text-xl" />
             </div>
             <div>
               <p className="font-semibold text-gray-900">{unit.currentTenantName}</p>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, Button, Select, Alert } from '@/components/common'
 import { useGetActiveTenants, useSendSms } from '@/lib/hooks'
 import { SmsTemplate } from '@/lib/types'
-import { FaPaperPlane, FaEnvelope } from 'react-icons/fa'
+import { Mail, Send } from 'lucide-react'
 
 interface SmsFormProps {
   onSmsSent?: () => void
@@ -133,7 +133,7 @@ export default function SmsForm({ onSmsSent }: SmsFormProps) {
     <Card padding="md">
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
-          <FaEnvelope className="text-primary-600 text-xl" />
+          <Mail className="text-primary-600 w-5 h-5" />
           <h2 className="text-lg font-semibold text-gray-900">Send SMS</h2>
         </div>
 
@@ -209,7 +209,7 @@ export default function SmsForm({ onSmsSent }: SmsFormProps) {
             disabled={!selectedTenantId || !message.trim()}
             fullWidth
           >
-            <FaPaperPlane className="mr-2" />
+            <Send className="mr-2 w-4 h-4" />
             Send SMS
           </Button>
           <Button

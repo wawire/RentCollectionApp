@@ -52,10 +52,24 @@ export const documentService = {
     return response.data.data
   },
 
+  // Get documents by type
+  getDocumentsByType: async (documentType: string) => {
+    const response = await apiClient.get<{ data: DocumentDto[] }>(`/documents/type/${documentType}`)
+    return response.data.data
+  },
+
   // Get documents by tenant
   getDocumentsByTenant: async (tenantId: number) => {
     const response = await apiClient.get<{ data: DocumentDto[] }>(`/documents/tenant/${tenantId}`)
     return response.data.data
+  },
+
+  // Download document file
+  downloadDocument: async (documentId: number) => {
+    const response = await apiClient.get(`/documents/${documentId}/download`, {
+      responseType: 'blob'
+    })
+    return response.data
   },
 
   // Verify document

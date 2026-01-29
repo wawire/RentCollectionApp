@@ -89,6 +89,11 @@ public class Payment : BaseEntity
     public decimal TotalAmount => Amount + LateFeeAmount;
 
     /// <summary>
+    /// Remaining unallocated amount for reconciliation
+    /// </summary>
+    public decimal UnallocatedAmount { get; set; }
+
+    /// <summary>
     /// Indicates if a late fee has been applied to this payment
     /// </summary>
     public bool HasLateFee => LateFeeAmount > 0;
@@ -98,4 +103,5 @@ public class Payment : BaseEntity
     public Unit Unit { get; set; } = null!;
     public LandlordPaymentAccount LandlordAccount { get; set; } = null!;
     public User? ConfirmedBy { get; set; }
+    public ICollection<PaymentAllocation> Allocations { get; set; } = new List<PaymentAllocation>();
 }

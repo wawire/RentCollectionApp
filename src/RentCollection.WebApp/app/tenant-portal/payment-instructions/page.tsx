@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
 import { tenantPaymentService } from '@/lib/services/tenantPaymentService'
 import { PaymentInstructions } from '@/lib/types/tenantPayment.types'
-import { FaArrowLeft, FaMobileAlt, FaUniversity, FaCopy, FaCheckCircle } from 'react-icons/fa'
+import { ArrowLeft, CheckCircle2, Copy, Landmark, Smartphone } from 'lucide-react'
 
 export default function PaymentInstructionsPage() {
   const [instructions, setInstructions] = useState<PaymentInstructions | null>(null)
@@ -68,7 +68,7 @@ export default function PaymentInstructionsPage() {
           href="/tenant-portal"
           className="inline-flex items-center gap-2 text-primary/60 hover:text-primary transition-colors mb-4"
         >
-          <FaArrowLeft />
+          <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </Link>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">
@@ -115,7 +115,7 @@ export default function PaymentInstructionsPage() {
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-sm border border-green-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-green-600 rounded-lg">
-              <FaMobileAlt className="text-white text-2xl" />
+              <Smartphone className="text-white w-6 h-6" />
             </div>
             <div>
               <h2 className="text-xl font-serif font-normal text-primary tracking-wide">
@@ -137,11 +137,11 @@ export default function PaymentInstructionsPage() {
                 >
                   {copiedField === 'paybillNumber' ? (
                     <>
-                      <FaCheckCircle className="text-green-600" /> Copied
+                      <CheckCircle2 className="text-green-600 w-4 h-4" /> Copied
                     </>
                   ) : (
                     <>
-                      <FaCopy /> Copy
+                      <Copy className="w-4 h-4" /> Copy
                     </>
                   )}
                 </button>
@@ -161,11 +161,11 @@ export default function PaymentInstructionsPage() {
                 >
                   {copiedField === 'accountNumber' ? (
                     <>
-                      <FaCheckCircle className="text-green-600" /> Copied
+                      <CheckCircle2 className="text-green-600 w-4 h-4" /> Copied
                     </>
                   ) : (
                     <>
-                      <FaCopy /> Copy
+                      <Copy className="w-4 h-4" /> Copy
                     </>
                   )}
                 </button>
@@ -201,7 +201,7 @@ export default function PaymentInstructionsPage() {
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm border border-blue-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-blue-600 rounded-lg">
-              <FaUniversity className="text-white text-2xl" />
+              <Landmark className="text-white w-6 h-6" />
             </div>
             <div>
               <h2 className="text-xl font-serif font-normal text-primary tracking-wide">
@@ -228,11 +228,11 @@ export default function PaymentInstructionsPage() {
                 >
                   {copiedField === 'bankAccountNumber' ? (
                     <>
-                      <FaCheckCircle className="text-green-600" /> Copied
+                      <CheckCircle2 className="text-green-600 w-4 h-4" /> Copied
                     </>
                   ) : (
                     <>
-                      <FaCopy /> Copy
+                      <Copy className="w-4 h-4" /> Copy
                     </>
                   )}
                 </button>

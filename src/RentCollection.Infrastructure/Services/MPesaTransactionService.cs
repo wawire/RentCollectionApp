@@ -129,7 +129,7 @@ public class MPesaTransactionService : IMPesaTransactionService
         }
     }
 
-    public async Task<ServiceResult<StkPushCallbackDto>> QueryAndUpdateStkPushStatusAsync(string checkoutRequestId)
+    public async Task<ServiceResult<StkPushQueryResponseDto>> QueryAndUpdateStkPushStatusAsync(string checkoutRequestId)
     {
         try
         {
@@ -147,9 +147,47 @@ public class MPesaTransactionService : IMPesaTransactionService
 
             if (transaction != null)
             {
-                // Update based on query result
-                // Note: Actual implementation depends on M-Pesa query response structure
-                transaction.UpdatedAt = DateTime.UtcNow;
+                var resultCode = -1;
+                if (!string.IsNullOrWhiteSpace(queryResult.Data?.ResultCode) &&
+                    int.TryParse(queryResult.Data.ResultCode, out var parsedCode))
+                {
+                    resultCode = parsedCode;
+                }
+
+                if (resultCode == 0)
+                {
+                    transaction.Status = MPesaTransactionStatus.Completed;
+                    transaction.ResultCode = 0;
+                    transaction.ResultDesc = queryResult.Data?.ResultDesc ?? "Completed";
+                    transaction.UpdatedAt = DateTime.UtcNow;
+
+                    if (!transaction.PaymentId.HasValue)
+                    {
+                        await CreatePaymentFromMPesaTransactionAsync(transaction);
+                    }
+                }
+                else if (resultCode == 1032)
+                {
+                    transaction.Status = MPesaTransactionStatus.Cancelled;
+                    transaction.ResultCode = resultCode;
+                    transaction.ResultDesc = queryResult.Data?.ResultDesc ?? "Cancelled";
+                    transaction.UpdatedAt = DateTime.UtcNow;
+                }
+                else if (resultCode == 1037)
+                {
+                    transaction.Status = MPesaTransactionStatus.Timeout;
+                    transaction.ResultCode = resultCode;
+                    transaction.ResultDesc = queryResult.Data?.ResultDesc ?? "Timeout";
+                    transaction.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    transaction.Status = MPesaTransactionStatus.Failed;
+                    transaction.ResultCode = resultCode;
+                    transaction.ResultDesc = queryResult.Data?.ResultDesc ?? "Failed";
+                    transaction.UpdatedAt = DateTime.UtcNow;
+                }
+
                 await _context.SaveChangesAsync();
             }
 
@@ -158,14 +196,43 @@ public class MPesaTransactionService : IMPesaTransactionService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error querying and updating STK Push status");
-            return ServiceResult<StkPushCallbackDto>.Failure($"Error querying status: {ex.Message}");
+            return ServiceResult<StkPushQueryResponseDto>.Failure($"Error querying status: {ex.Message}");
         }
+    }
+
+    public async Task<List<string>> GetPendingStkPushCheckoutRequestIdsAsync(DateTime olderThanUtc, int batchSize)
+    {
+        return await _context.MPesaTransactions
+            .Where(t => t.Status == MPesaTransactionStatus.Pending &&
+                        (t.TransactionType == MPesaTransactionType.C2B || t.TransactionType == 0) &&
+                        t.CreatedAt <= olderThanUtc &&
+                        !string.IsNullOrEmpty(t.CheckoutRequestID))
+            .OrderBy(t => t.CreatedAt)
+            .Select(t => t.CheckoutRequestID)
+            .Take(batchSize)
+            .ToListAsync();
     }
 
     private async Task CreatePaymentFromMPesaTransactionAsync(MPesaTransaction mpesaTransaction)
     {
         try
         {
+            if (mpesaTransaction.PaymentId.HasValue)
+            {
+                return;
+            }
+
+            var existingPayment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.TransactionReference == mpesaTransaction.MPesaReceiptNumber ||
+                                          p.TransactionReference == mpesaTransaction.CheckoutRequestID);
+
+            if (existingPayment != null)
+            {
+                mpesaTransaction.PaymentId = existingPayment.Id;
+                await _context.SaveChangesAsync();
+                return;
+            }
+
             var tenant = await _context.Tenants
                 .Include(t => t.Unit)
                     .ThenInclude(u => u.Property)
@@ -178,8 +245,17 @@ public class MPesaTransactionService : IMPesaTransactionService
                 return;
             }
 
+            if (tenant.Unit == null || tenant.Unit.Property == null)
+            {
+                _logger.LogError(
+                    "Tenant {TenantId} missing unit/property for MPesaTransaction: {TransactionId}",
+                    tenant.Id,
+                    mpesaTransaction.Id);
+                return;
+            }
+
             // Get the payment account
-            var paymentAccount = tenant.Unit?.Property?.PaymentAccounts
+            var paymentAccount = tenant.Unit.Property.PaymentAccounts?
                 .FirstOrDefault(pa => pa.AccountType == PaymentAccountType.MPesaPaybill && pa.IsActive);
 
             if (paymentAccount == null)
@@ -205,6 +281,7 @@ public class MPesaTransactionService : IMPesaTransactionService
                 PeriodEnd = periodEnd,
                 PaymentMethod = PaymentMethod.MPesa,
                 Status = PaymentStatus.Pending, // Still pending landlord confirmation
+                UnallocatedAmount = mpesaTransaction.Amount,
                 TransactionReference = mpesaTransaction.MPesaReceiptNumber ?? mpesaTransaction.CheckoutRequestID,
                 PaybillAccountNumber = mpesaTransaction.AccountReference,
                 MPesaPhoneNumber = mpesaTransaction.PhoneNumber,
@@ -213,10 +290,10 @@ public class MPesaTransactionService : IMPesaTransactionService
             };
 
             _context.Payments.Add(payment);
+            await _context.SaveChangesAsync();
 
-            // Link payment to M-Pesa transaction
+            // Link payment to M-Pesa transaction after payment is persisted
             mpesaTransaction.PaymentId = payment.Id;
-
             await _context.SaveChangesAsync();
 
             _logger.LogInformation(

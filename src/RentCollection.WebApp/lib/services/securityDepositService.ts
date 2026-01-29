@@ -29,6 +29,16 @@ export const securityDepositService = {
   },
 
   /**
+   * Get deposit balance for the authenticated tenant
+   */
+  async getMyDepositBalance(): Promise<SecurityDepositBalance> {
+    const response = await apiClient.get<SecurityDepositBalance>(
+      '/securitydeposits/me/balance'
+    );
+    return response.data;
+  },
+
+  /**
    * Get transaction history for a tenant
    */
   async getTransactionHistory(
@@ -41,6 +51,24 @@ export const securityDepositService = {
     if (endDate) params.append('endDate', endDate);
 
     const url = `/securitydeposits/tenant/${tenantId}/transactions${
+      params.toString() ? `?${params.toString()}` : ''
+    }`;
+    const response = await apiClient.get<SecurityDepositTransaction[]>(url);
+    return response.data;
+  },
+
+  /**
+   * Get transaction history for the authenticated tenant
+   */
+  async getMyTransactionHistory(
+    startDate?: string,
+    endDate?: string
+  ): Promise<SecurityDepositTransaction[]> {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    const url = `/securitydeposits/me/transactions${
       params.toString() ? `?${params.toString()}` : ''
     }`;
     const response = await apiClient.get<SecurityDepositTransaction[]>(url);

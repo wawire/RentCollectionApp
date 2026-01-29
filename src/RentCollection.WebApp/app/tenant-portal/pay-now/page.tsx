@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { tenantPaymentService } from '@/lib/services/tenantPaymentService'
-import { FaArrowLeft, FaMobileAlt, FaCheckCircle, FaExclamationCircle, FaSpinner, FaInfoCircle } from 'react-icons/fa'
+import { AlertCircle, ArrowLeft, CheckCircle2, Info, Loader2, RefreshCw, Smartphone } from 'lucide-react'
 
 export default function PayNowPage() {
   const router = useRouter()
@@ -19,6 +19,9 @@ export default function PayNowPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [stkPushSent, setStkPushSent] = useState(false)
+  const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null)
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  const [statusLoading, setStatusLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,14 +37,8 @@ export default function PayNowPage() {
       })
 
       setStkPushSent(true)
-
-      // Simulate waiting for payment confirmation
-      setTimeout(() => {
-        setSuccess(true)
-        setTimeout(() => {
-          router.push('/tenant-portal')
-        }, 3000)
-      }, 5000)
+      setCheckoutRequestId(response.checkoutRequestId)
+      setStatusMessage('STK Push sent. Waiting for payment confirmation...')
 
     } catch (err: any) {
       setError(err.response?.data?.message || 'Payment failed. Please try again or contact support.')
@@ -50,12 +47,33 @@ export default function PayNowPage() {
     }
   }
 
+  const handleCheckStatus = async () => {
+    if (!checkoutRequestId) return
+    setStatusLoading(true)
+    try {
+      const result = await tenantPaymentService.getStkStatus(checkoutRequestId)
+      const description = result.resultDesc || result.responseDescription || 'Status received'
+      setStatusMessage(description)
+
+      if (result.resultCode === '0') {
+        setSuccess(true)
+        setTimeout(() => {
+          router.push('/tenant-portal')
+        }, 3000)
+      }
+    } catch (err: any) {
+      setStatusMessage(err.message || 'Failed to fetch status')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
   if (success) {
     return (
       <div className="max-w-2xl mx-auto min-h-screen flex items-center justify-center -mt-20">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-            <FaCheckCircle className="text-green-600 text-4xl" />
+            <CheckCircle2 className="text-green-600 text-4xl" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
             Payment Successful!
@@ -74,7 +92,7 @@ export default function PayNowPage() {
       <div className="max-w-2xl mx-auto min-h-screen flex items-center justify-center -mt-20">
         <div className="text-center px-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6 animate-pulse">
-            <FaMobileAlt className="text-blue-600 text-4xl" />
+            <Smartphone className="text-blue-600 text-4xl" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
             Check Your Phone
@@ -104,8 +122,21 @@ export default function PayNowPage() {
             </ol>
           </div>
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
-            <FaSpinner className="animate-spin text-blue-600" />
-            <span>Waiting for confirmation...</span>
+            <Loader2 className="animate-spin text-blue-600 w-4 h-4" />
+            <span>{statusMessage || 'Waiting for confirmation...'}</span>
+          </div>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <button
+              onClick={handleCheckStatus}
+              disabled={statusLoading || !checkoutRequestId}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+            >
+              {statusLoading ? <Loader2 className="animate-spin w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
+              Check Status
+            </button>
+            {checkoutRequestId && (
+              <p className="text-xs text-gray-500">Checkout ID: {checkoutRequestId}</p>
+            )}
           </div>
         </div>
       </div>
@@ -120,7 +151,7 @@ export default function PayNowPage() {
           href="/tenant-portal"
           className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
         >
-          <FaArrowLeft className="text-gray-600" />
+          <ArrowLeft className="text-gray-600 w-4 h-4" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -134,7 +165,7 @@ export default function PayNowPage() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-start gap-4">
-          <FaExclamationCircle className="text-red-600 text-2xl flex-shrink-0 mt-0.5" />
+          <AlertCircle className="text-red-600 text-2xl flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-red-900 text-lg">Payment Failed</p>
             <p className="text-red-700 mt-1">{error}</p>
@@ -152,7 +183,7 @@ export default function PayNowPage() {
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
-            <FaInfoCircle className="text-white text-xl" />
+            <Info className="text-white text-xl" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">How M-Pesa Payment Works</h3>
@@ -225,12 +256,12 @@ export default function PayNowPage() {
           >
             {loading ? (
               <>
-                <FaSpinner className="animate-spin text-xl" />
+                <Loader2 className="animate-spin text-xl" />
                 Processing...
               </>
             ) : (
               <>
-                <FaMobileAlt className="text-xl" />
+                <Smartphone className="text-xl" />
                 Pay KSh {formData.amount || '0'} Now
               </>
             )}

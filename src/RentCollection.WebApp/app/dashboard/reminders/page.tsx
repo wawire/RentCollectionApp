@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaArrowLeft, FaBell, FaClock, FaEnvelope, FaSms, FaSave, FaSpinner, FaCheckCircle, FaHistory, FaCog } from 'react-icons/fa'
+import { ArrowLeft, Bell, CheckCircle2, Clock, History, Loader2, Mail, MessageSquare, Save } from 'lucide-react'
 import { rentReminderService, ReminderSettings, UpdateReminderSettings } from '@/lib/services/rentReminderService'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 export default function RentRemindersPage() {
   const [loading, setLoading] = useState(true)
@@ -83,20 +84,16 @@ export default function RentRemindersPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <FaSpinner className="animate-spin text-4xl text-blue-600" />
-      </div>
-    )
-  }
-
-  return (
+  const content = loading ? (
+    <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="animate-spin w-10 h-10 text-blue-600" />
+    </div>
+  ) : (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
         <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4">
-          <FaArrowLeft /> Back to Dashboard
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
         <div className="flex justify-between items-center">
           <div>
@@ -107,7 +104,7 @@ export default function RentRemindersPage() {
             href="/dashboard/reminders/history"
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition"
           >
-            <FaHistory /> View History
+            <History className="w-4 h-4" /> View History
           </Link>
         </div>
       </div>
@@ -120,7 +117,7 @@ export default function RentRemindersPage() {
       )}
       {successMessage && (
         <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
-          <FaCheckCircle /> {successMessage}
+          <CheckCircle2 className="w-4 h-4" /> {successMessage}
         </div>
       )}
 
@@ -130,7 +127,7 @@ export default function RentRemindersPage() {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FaBell className="text-2xl text-blue-600" />
+                <Bell className="w-6 h-6 text-blue-600" />
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800">Enable Automated Reminders</h2>
                   <p className="text-sm text-gray-600">Turn on/off automated rent reminder system</p>
@@ -152,44 +149,44 @@ export default function RentRemindersPage() {
           <div className="p-6 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Default Notification Channel</h3>
             <div className="flex gap-4">
-              <button
-                onClick={() => handleChannelChange('SMS')}
-                className={`flex-1 p-4 border-2 rounded-lg transition ${
-                  settings.defaultChannel === 'SMS'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <FaSms className="text-2xl mx-auto mb-2 text-blue-600" />
-                <div className="font-medium">SMS Only</div>
-              </button>
-              <button
-                onClick={() => handleChannelChange('Email')}
-                className={`flex-1 p-4 border-2 rounded-lg transition ${
-                  settings.defaultChannel === 'Email'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <FaEnvelope className="text-2xl mx-auto mb-2 text-blue-600" />
-                <div className="font-medium">Email Only</div>
-              </button>
-              <button
-                onClick={() => handleChannelChange('Both')}
-                className={`flex-1 p-4 border-2 rounded-lg transition ${
-                  settings.defaultChannel === 'Both'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex justify-center gap-2 text-2xl mb-2 text-blue-600">
-                  <FaSms />
-                  <FaEnvelope />
-                </div>
-                <div className="font-medium">Both</div>
-              </button>
+                <button
+                  onClick={() => handleChannelChange('SMS')}
+                  className={`flex-1 p-4 border-2 rounded-lg transition ${
+                    settings.defaultChannel === 'SMS'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <MessageSquare className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                  <div className="font-medium">SMS Only</div>
+                </button>
+                <button
+                  onClick={() => handleChannelChange('Email')}
+                  className={`flex-1 p-4 border-2 rounded-lg transition ${
+                    settings.defaultChannel === 'Email'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <Mail className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                  <div className="font-medium">Email Only</div>
+                </button>
+                <button
+                  onClick={() => handleChannelChange('Both')}
+                  className={`flex-1 p-4 border-2 rounded-lg transition ${
+                    settings.defaultChannel === 'Both'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex justify-center gap-2 text-2xl mb-2 text-blue-600">
+                    <MessageSquare className="w-6 h-6" />
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div className="font-medium">Both</div>
+                </button>
+              </div>
             </div>
-          </div>
 
           {/* Reminder Schedule */}
           <div className="p-6 border-b border-gray-200">
@@ -206,7 +203,7 @@ export default function RentRemindersPage() {
               ].map(({ key, label, type }) => (
                 <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <FaClock className={`${
+                    <Clock className={`${
                       type === 'before' ? 'text-blue-600' :
                       type === 'due' ? 'text-yellow-600' : 'text-red-600'
                     }`} />
@@ -232,7 +229,7 @@ export default function RentRemindersPage() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Quiet Hours</h3>
             <p className="text-sm text-gray-600 mb-4">No reminders will be sent during these hours (currently set to 10 PM - 8 AM)</p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-              <FaClock className="inline mr-2" />
+              <Clock className="inline mr-2 w-4 h-4" />
               Advanced quiet hours configuration coming soon. Default: 10:00 PM - 8:00 AM
             </div>
           </div>
@@ -246,12 +243,12 @@ export default function RentRemindersPage() {
             >
               {saving ? (
                 <>
-                  <FaSpinner className="animate-spin" />
+                  <Loader2 className="animate-spin w-4 h-4" />
                   Saving Settings...
                 </>
               ) : (
                 <>
-                  <FaSave />
+                  <Save className="w-4 h-4" />
                   Save Reminder Settings
                 </>
               )}
@@ -261,4 +258,11 @@ export default function RentRemindersPage() {
       )}
     </div>
   )
+
+  return (
+    <ProtectedRoute allowedRoles={['PlatformAdmin', 'Landlord']}>
+      {content}
+    </ProtectedRoute>
+  )
 }
+

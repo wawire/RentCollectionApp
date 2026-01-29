@@ -5,7 +5,7 @@ import SmsForm from '@/components/notifications/SmsForm'
 import SmsHistory from '@/components/notifications/SmsHistory'
 import BulkSms from '@/components/notifications/BulkSms'
 import { SmsHistoryItem } from '@/lib/types'
-import { FaBell, FaCommentAlt, FaUsers } from 'react-icons/fa'
+import { Bell, MessageSquare, Users } from 'lucide-react'
 
 type TabType = 'send' | 'bulk' | 'history'
 
@@ -48,9 +48,9 @@ export default function NotificationsPage() {
   }
 
   const tabs = [
-    { id: 'send' as TabType, label: 'Send SMS', icon: FaCommentAlt },
-    { id: 'bulk' as TabType, label: 'Bulk SMS', icon: FaUsers },
-    { id: 'history' as TabType, label: 'SMS History', icon: FaBell },
+    { id: 'send' as TabType, label: 'Send SMS', icon: MessageSquare },
+    { id: 'bulk' as TabType, label: 'Bulk SMS', icon: Users },
+    { id: 'history' as TabType, label: 'SMS History', icon: Bell },
   ]
 
   return (

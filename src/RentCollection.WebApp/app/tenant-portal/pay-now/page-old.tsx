@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { tenantPaymentService } from '@/lib/services/tenantPaymentService'
 import { Card } from '@/components/common'
-import { FaArrowLeft, FaMobileAlt, FaCheckCircle, FaExclamationCircle, FaSpinner } from 'react-icons/fa'
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Smartphone } from 'lucide-react'
 
 export default function PayNowPage() {
   const router = useRouter()
@@ -57,7 +57,7 @@ export default function PayNowPage() {
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-              <FaCheckCircle className="text-green-600 text-3xl" />
+              <CheckCircle2 className="text-green-600 text-3xl" />
             </div>
             <h2 className="text-2xl font-serif font-normal text-primary tracking-wide mb-2">
               Payment Successful!
@@ -78,7 +78,7 @@ export default function PayNowPage() {
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 animate-pulse">
-              <FaMobileAlt className="text-blue-600 text-3xl" />
+              <Smartphone className="text-blue-600 text-3xl" />
             </div>
             <h2 className="text-2xl font-serif font-normal text-primary tracking-wide mb-2">
               Check Your Phone
@@ -96,7 +96,7 @@ export default function PayNowPage() {
               </ol>
             </div>
             <div className="mt-6 flex items-center justify-center gap-2 text-primary/60">
-              <FaSpinner className="animate-spin" />
+              <Loader2 className="animate-spin w-4 h-4" />
               <span className="text-sm">Waiting for payment confirmation...</span>
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function PayNowPage() {
           href="/tenant-portal"
           className="inline-flex items-center gap-2 text-primary/60 hover:text-primary transition-colors mb-4"
         >
-          <FaArrowLeft />
+          <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </Link>
         <h1 className="text-3xl font-serif font-normal text-primary tracking-wide">
@@ -126,7 +126,7 @@ export default function PayNowPage() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-          <FaExclamationCircle className="text-red-600 text-xl flex-shrink-0 mt-0.5" />
+          <AlertCircle className="text-red-600 text-xl flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-red-800">Payment Failed</p>
             <p className="text-red-700 text-sm">{error}</p>
@@ -139,7 +139,7 @@ export default function PayNowPage() {
         <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6 mb-6 border border-green-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <FaMobileAlt className="text-white text-xl" />
+              <Smartphone className="text-white text-xl" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-primary">M-Pesa STK Push Payment</h3>
@@ -210,12 +210,12 @@ export default function PayNowPage() {
             >
               {loading ? (
                 <>
-                  <FaSpinner className="animate-spin" />
+                  <Loader2 className="animate-spin w-4 h-4" />
                   Processing...
                 </>
               ) : (
                 <>
-                  <FaMobileAlt />
+                  <Smartphone className="w-4 h-4" />
                   Pay Now
                 </>
               )}

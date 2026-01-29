@@ -43,6 +43,7 @@ public class ApplicationDbContextSeed
                     Description = "Modern bedsitters and one-bedroom apartments in the heart of Westlands. Walking distance to Sarit Centre and Westgate Mall. Secure compound with ample parking.",
                     TotalUnits = 12,
                     LandlordId = johnLandlord.Id,
+                    OrganizationId = johnLandlord.OrganizationId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -53,6 +54,7 @@ public class ApplicationDbContextSeed
                     Description = "Affordable bedsitters and studios for young professionals. Near shops, hospitals, and public transport. Water available 24/7.",
                     TotalUnits = 8,
                     LandlordId = johnLandlord.Id,
+                    OrganizationId = johnLandlord.OrganizationId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -65,6 +67,7 @@ public class ApplicationDbContextSeed
                     Description = "Family-friendly two and three bedroom apartments with spacious balconies. Quiet neighborhood with schools nearby. Borehole water and backup generator.",
                     TotalUnits = 15,
                     LandlordId = maryLandlord.Id,
+                    OrganizationId = maryLandlord.OrganizationId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -75,6 +78,7 @@ public class ApplicationDbContextSeed
                     Description = "Premium two and three bedroom apartments in serene Lavington. Swimming pool, gym, children's play area. DSTV ready, fiber internet.",
                     TotalUnits = 10,
                     LandlordId = maryLandlord.Id,
+                    OrganizationId = maryLandlord.OrganizationId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -87,6 +91,7 @@ public class ApplicationDbContextSeed
                     Description = "Own compound maisonettes with 3 bedrooms, DSQ (domestic servant quarters), parking for 2 cars. Gated community with 24hr security.",
                     TotalUnits = 6,
                     LandlordId = davidLandlord.Id,
+                    OrganizationId = davidLandlord.OrganizationId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -97,6 +102,7 @@ public class ApplicationDbContextSeed
                     Description = "Standalone bungalows (own compound) with 2-3 bedrooms. Each house has a garden, parking, and perimeter wall. Perfect for families seeking peace and privacy.",
                     TotalUnits = 8,
                     LandlordId = davidLandlord.Id,
+                    OrganizationId = davidLandlord.OrganizationId,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 }
@@ -712,12 +718,17 @@ public class ApplicationDbContextSeed
                     LastName = tenant.LastName,
                     Email = tenant.Email,
                     PhoneNumber = tenant.PhoneNumber,
-                    // Password: Tenant@123 (same for all tenants for testing)
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Tenant@123"),
+                    // Password: HisaRentalsTenant@2025 (temporary for invited tenants)
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("HisaRentalsTenant@2025"),
                     Role = UserRole.Tenant,
                     Status = UserStatus.Active,
+                    IsVerified = true,
+                    VerifiedAt = DateTime.UtcNow,
+                    VerificationChannel = VerificationChannel.Email,
+                    MustChangePassword = false,
                     PropertyId = null,
                     TenantId = tenant.Id, // Link User to Tenant entity
+                    OrganizationId = tenant.Unit?.Property?.OrganizationId ?? 0,
                     CreatedAt = tenant.CreatedAt
                 };
 
@@ -733,12 +744,12 @@ public class ApplicationDbContextSeed
             logger.LogInformation("=== TENANT LOGIN CREDENTIALS ===");
             foreach (var tenant in tenants)
             {
-                logger.LogInformation("📧 {Name} - {Email} / {Phone}",
+                logger.LogInformation("TENANT: {Name} - {Email} / {Phone}",
                     $"{tenant.FirstName} {tenant.LastName}",
                     tenant.Email,
                     tenant.PhoneNumber);
             }
-            logger.LogInformation("🔑 Password (all tenants): Tenant@123");
+            logger.LogInformation("Password (all tenants): HisaRentalsTenant@2025");
             logger.LogInformation("================================");
             logger.LogInformation("");
 

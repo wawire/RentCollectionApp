@@ -284,13 +284,13 @@ export default function FilterSidebar(props: FilterSidebarProps) {
                   value={priceRange}
                   onChange={handlePriceChange}
                   onAfterChange={handlePriceCommit}
-                  trackStyle={{ backgroundColor: '#D4AF37' }}
+                  trackStyle={{ backgroundColor: 'var(--color-brand-secondary)' }}
                   handleStyle={{
-                    borderColor: '#D4AF37',
-                    backgroundColor: '#fff',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    borderColor: 'var(--color-brand-secondary)',
+                    backgroundColor: 'var(--color-surface)',
+                    boxShadow: '0 2px 4px rgba(30, 58, 95, 0.2)',
                   }}
-                  railStyle={{ backgroundColor: '#DDE1E4' }}
+                  railStyle={{ backgroundColor: 'var(--color-brand-bg)' }}
                 />
               ) : (
                 <div className="h-6 bg-gray-100 rounded animate-pulse" />

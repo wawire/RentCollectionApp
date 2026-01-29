@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useGetProperty, useGetUnitsByProperty } from '@/lib/hooks'
 import { Card, Button, Badge, LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
-import { FaArrowLeft, FaEdit, FaPlus, FaDoorOpen, FaBuilding } from 'react-icons/fa'
+import { ArrowLeft, Building2, DoorOpen, Pencil, Plus } from 'lucide-react'
 
 export default function PropertyDetailPage() {
   const params = useParams()
@@ -45,7 +45,7 @@ export default function PropertyDetailPage() {
           href="/properties"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
-          <FaArrowLeft className="mr-2" />
+          <ArrowLeft className="mr-2" />
           Back to Properties
         </Link>
         <div className="flex items-start justify-between">
@@ -60,7 +60,7 @@ export default function PropertyDetailPage() {
           </div>
           <Link href={`/properties/${property.id}/edit`}>
             <Button variant="secondary">
-              <FaEdit className="mr-2" />
+              <Pencil className="mr-2" />
               Edit Property
             </Button>
           </Link>
@@ -72,7 +72,7 @@ export default function PropertyDetailPage() {
         <Card padding="md">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FaBuilding className="text-blue-600" />
+              <Building2 className="text-blue-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{property.totalUnits}</p>
@@ -84,7 +84,7 @@ export default function PropertyDetailPage() {
         <Card padding="md">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <FaDoorOpen className="text-green-600" />
+              <DoorOpen className="text-green-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-green-600">{property.occupiedUnits}</p>
@@ -96,7 +96,7 @@ export default function PropertyDetailPage() {
         <Card padding="md">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-              <FaDoorOpen className="text-gray-600" />
+              <DoorOpen className="text-gray-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-600">{property.vacantUnits}</p>
@@ -133,7 +133,7 @@ export default function PropertyDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900">Units</h2>
           <Link href={`/units/new?propertyId=${property.id}`}>
             <Button variant="primary" size="sm">
-              <FaPlus className="mr-2" />
+              <Plus className="mr-2" />
               Add Unit
             </Button>
           </Link>
@@ -172,7 +172,7 @@ export default function PropertyDetailPage() {
             <p>No units added yet</p>
             <Link href={`/units/new?propertyId=${property.id}`}>
               <Button variant="primary" size="sm" className="mt-3">
-                <FaPlus className="mr-2" />
+                <Plus className="mr-2" />
                 Add First Unit
               </Button>
             </Link>

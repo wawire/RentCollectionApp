@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.DTOs.Auth;
 using RentCollection.Application.Services.Auth;
+using RentCollection.Application.Services.Interfaces;
 using RentCollection.Domain.Enums;
 using System.Security.Claims;
 
@@ -16,11 +18,13 @@ namespace RentCollection.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IVerificationService _verificationService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, IVerificationService verificationService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _verificationService = verificationService;
         _logger = logger;
     }
 
@@ -45,7 +49,9 @@ public class AuthController : ControllerBase
     /// <param name="registerDto">User registration details</param>
     /// <returns>Authentication token and user info</returns>
     [HttpPost("register")]
-    [Authorize(Roles = "SystemAdmin,Landlord")] // Only SystemAdmin and Landlord can create users
+    [Authorize(Roles = "PlatformAdmin,Landlord")] // Only PlatformAdmin and Landlord can create users
+    [Authorize(Policy = Policies.RequireVerifiedUser)]
+    [Authorize(Policy = Policies.RequireActiveOrganization)]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
@@ -84,7 +90,9 @@ public class AuthController : ControllerBase
     /// <param name="id">User ID</param>
     /// <returns>User details</returns>
     [HttpGet("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
+    [Authorize(Policy = Policies.RequireVerifiedUser)]
+    [Authorize(Policy = Policies.RequireActiveOrganization)]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUser(int id)
@@ -102,7 +110,9 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <returns>List of all users</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
+    [Authorize(Policy = Policies.RequireVerifiedUser)]
+    [Authorize(Policy = Policies.RequireActiveOrganization)]
     [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllUsers()
     {
@@ -132,13 +142,70 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Complete forced password change for invited users
+    /// </summary>
+    [HttpPost("complete-password-change")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CompletePasswordChange([FromBody] CompletePasswordChangeDto dto)
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+        if (userId == 0)
+            return Unauthorized();
+
+        var response = await _authService.CompletePasswordChangeAsync(userId, dto);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Send a verification OTP to the current user
+    /// </summary>
+    [HttpPost("verification/send")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendVerificationOtp([FromBody] SendVerificationOtpDto dto)
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+        if (userId == 0)
+            return Unauthorized();
+
+        await _verificationService.SendVerificationOtpAsync(userId, dto.Channel);
+        return Ok(new { message = "Verification code sent" });
+    }
+
+    /// <summary>
+    /// Verify OTP for the current user and return refreshed auth payload
+    /// </summary>
+    [HttpPost("verification/verify")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+        if (userId == 0)
+            return Unauthorized();
+
+        await _verificationService.VerifyOtpAsync(userId, dto.Code);
+        var response = await _authService.RefreshAuthAsync(userId);
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Update user status (activate/suspend)
     /// </summary>
     /// <param name="id">User ID</param>
     /// <param name="status">New status</param>
     /// <returns>Success message</returns>
     [HttpPut("{id}/status")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
+    [Authorize(Policy = Policies.RequireVerifiedUser)]
+    [Authorize(Policy = Policies.RequireActiveOrganization)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateUserStatus(int id, [FromBody] UserStatus status)
@@ -153,7 +220,9 @@ public class AuthController : ControllerBase
     /// <param name="id">User ID</param>
     /// <returns>No content</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "PlatformAdmin")]
+    [Authorize(Policy = Policies.RequireVerifiedUser)]
+    [Authorize(Policy = Policies.RequireActiveOrganization)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUser(int id)
@@ -231,3 +300,4 @@ public class AuthController : ControllerBase
         return Ok(new { message = "If the email exists in our system, a verification link has been sent." });
     }
 }
+

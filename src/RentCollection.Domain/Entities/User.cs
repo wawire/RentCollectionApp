@@ -17,13 +17,14 @@ public class User
     public UserStatus Status { get; set; } = UserStatus.Active;
 
     /// <summary>
-    /// Organization/Company ID for multi-tenancy (future use)
+    /// Organization/Company ID for multi-tenancy
     /// </summary>
-    public int? OrganizationId { get; set; }
+    public int OrganizationId { get; set; }
+    public Organization? Organization { get; set; }
 
     /// <summary>
     /// For Landlords and Caretakers - links to specific properties they manage
-    /// Null for SystemAdmin and Accountant (they see all)
+    /// Null for PlatformAdmin and Accountant (they see all)
     /// </summary>
     public int? PropertyId { get; set; }
     public Property? Property { get; set; }
@@ -36,12 +37,30 @@ public class User
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
+    public int LoginAttempts { get; set; }
+    public DateTime? LoginLockoutUntil { get; set; }
+    public DateTime? LastFailedLoginAt { get; set; }
 
     /// <summary>
-    /// Email verification status
+    /// Account verification status
     /// </summary>
-    public bool IsEmailVerified { get; set; } = false;
-    public DateTime? EmailVerifiedAt { get; set; }
+    public bool IsVerified { get; set; } = false;
+    public DateTime? VerifiedAt { get; set; }
+    public VerificationChannel? VerificationChannel { get; set; }
+
+    /// <summary>
+    /// OTP verification details
+    /// </summary>
+    public string? OtpHash { get; set; }
+    public DateTime? OtpExpiresAt { get; set; }
+    public int OtpAttempts { get; set; }
+    public DateTime? OtpLastSentAt { get; set; }
+    public DateTime? OtpLockoutUntil { get; set; }
+
+    /// <summary>
+    /// Force password change on first login or after invite
+    /// </summary>
+    public bool MustChangePassword { get; set; } = false;
 
     /// <summary>
     /// Two-factor authentication enabled status
@@ -65,7 +84,13 @@ public class User
     public ICollection<LandlordPaymentAccount> PaymentAccounts { get; set; } = new List<LandlordPaymentAccount>();
 
     /// <summary>
+    /// Scoped property assignments for Manager/Accountant/Caretaker
+    /// </summary>
+    public ICollection<UserPropertyAssignment> PropertyAssignments { get; set; } = new List<UserPropertyAssignment>();
+
+    /// <summary>
     /// Full name for display
     /// </summary>
     public string FullName => $"{FirstName} {LastName}";
 }
+

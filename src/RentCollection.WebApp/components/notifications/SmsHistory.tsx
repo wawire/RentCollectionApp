@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Card, Badge, SearchBar, Select } from '@/components/common'
 import { SmsHistoryItem } from '@/lib/types'
-import { FaCheckCircle, FaTimesCircle, FaClock, FaHistory } from 'react-icons/fa'
+import { CheckCircle2, Clock, History, XCircle } from 'lucide-react'
 
 interface SmsHistoryProps {
   history: SmsHistoryItem[]
@@ -33,11 +33,11 @@ export default function SmsHistory({ history }: SmsHistoryProps) {
   const getStatusIcon = (status: 'sent' | 'failed' | 'pending') => {
     switch (status) {
       case 'sent':
-        return <FaCheckCircle className="text-green-600" />
+        return <CheckCircle2 className="text-green-600 w-4 h-4" />
       case 'failed':
-        return <FaTimesCircle className="text-red-600" />
+        return <XCircle className="text-red-600 w-4 h-4" />
       case 'pending':
-        return <FaClock className="text-yellow-600" />
+        return <Clock className="text-yellow-600 w-4 h-4" />
     }
   }
 
@@ -71,7 +71,7 @@ export default function SmsHistory({ history }: SmsHistoryProps) {
     <div className="space-y-4">
       <Card padding="md">
         <div className="flex items-center gap-2 mb-4">
-          <FaHistory className="text-primary-600 text-xl" />
+          <History className="text-primary-600 w-5 h-5" />
           <h2 className="text-lg font-semibold text-gray-900">SMS History</h2>
         </div>
 

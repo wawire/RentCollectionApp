@@ -30,7 +30,7 @@ public class PropertiesController : ControllerBase
     /// </summary>
     /// <returns>List of all properties</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAll()
@@ -50,7 +50,7 @@ public class PropertiesController : ControllerBase
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <returns>Paginated list of properties</returns>
     [HttpGet("paginated")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaginated([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -69,7 +69,7 @@ public class PropertiesController : ControllerBase
     /// <param name="id">Property ID</param>
     /// <returns>Property details</returns>
     [HttpGet("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord,Caretaker,Accountant,Tenant")]
+    [Authorize(Roles = "PlatformAdmin,Landlord,Manager,Caretaker,Accountant,Tenant")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -77,7 +77,14 @@ public class PropertiesController : ControllerBase
         var result = await _propertyService.GetPropertyByIdAsync(id);
 
         if (!result.IsSuccess)
+        {
+            if (result.ErrorMessage.Contains("permission", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
+
             return NotFound(result);
+        }
 
         return Ok(result);
     }
@@ -88,7 +95,7 @@ public class PropertiesController : ControllerBase
     /// <param name="createDto">Property creation data</param>
     /// <returns>Created property</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreatePropertyDto createDto)
@@ -108,7 +115,7 @@ public class PropertiesController : ControllerBase
     /// <param name="updateDto">Property update data</param>
     /// <returns>Updated property</returns>
     [HttpPut("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -128,7 +135,7 @@ public class PropertiesController : ControllerBase
     /// <param name="id">Property ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -149,7 +156,7 @@ public class PropertiesController : ControllerBase
     /// <param name="file">Image file (JPG, PNG, WEBP, max 5MB)</param>
     /// <returns>Updated property with new image URL</returns>
     [HttpPost("{id}/image")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -177,7 +184,7 @@ public class PropertiesController : ControllerBase
     /// <param name="id">Property ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id}/image")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -200,7 +207,7 @@ public class PropertiesController : ControllerBase
     /// <param name="startDate">Optional start date for filtering payments</param>
     /// <param name="endDate">Optional end date for filtering payments</param>
     [HttpGet("{id}/payment-history/export")]
-    [Authorize(Roles = "SystemAdmin,Landlord")]
+    [Authorize(Roles = "PlatformAdmin,Landlord")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -227,3 +234,4 @@ public class PropertiesController : ControllerBase
         }
     }
 }
+

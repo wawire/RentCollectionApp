@@ -43,7 +43,22 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.Property(u => u.VerificationChannel)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.Property(u => u.OtpHash)
+            .HasMaxLength(200);
+
+        builder.Property(u => u.OrganizationId)
+            .IsRequired();
+
         // Relationships
+        builder.HasOne(u => u.Organization)
+            .WithMany(o => o.Users)
+            .HasForeignKey(u => u.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(u => u.Property)
             .WithMany()
             .HasForeignKey(u => u.PropertyId)
@@ -63,5 +78,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Role);
 
         builder.HasIndex(u => u.Status);
+
+        builder.HasIndex(u => u.OrganizationId);
+
+        builder.HasIndex(u => u.IsVerified);
+
+        builder.HasIndex(u => u.MustChangePassword);
+
+        builder.HasIndex(u => u.LoginLockoutUntil);
     }
 }

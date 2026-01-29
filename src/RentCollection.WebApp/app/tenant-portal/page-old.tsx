@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/common'
 import { tenantPortalService, TenantDashboardDto } from '@/lib/services/tenantPortalService'
-import { FaMoneyBillWave, FaClock, FaCheckCircle, FaExclamationTriangle, FaReceipt, FaFileAlt, FaCalendarAlt, FaInfoCircle, FaMobileAlt } from 'react-icons/fa'
+import { AlertTriangle, Banknote, Calendar, CheckCircle2, Clock, FileText, Info, Receipt, Smartphone } from 'lucide-react'
 
 export default function TenantPortalPage() {
   const [dashboard, setDashboard] = useState<TenantDashboardDto | null>(null)
@@ -49,13 +49,13 @@ export default function TenantPortalPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Confirmed':
-        return <FaCheckCircle className="text-green-600" />
+        return <CheckCircle2 className="text-green-600 w-4 h-4" />
       case 'Pending':
-        return <FaClock className="text-yellow-600" />
+        return <Clock className="text-yellow-600 w-4 h-4" />
       case 'Rejected':
-        return <FaExclamationTriangle className="text-red-600" />
+        return <AlertTriangle className="text-red-600 w-4 h-4" />
       default:
-        return <FaReceipt className="text-gray-600" />
+        return <Receipt className="text-gray-600 w-4 h-4" />
     }
   }
 
@@ -84,7 +84,7 @@ export default function TenantPortalPage() {
       {dashboard.hasOverduePayments && (
         <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <FaExclamationTriangle className="text-red-600 text-xl mt-1" />
+            <AlertTriangle className="text-red-600 text-xl mt-1" />
             <div className="flex-1">
               <h3 className="font-medium text-red-900">Overdue Payment</h3>
               <p className="text-sm text-red-700 mt-1">
@@ -97,7 +97,7 @@ export default function TenantPortalPage() {
                   href="/tenant-portal/pay-now"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                 >
-                  <FaMobileAlt />
+                  <Smartphone className="w-4 h-4" />
                   Pay Now with M-Pesa
                 </Link>
               </div>
@@ -137,7 +137,7 @@ export default function TenantPortalPage() {
               </p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
-              <FaMoneyBillWave className="text-blue-600 text-2xl" />
+              <Banknote className="text-blue-600 text-2xl" />
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function TenantPortalPage() {
               )}
             </div>
             <div className={`p-3 rounded-lg ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
-              <FaCalendarAlt className={`text-2xl ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
+              <Calendar className={`text-2xl ${dashboard.daysUntilDue && dashboard.daysUntilDue < 0 ? 'text-red-600' : 'text-yellow-600'}`} />
             </div>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function TenantPortalPage() {
               </p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
-              <FaCheckCircle className="text-green-600 text-2xl" />
+              <CheckCircle2 className="text-green-600 text-2xl" />
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function TenantPortalPage() {
               )}
             </div>
             <div className="p-3 bg-purple-100 rounded-lg">
-              <FaFileAlt className="text-purple-600 text-2xl" />
+              <FileText className="text-purple-600 text-2xl" />
             </div>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function TenantPortalPage() {
             href="/tenant-portal/pay-now"
             className="flex items-center gap-3 p-4 border-2 border-green-500 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
           >
-            <FaMobileAlt className="text-green-600 text-xl" />
+            <Smartphone className="text-green-600 text-xl" />
             <div>
               <p className="font-medium text-green-700">Pay with M-Pesa</p>
               <p className="text-sm text-green-600">STK Push</p>
@@ -219,7 +219,7 @@ export default function TenantPortalPage() {
             href="/tenant-portal/record-payment"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <FaReceipt className="text-blue-600 text-xl" />
+            <Receipt className="text-blue-600 text-xl" />
             <div>
               <p className="font-medium text-primary">Record Payment</p>
               <p className="text-sm text-primary/60">Already paid?</p>
@@ -230,7 +230,7 @@ export default function TenantPortalPage() {
             href="/tenant-portal/payment-instructions"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <FaMoneyBillWave className="text-purple-600 text-xl" />
+            <Banknote className="text-purple-600 text-xl" />
             <div>
               <p className="font-medium text-primary">Payment Info</p>
               <p className="text-sm text-primary/60">Instructions</p>
@@ -241,7 +241,7 @@ export default function TenantPortalPage() {
             href="/tenant-portal/documents"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <FaFileAlt className="text-purple-600 text-xl" />
+            <FileText className="text-purple-600 text-xl" />
             <div>
               <p className="font-medium text-primary">Documents</p>
               <p className="text-sm text-primary/60">Upload & view</p>
@@ -252,7 +252,7 @@ export default function TenantPortalPage() {
             href="/tenant-portal/lease-info"
             className="flex items-center gap-3 p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
           >
-            <FaInfoCircle className="text-orange-600 text-xl" />
+            <Info className="text-orange-600 text-xl" />
             <div>
               <p className="font-medium text-primary">Lease Info</p>
               <p className="text-sm text-primary/60">View details</p>

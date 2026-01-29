@@ -8,7 +8,7 @@ namespace RentCollection.API.Controllers;
 /// <summary>
 /// SMS management endpoints
 /// </summary>
-[Authorize]
+[Authorize(Roles = "PlatformAdmin,Landlord,Manager,Accountant,Caretaker")]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -79,3 +79,4 @@ public class SmsController : ControllerBase
         return Ok(result);
     }
 }
+

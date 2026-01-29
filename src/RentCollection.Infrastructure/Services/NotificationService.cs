@@ -13,17 +13,20 @@ public class NotificationService : INotificationService
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
     private readonly ISmsService _smsService;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<NotificationService> _logger;
 
     public NotificationService(
         ApplicationDbContext context,
         IEmailService emailService,
         ISmsService smsService,
+        ICurrentUserService currentUserService,
         ILogger<NotificationService> logger)
     {
         _context = context;
         _emailService = emailService;
         _smsService = smsService;
+        _currentUserService = currentUserService;
         _logger = logger;
     }
 
@@ -39,6 +42,11 @@ public class NotificationService : INotificationService
             if (tenant == null)
             {
                 return ServiceResult<bool>.Failure($"Tenant with ID {tenantId} not found");
+            }
+
+            if (!await HasAccessToTenantAsync(tenant))
+            {
+                return ServiceResult<bool>.Failure("You do not have permission to send reminders for this tenant");
             }
 
             // Calculate the next due date
@@ -106,6 +114,8 @@ public class NotificationService : INotificationService
                     .ThenInclude(u => u.Property)
                 .Where(t => t.IsActive);
 
+            tenantsQuery = await ApplyTenantScopeAsync(tenantsQuery, landlordId);
+
             var tenants = await tenantsQuery.ToListAsync();
             int remindersSent = 0;
 
@@ -159,6 +169,8 @@ public class NotificationService : INotificationService
                 .Where(t => t.IsActive && t.Payments.Any(p =>
                     p.Status == Domain.Enums.PaymentStatus.Pending && p.DueDate.Date < today));
 
+            tenantsQuery = await ApplyTenantScopeAsync(tenantsQuery, landlordId);
+
             var tenants = await tenantsQuery.ToListAsync();
             int noticesSent = 0;
 
@@ -204,6 +216,11 @@ public class NotificationService : INotificationService
             if (tenant == null)
             {
                 return ServiceResult<bool>.Failure($"Tenant with ID {tenantId} not found");
+            }
+
+            if (!await HasAccessToTenantAsync(tenant))
+            {
+                return ServiceResult<bool>.Failure("You do not have permission to send notices for this tenant");
             }
 
             // Get overdue payments for this tenant
@@ -298,6 +315,11 @@ public class NotificationService : INotificationService
                 return ServiceResult<bool>.Failure($"Payment with ID {paymentId} not found");
             }
 
+            if (!await HasAccessToTenantAsync(payment.Tenant))
+            {
+                return ServiceResult<bool>.Failure("You do not have permission to send a receipt for this payment");
+            }
+
             var tenant = payment.Tenant;
             var propertyName = tenant.Unit?.Property?.Name ?? "Your Property";
             var unitNumber = tenant.Unit?.UnitNumber ?? "N/A";
@@ -347,4 +369,120 @@ public class NotificationService : INotificationService
             return ServiceResult<bool>.Failure($"Error sending payment receipt: {ex.Message}");
         }
     }
+
+    private async Task<bool> HasAccessToTenantAsync(Domain.Entities.Tenant tenant)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        if (!_currentUserService.OrganizationId.HasValue)
+        {
+            return false;
+        }
+
+        var property = tenant.Unit?.Property;
+        if (property == null || property.OrganizationId != _currentUserService.OrganizationId.Value)
+        {
+            return false;
+        }
+
+        if (_currentUserService.IsTenant)
+        {
+            return _currentUserService.TenantId.HasValue && tenant.Id == _currentUserService.TenantId.Value;
+        }
+
+        if (_currentUserService.IsLandlord)
+        {
+            return _currentUserService.UserIdInt.HasValue &&
+                   property.LandlordId == _currentUserService.UserIdInt.Value;
+        }
+
+        if (_currentUserService.IsManager || _currentUserService.IsAccountant || _currentUserService.IsCaretaker)
+        {
+            var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+            return assignedPropertyIds.Contains(property.Id);
+        }
+
+        return false;
+    }
+
+    private async Task<IQueryable<Domain.Entities.Tenant>> ApplyTenantScopeAsync(
+        IQueryable<Domain.Entities.Tenant> query,
+        int? landlordId)
+    {
+        if (_currentUserService.IsPlatformAdmin)
+        {
+            if (landlordId.HasValue)
+            {
+                query = query.Where(t => t.Unit != null &&
+                                         t.Unit.Property != null &&
+                                         t.Unit.Property.LandlordId == landlordId.Value);
+            }
+
+            return query;
+        }
+
+        if (!_currentUserService.OrganizationId.HasValue)
+        {
+            return query.Where(_ => false);
+        }
+
+        query = query.Where(t => t.Unit != null &&
+                                 t.Unit.Property != null &&
+                                 t.Unit.Property.OrganizationId == _currentUserService.OrganizationId.Value);
+
+        if (landlordId.HasValue)
+        {
+            if (_currentUserService.IsLandlord)
+            {
+                if (!_currentUserService.UserIdInt.HasValue ||
+                    landlordId.Value != _currentUserService.UserIdInt.Value)
+                {
+                    return query.Where(_ => false);
+                }
+            }
+            else
+            {
+                return query.Where(_ => false);
+            }
+        }
+
+        if (_currentUserService.IsLandlord)
+        {
+            if (!_currentUserService.UserIdInt.HasValue)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(t => t.Unit != null &&
+                                    t.Unit.Property != null &&
+                                    t.Unit.Property.LandlordId == _currentUserService.UserIdInt.Value);
+        }
+
+        if (_currentUserService.IsManager || _currentUserService.IsAccountant || _currentUserService.IsCaretaker)
+        {
+            var assignedPropertyIds = await _currentUserService.GetAssignedPropertyIdsAsync();
+            if (assignedPropertyIds.Count == 0)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(t => t.Unit != null && assignedPropertyIds.Contains(t.Unit.PropertyId));
+        }
+
+        if (_currentUserService.IsTenant)
+        {
+            if (!_currentUserService.TenantId.HasValue)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(t => t.Id == _currentUserService.TenantId.Value);
+        }
+
+        return query.Where(_ => false);
+    }
 }
+

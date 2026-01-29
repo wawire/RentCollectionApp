@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentCollection.Application.Authorization;
 using RentCollection.Application.DTOs.Payments;
 using RentCollection.Application.Services.Interfaces;
 
@@ -8,7 +9,9 @@ namespace RentCollection.API.Controllers;
 /// <summary>
 /// Landlord payment account management endpoints
 /// </summary>
-[Authorize(Roles = "SystemAdmin,Landlord")]
+[Authorize(Roles = "PlatformAdmin,Landlord")]
+[Authorize(Policy = Policies.RequireVerifiedUser)]
+[Authorize(Policy = Policies.RequireActiveOrganization)]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -176,3 +179,4 @@ public class LandlordPaymentAccountsController : ControllerBase
         return Ok(result);
     }
 }
+
